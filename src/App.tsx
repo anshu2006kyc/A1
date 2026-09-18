@@ -13,6 +13,7 @@ import { BankView } from './views/BankView';
 import { MyProductsView } from './views/MyProductsView';
 import { TransactionsView } from './views/TransactionsView';
 import { PaymentCashierView } from './views/PaymentCashierView';
+import { PasswordView } from './views/PasswordView';
 import { AdminView } from './views/AdminView';
 
 import { BottomNav } from './components/BottomNav';
@@ -91,6 +92,8 @@ const MainAppContent: React.FC = () => {
         return <MyProductsView />;
       case 'transactions':
         return <TransactionsView />;
+      case 'password':
+        return <PasswordView />;
       default:
         return <HomeView />;
     }

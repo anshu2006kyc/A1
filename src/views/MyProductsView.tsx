@@ -23,7 +23,7 @@ import { formatINR } from '../utils/currency';
 import { UserPlan } from '../types';
 
 export const MyProductsView: React.FC = () => {
-  const { userPlans, setCurrentView, claimPlanProfit, claimAllPlanProfits, returnPlanCycle, showToast } = useApp();
+  const { userPlans, setCurrentView, goBack, claimPlanProfit, claimAllPlanProfits, returnPlanCycle, showToast } = useApp();
   const [planToReturn, setPlanToReturn] = useState<UserPlan | null>(null);
 
   const activePlans = userPlans.filter((p) => p.status === 'active');
@@ -102,7 +102,7 @@ export const MyProductsView: React.FC = () => {
       <div className="bg-white px-4 py-3.5 flex items-center justify-between border-b border-gray-100 sticky top-0 z-20">
         <button
           id="products-back-btn"
-          onClick={() => setCurrentView('profile')}
+          onClick={goBack}
           className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -173,7 +173,7 @@ export const MyProductsView: React.FC = () => {
             <button
               type="button"
               onClick={handleClaimAll}
-              className="py-2 px-3.5 bg-slate-950 hover:bg-black text-amber-400 font-black text-xs rounded-xl shadow-md active:scale-95 transition-all cursor-pointer flex items-center space-x-1"
+              className="py-2 px-3.5 btn-chamkila-gold text-amber-950 font-black text-xs rounded-xl shadow-md active:scale-95 transition-all cursor-pointer flex items-center space-x-1"
             >
               <Coins className="w-3.5 h-3.5" />
               <span>Claim All</span>
@@ -196,7 +196,7 @@ export const MyProductsView: React.FC = () => {
             <button
               id="browse-plans-btn"
               onClick={() => setCurrentView('home')}
-              className="mt-6 py-3 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer"
+              className="mt-6 py-3 px-6 rounded-2xl btn-chamkila text-white font-bold text-xs shadow-md shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer"
             >
               Browse Plans
             </button>

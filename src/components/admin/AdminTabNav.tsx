@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Activity,
   AlertOctagon,
-  ArrowDownToLine,
+  Banknote,
   BarChart3,
   CreditCard,
   Database,
@@ -63,7 +63,7 @@ export const AdminTabNav: React.FC<AdminTabNavProps> = ({ activeTab, onSelectTab
     {
       id: 'withdrawals',
       label: 'Payouts',
-      icon: ArrowDownToLine,
+      icon: Banknote,
       badge: pendingWithdrawalsCount,
       badgeColor: 'bg-amber-400 text-slate-950'
     },

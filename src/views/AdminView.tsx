@@ -53,7 +53,9 @@ export const AdminView: React.FC = () => {
     securityAlerts,
     registeredUsers,
     user,
-    plans
+    plans,
+    dbConnectionStatus,
+    isDbConnected
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<AdminTabId>('overview');
@@ -268,6 +270,11 @@ export const AdminView: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-[9.5px] font-bold text-emerald-300">
+            <span className={`w-1.5 h-1.5 rounded-full ${isDbConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+            <span>{isDbConnected ? 'DB Live' : 'DB Sync'}</span>
+          </div>
+
           {pendingDepositsCount + pendingWithdrawalsCount > 0 && (
             <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-black">
               {pendingDepositsCount + pendingWithdrawalsCount} Pending
@@ -303,7 +310,16 @@ export const AdminView: React.FC = () => {
             <span className="text-white font-black">{currentTabMeta?.label}</span>
           </div>
 
-          <div className="flex items-center space-x-4 text-xs">
+          <div className="flex items-center space-x-3 text-xs">
+            <div className="flex items-center space-x-2 bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-500/30 font-mono text-[11px]">
+              <Database className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-emerald-300 font-bold">
+                {isDbConnected ? 'DB: Connected' : 'DB: Syncing'}
+              </span>
+              <span className="text-emerald-500/50">•</span>
+              <span className="text-slate-400 text-[10px]">Firestore</span>
+            </div>
+
             <div className="flex items-center space-x-2 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800 font-mono text-[11px]">
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
               <span className="text-slate-300">Auto-Reconcile: ON</span>

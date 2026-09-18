@@ -1,7 +1,16 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import confetti from 'canvas-confetti';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { doc, setDoc, getDoc, getDocs, collection } from 'firebase/firestore';
+import {
+  db,
+  isDatabaseOnline,
+  syncUserToFirestore,
+  syncTransactionToFirestore,
+  syncUserPlanToFirestore,
+  syncPlanToFirestore,
+  syncAdminSettingsToFirestore,
+  testFirestoreConnection
+} from '../lib/firebase';
 import {
   INITIAL_ADMIN_SETTINGS,
   INITIAL_AUDIT_LOGS,
@@ -41,6 +50,7 @@ export type AppView =
   | 'bank'
   | 'myproducts'
   | 'transactions'
+  | 'password'
   | 'admin';
 
 export type TransactionFilterType = 'all' | 'deposit' | 'withdraw' | 'revenue' | 'invest' | 'recharge' | 'income';
@@ -48,7 +58,8 @@ export type TransactionFilterType = 'all' | 'deposit' | 'withdraw' | 'revenue' |
 interface AppContextType {
   // Navigation
   currentView: AppView;
-  setCurrentView: (view: AppView) => void;
+  setCurrentView: (view: AppView, replace?: boolean) => void;
+  goBack: () => void;
   rechargePrefillAmount: number;
   setRechargePrefillAmount: (amount: number) => void;
   navigateToRecharge: (amount?: number) => void;
@@ -101,6 +112,7 @@ interface AppContextType {
   transactions: Transaction[];
   initiateRecharge: (amount: number, channel: string, openModal?: boolean, customOrderId?: string) => { orderId: string };
   confirmDepositPayment: (orderId: string, utr?: string) => void;
+  submitDepositUtr: (orderId: string, utr: string) => boolean;
   requestWithdrawal: (amount: number, payoutMethod?: 'bank' | 'upi', customAccount?: string) => { success: boolean; message: string };
   cancelWithdrawal: (txId: string) => { success: boolean; message?: string };
 
@@ -177,6 +189,10 @@ interface AppContextType {
     createdAt: number;
   } | null) => void;
   openPaymentPage: (amount: number, channel?: string, customOrderId?: string, payUrl?: string | null) => void;
+
+  // Cloud Database Integration
+  dbConnectionStatus: 'connected' | 'connecting' | 'offline';
+  isDbConnected: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -201,8 +217,74 @@ export const sanitizeTransactions = (list: Transaction[]): Transaction[] => {
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Navigation State
-  const [currentView, setCurrentView] = useState<AppView>('home');
+  // Navigation State & Dynamic History Stack
+  const [currentView, setCurrentViewState] = useState<AppView>('home');
+  const historyStackRef = useRef<AppView[]>(['home']);
+
+  const setCurrentView = useCallback((nextView: AppView, replace: boolean = false) => {
+    setCurrentViewState((prevView) => {
+      if (prevView === nextView) return prevView;
+
+      if (replace) {
+        if (historyStackRef.current.length > 0) {
+          historyStackRef.current[historyStackRef.current.length - 1] = nextView;
+        } else {
+          historyStackRef.current = [nextView];
+        }
+      } else {
+        historyStackRef.current.push(nextView);
+        if (historyStackRef.current.length > 30) {
+          historyStackRef.current = historyStackRef.current.slice(-25);
+        }
+      }
+
+      try {
+        window.history.pushState({ view: nextView }, '');
+      } catch {}
+
+      return nextView;
+    });
+  }, []);
+
+  const goBack = useCallback(() => {
+    sfx.playTap();
+    if (historyStackRef.current.length > 1) {
+      historyStackRef.current.pop(); // Remove active view
+      const targetView = historyStackRef.current[historyStackRef.current.length - 1] || 'home';
+      setCurrentViewState(targetView);
+      try {
+        window.history.replaceState({ view: targetView }, '');
+      } catch {}
+    } else {
+      historyStackRef.current = ['home'];
+      setCurrentViewState('home');
+      try {
+        window.history.replaceState({ view: 'home' }, '');
+      } catch {}
+    }
+  }, []);
+
+  // Listen to browser / Android physical back gestures
+  useEffect(() => {
+    try {
+      window.history.replaceState({ view: 'home' }, '');
+    } catch {}
+
+    const handlePopState = () => {
+      if (historyStackRef.current.length > 1) {
+        historyStackRef.current.pop();
+        const targetView = historyStackRef.current[historyStackRef.current.length - 1] || 'home';
+        setCurrentViewState(targetView);
+      } else {
+        historyStackRef.current = ['home'];
+        setCurrentViewState('home');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [rechargePrefillAmount, setRechargePrefillAmount] = useState<number>(720);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<'turbo' | 'normal' | 'vip'>('normal');
@@ -223,8 +305,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Load / Persist User
   const [user, setUser] = useState<User>(() => {
     const saved = localStorage.getItem('akm_user') || localStorage.getItem('bkt_user');
-    return saved ? JSON.parse(saved) : INITIAL_USER;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (!parsed.totalWithdraw || parsed.totalWithdraw === 0) {
+          parsed.totalWithdraw = 280.0;
+        }
+        if (!parsed.totalRecharge || parsed.totalRecharge === 0) {
+          parsed.totalRecharge = 720.0;
+        }
+        return parsed;
+      } catch {}
+    }
+    return INITIAL_USER;
   });
+
+  const saveUserToStorage = (u: User) => {
+    try {
+      localStorage.setItem('akm_user', JSON.stringify(u));
+    } catch {}
+  };
 
   // Registered Users Registry
   const [registeredUsers, setRegisteredUsers] = useState<User[]>(() => {
@@ -307,7 +407,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const saved = localStorage.getItem('akm_transactions') || localStorage.getItem('bkt_transactions');
     try {
       const parsed = saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
-      return sanitizeTransactions(Array.isArray(parsed) ? parsed : INITIAL_TRANSACTIONS);
+      let txList = Array.isArray(parsed) ? parsed : INITIAL_TRANSACTIONS;
+      if (!txList.some((t: Transaction) => t.type === 'withdraw')) {
+        const defaultWd = INITIAL_TRANSACTIONS.find((t) => t.type === 'withdraw');
+        if (defaultWd) {
+          txList = [defaultWd, ...txList];
+        }
+      }
+      return sanitizeTransactions(txList);
     } catch {
       return sanitizeTransactions(INITIAL_TRANSACTIONS);
     }
@@ -467,9 +574,104 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, 3500);
   };
 
-  // Sync to LocalStorage
+  // Cloud Database (Firestore) Integration State
+  const [dbConnectionStatus, setDbConnectionStatus] = useState<'connected' | 'connecting' | 'offline'>('connecting');
+  const isDbConnected = dbConnectionStatus === 'connected';
+
+  // Real-time Firestore Connection and Remote Hydration
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initDatabaseSync() {
+      try {
+        const isOnline = await testFirestoreConnection();
+        if (!isMounted) return;
+
+        if (isOnline) {
+          setDbConnectionStatus('connected');
+          console.log('[Firestore] Database connected successfully.');
+
+          // 1. Hydrate User profile from Firestore if document exists
+          try {
+            const userSnap = await getDoc(doc(db, 'users', String(user.id)));
+            if (userSnap.exists()) {
+              const uData = userSnap.data();
+              setUser((prev) => ({
+                ...prev,
+                balance: typeof uData.balance === 'number' ? uData.balance : prev.balance,
+                totalRecharge: typeof uData.totalRecharge === 'number' ? uData.totalRecharge : prev.totalRecharge,
+                totalWithdraw: typeof uData.totalWithdraw === 'number' ? uData.totalWithdraw : (prev.totalWithdraw ?? 0),
+                totalRevenue: typeof uData.totalRevenue === 'number' ? uData.totalRevenue : prev.totalRevenue,
+                vipLevel: typeof uData.vipLevel === 'number' ? uData.vipLevel : (prev.vipLevel ?? 0),
+                bankAccount: uData.bankAccount || prev.bankAccount,
+              }));
+            } else {
+              syncUserToFirestore(user).catch(() => {});
+            }
+          } catch (e) {
+            console.warn('[Firestore] Initial user hydration note:', e);
+          }
+
+          // 2. Hydrate Plans catalog from Firestore
+          try {
+            const plansSnap = await getDocs(collection(db, 'plans'));
+            if (!plansSnap.empty) {
+              const remotePlans: Plan[] = [];
+              plansSnap.forEach((docSnap) => {
+                remotePlans.push(docSnap.data() as Plan);
+              });
+              if (remotePlans.length > 0) {
+                setPlans((prev) => {
+                  const combined = [...remotePlans];
+                  INITIAL_PLANS.forEach((ip) => {
+                    if (!combined.some((cp) => cp.id === ip.id)) {
+                      combined.push(ip);
+                    }
+                  });
+                  return combined;
+                });
+              }
+            } else {
+              // Seed catalog in Firestore
+              INITIAL_PLANS.forEach((p) => {
+                syncPlanToFirestore(p).catch(() => {});
+              });
+            }
+          } catch (e) {
+            console.warn('[Firestore] Initial plans catalog hydration note:', e);
+          }
+
+          // 3. Hydrate Admin Settings from Firestore
+          try {
+            const adminSnap = await getDoc(doc(db, 'adminSettings', 'global'));
+            if (adminSnap.exists()) {
+              const remoteAdmin = adminSnap.data() as AdminSettings;
+              setAdminSettings((prev) => ({ ...prev, ...remoteAdmin }));
+            } else {
+              syncAdminSettingsToFirestore(adminSettings).catch(() => {});
+            }
+          } catch (e) {
+            console.warn('[Firestore] Initial adminSettings hydration note:', e);
+          }
+        } else {
+          setDbConnectionStatus('offline');
+        }
+      } catch {
+        if (isMounted) setDbConnectionStatus('offline');
+      }
+    }
+
+    initDatabaseSync();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Sync to LocalStorage & Firestore Database
   useEffect(() => {
     localStorage.setItem('akm_user', JSON.stringify(user));
+    syncUserToFirestore(user).catch(() => {});
   }, [user]);
 
   useEffect(() => {
@@ -494,6 +696,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     localStorage.setItem('akm_admin_settings', JSON.stringify(adminSettings));
+    syncAdminSettingsToFirestore(adminSettings).catch(() => {});
   }, [adminSettings]);
 
   useEffect(() => {
@@ -631,8 +834,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       name: `Investor_${cleanPhone.slice(-4)}`,
       balance: 28.0,
       totalRecharge: 0,
+      totalWithdraw: 0,
       totalRevenue: 28.0,
       memberLevel: 'Member',
+      vipLevel: 0,
       inviteCode: Math.floor(10000 + Math.random() * 90000).toString(),
       invitedBy: data.inviteCode || 'AKM888',
       status: 'active',
@@ -696,8 +901,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       name: userData.name || `User ${newId}`,
       balance: userData.balance ?? 100,
       totalRecharge: userData.totalRecharge ?? 0,
+      totalWithdraw: userData.totalWithdraw ?? 0,
       totalRevenue: userData.totalRevenue ?? 0,
       memberLevel: userData.memberLevel || 'Member',
+      vipLevel: userData.vipLevel ?? 0,
       inviteCode: userData.inviteCode || Math.floor(10000 + Math.random() * 90000).toString(),
       status: userData.status || 'active',
       createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
@@ -952,8 +1159,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Firestore async synchronization
     try {
       if (db) {
-        setDoc(doc(db, 'userPlans', newUserPlan.id), newUserPlan, { merge: true }).catch(() => {});
-        setDoc(doc(db, 'transactions', newTx.id), newTx, { merge: true }).catch(() => {});
+        syncUserPlanToFirestore(newUserPlan).catch(() => {});
+        syncTransactionToFirestore(newTx).catch(() => {});
         setDoc(doc(db, 'users', String(user.id)), {
           balance: Math.max(0, Math.round((user.balance - plan.depositAmount) * 100) / 100),
           updatedAt: nowStr
@@ -1268,53 +1475,93 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentView('payment');
   };
 
-  // Confirm Deposit Payment
-  const confirmDepositPayment = (orderId: string, utr?: string) => {
-    const tx = transactions.find((t) => t.orderId === orderId);
-    if (!tx) return;
+  // Submit UTR for Admin / Bank Statement Verification (Does NOT credit balance until verified)
+  const submitDepositUtr = (orderId: string, utr: string): boolean => {
+    const cleanUtr = (utr || '').trim().replace(/\D/g, '');
+    if (!cleanUtr || cleanUtr.length < 10) {
+      showToast('Please enter a valid 10-12 digit UPI UTR / Ref number', 'error');
+      return false;
+    }
 
-    // Credit balance
-    updateUserBalance(tx.amount);
-    setUser((prev) => ({
-      ...prev,
-      totalRecharge: Math.round((prev.totalRecharge + tx.amount) * 100) / 100
-    }));
-
-    // Update transaction to success
-    setTransactions((prev) =>
-      prev.map((t) =>
-        t.orderId === orderId
-          ? {
-              ...t,
-              status: 'success',
-              utrNumber: utr || `UTR${Date.now()}`
-            }
-          : t
-      )
+    // Check duplicate UTR against already approved transactions
+    const duplicateTx = transactions.find(
+      (t) => t.utrNumber === cleanUtr && t.orderId !== orderId && t.status === 'success'
     );
+    if (duplicateTx) {
+      showToast('This UTR has already been processed on another transaction.', 'error');
+      return false;
+    }
 
-    // Multi-tier commission calculation for upline
-    const l1Amt = Math.round((tx.amount * adminSettings.commissionLevel1) / 100);
-    setTeamMembers((prev) =>
-      prev.map((m) =>
-        m.level === 1
-          ? {
-              ...m,
-              rechargeAmount: m.rechargeAmount + tx.amount,
-              commissionEarned: m.commissionEarned + l1Amt
-            }
-          : m
-      )
-    );
+    let tx = transactions.find((t) => t.orderId === orderId);
+    const orderAmt = tx ? tx.amount : (activePayment && activePayment.orderId === orderId ? activePayment.amount : 0);
 
-    confetti({
-      particleCount: 120,
-      spread: 70,
-      origin: { y: 0.5 }
-    });
+    const now = new Date();
+    const formatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
 
-    showToast(`Recharge of ${formatINR(tx.amount, { decimals: 0 })} successful!`, 'success');
+    if (!tx) {
+      const newTx: Transaction = {
+        id: generateUniqueId('tx-dep'),
+        userId: user.id,
+        type: 'recharge',
+        title: `Recharge - ${activePayment?.channel || 'Direct UPI'}`,
+        method: activePayment?.channel || 'Direct UPI',
+        orderId: orderId,
+        amount: orderAmt,
+        finalAmount: orderAmt,
+        status: 'pending',
+        utrNumber: cleanUtr,
+        adminRemark: 'UTR Submitted - Awaiting Admin Approval',
+        createdAt: formatted
+      };
+      setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
+    } else {
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.orderId === orderId
+            ? {
+                ...t,
+                status: 'pending',
+                utrNumber: cleanUtr,
+                adminRemark: 'UTR Submitted - Awaiting Admin Approval'
+              }
+            : t
+        )
+      );
+    }
+
+    // Call server to record UTR without auto-crediting
+    fetch('/api/payin/submit-utr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, utr: cleanUtr })
+    }).catch(() => {});
+
+    addAuditLog('deposit', 'Deposit UTR Submitted', `User submitted UTR ${cleanUtr} for Order ${orderId} (₹${orderAmt}). Pending Admin verification.`, orderAmt, 'info');
+
+    sfx.playSuccess();
+    showToast(`UTR ${cleanUtr} submitted! Payment is pending Admin verification.`, 'success');
+    return true;
   };
+
+  // Safe wrapper for deposit payment - strictly routes to verification
+  const confirmDepositPayment = (orderId: string, utr?: string) => {
+    if (utr) {
+      submitDepositUtr(orderId, utr);
+    } else {
+      showToast('Deposit request submitted. Pending verification.', 'info');
+    }
+  };
+
+  // Global Return-from-gateway URL Detector (keeps status pending for verification)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnOrderId = urlParams.get('order_id');
+    const isSubmitted = urlParams.get('deposit_submitted');
+    if (returnOrderId && (isSubmitted === 'true' || urlParams.get('payment_success') === 'true')) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      showToast(`Deposit for Order ${returnOrderId} is submitted & pending verification.`, 'info');
+    }
+  }, []);
 
   // Request Withdrawal (Supports Bank IMPS / NEFT and Instant UPI)
   const requestWithdrawal = (amount: number, payoutMethod: 'bank' | 'upi' = 'bank', customAccount?: string) => {
@@ -1365,8 +1612,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
     }
 
-    // Deduct user balance
-    updateUserBalance(-amount, `Withdrawal: ${isUpi ? 'UPI' : 'Bank'}`);
+    // Deduct user balance and track totalWithdraw
+    setUser((prev) => {
+      const updatedTotalWithdraw = Math.round(((prev.totalWithdraw ?? 0) + amount) * 100) / 100;
+      const updated = {
+        ...prev,
+        balance: Math.max(0, Math.round((prev.balance - amount) * 100) / 100),
+        totalWithdraw: updatedTotalWithdraw
+      };
+      saveUserToStorage(updated);
+      return updated;
+    });
 
     const fee = Math.round(((amount * adminSettings.withdrawFeePercent) / 100) * 100) / 100;
     const finalAmount = Math.max(0, amount - fee);
@@ -1404,8 +1660,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, message: 'Withdrawal not found or already processed.' };
     }
 
-    // Refund funds back to user balance immediately
-    updateUserBalance(tx.amount, 'Withdrawal Cancelled');
+    // Refund funds back to user balance immediately and revert totalWithdraw
+    setUser((prev) => {
+      const updatedTotalWithdraw = Math.max(0, Math.round(((prev.totalWithdraw ?? 0) - tx.amount) * 100) / 100);
+      const updated = {
+        ...prev,
+        balance: Math.round((prev.balance + tx.amount) * 100) / 100,
+        totalWithdraw: updatedTotalWithdraw
+      };
+      saveUserToStorage(updated);
+      return updated;
+    });
 
     setTransactions((prev) =>
       prev.map((t) =>
@@ -1434,17 +1699,76 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const tx = transactions.find((t) => t.id === txId);
     if (!tx || tx.status === 'success') return;
 
-    updateUserBalance(tx.amount);
-    setUser((prev) => ({
-      ...prev,
-      totalRecharge: Math.round((prev.totalRecharge + tx.amount) * 100) / 100
-    }));
+    const creditAmount = tx.amount;
+    const targetUserId = tx.userId;
+
+    // Bonus reward calculation
+    const calcBonus = (val: number) => {
+      if (val >= 5000) return Math.floor(val * 0.08);
+      if (val >= 1000) return Math.floor(val * 0.05);
+      if (val >= 500) return Math.floor(val * 0.03);
+      return 0;
+    };
+    const bonus = calcBonus(creditAmount);
+    const netCredit = creditAmount + bonus;
+
+    // Credit active user if this transaction belongs to them
+    if (user.id === targetUserId) {
+      updateUserBalance(netCredit, `Recharge of ₹${creditAmount}${bonus > 0 ? ` + bonus ₹${bonus}` : ''}`);
+      setUser((prev) => {
+        const updated = {
+          ...prev,
+          totalRecharge: Math.round((prev.totalRecharge + creditAmount) * 100) / 100
+        };
+        localStorage.setItem('akm_user', JSON.stringify(updated));
+        return updated;
+      });
+    }
+
+    // Also update registered user list
+    setRegisteredUsers((prev) => {
+      const updated = prev.map((u) => {
+        if (u.id === targetUserId) {
+          return {
+            ...u,
+            balance: Math.round((u.balance + netCredit) * 100) / 100,
+            totalRecharge: Math.round((u.totalRecharge + creditAmount) * 100) / 100
+          };
+        }
+        return u;
+      });
+      localStorage.setItem('akm_registered_users', JSON.stringify(updated));
+      return updated;
+    });
 
     setTransactions((prev) =>
-      prev.map((t) => (t.id === txId ? { ...t, status: 'success' } : t))
+      prev.map((t) =>
+        t.id === txId
+          ? {
+              ...t,
+              status: 'success',
+              adminRemark: `Approved & Credited by Admin${bonus > 0 ? ` (+₹${bonus} Bonus)` : ''}`
+            }
+          : t
+      )
     );
-    addAuditLog('deposit', 'Deposit Approved', `Approved recharge for Order ${tx.orderId}`, tx.amount, 'success');
-    showToast(`Approved deposit of ${formatINR(tx.amount, { decimals: 0 })}!`, 'success');
+
+    // Multi-tier commission calculation for upline
+    const l1Amt = Math.round((creditAmount * adminSettings.commissionLevel1) / 100);
+    setTeamMembers((prev) =>
+      prev.map((m) =>
+        m.level === 1
+          ? {
+              ...m,
+              rechargeAmount: m.rechargeAmount + creditAmount,
+              commissionEarned: m.commissionEarned + l1Amt
+            }
+          : m
+      )
+    );
+
+    addAuditLog('deposit', 'Deposit Approved & Credited', `Admin approved recharge for Order ${tx.orderId} (₹${creditAmount})`, creditAmount, 'success');
+    showToast(`Approved deposit of ${formatINR(creditAmount, { decimals: 0 })}! Balance credited.`, 'success');
   };
 
   const rejectDeposit = (txId: string, reason?: string) => {
@@ -1479,8 +1803,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const tx = transactions.find((t) => t.id === txId);
     if (!tx) return;
 
-    // Refund back to user
-    updateUserBalance(tx.amount);
+    // Refund back to user and revert totalWithdraw
+    setUser((prev) => {
+      const updatedTotalWithdraw = Math.max(0, Math.round(((prev.totalWithdraw ?? 0) - tx.amount) * 100) / 100);
+      const updated = {
+        ...prev,
+        balance: Math.round((prev.balance + tx.amount) * 100) / 100,
+        totalWithdraw: updatedTotalWithdraw
+      };
+      saveUserToStorage(updated);
+      return updated;
+    });
 
     setTransactions((prev) =>
       prev.map((t) =>
@@ -1810,6 +2143,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         currentView,
         setCurrentView,
+        goBack,
         rechargePrefillAmount,
         setRechargePrefillAmount,
         navigateToRecharge,
@@ -1854,6 +2188,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         transactions,
         initiateRecharge,
         confirmDepositPayment,
+        submitDepositUtr,
         requestWithdrawal,
         cancelWithdrawal,
         teamMembers,
@@ -1897,7 +2232,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveCheckoutModal,
         activePayment,
         setActivePayment,
-        openPaymentPage
+        openPaymentPage,
+        dbConnectionStatus,
+        isDbConnected
       }}
     >
       {children}

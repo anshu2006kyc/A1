@@ -26,6 +26,7 @@ export const CheckInView: React.FC = () => {
   const {
     user,
     setCurrentView,
+    goBack,
     checkIns,
     hasCheckedInToday,
     claimDailyCheckIn,
@@ -120,9 +121,13 @@ export const CheckInView: React.FC = () => {
     <div className="min-h-screen bg-gray-50 pb-28 animate-fade-in">
       {/* Top Navigation */}
       <div className="bg-white px-4 py-3.5 flex items-center justify-between border-b border-gray-100 sticky top-0 z-20">
-        <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700">
-          <Calendar className="w-4 h-4" />
-        </div>
+        <button
+          id="checkin-back-btn"
+          onClick={goBack}
+          className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
         <div className="text-center">
           <h1 className="text-base font-bold text-gray-900">Daily Check-in</h1>
           <span className="text-[10px] text-emerald-600 font-medium">Daily Streak & Reward Center</span>

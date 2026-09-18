@@ -33,8 +33,10 @@ export interface User {
   name?: string;
   balance: number;
   totalRecharge: number;
+  totalWithdraw?: number;
   totalRevenue: number;
   memberLevel: string;
+  vipLevel?: number;
   inviteCode: string;
   invitedBy?: string;
   bankAccount?: BankAccount;

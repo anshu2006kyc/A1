@@ -192,7 +192,26 @@ async function startServer() {
     });
   });
 
-  // Auto-confirm endpoint for client auto-credit verification
+  // Submit UTR endpoint for payment verification (remains PENDING until admin/bank verification)
+  app.post('/api/payin/submit-utr', (req, res) => {
+    const { orderId, utr } = req.body || {};
+    if (!orderId) {
+      return res.status(400).json({ error: 'order_id_required' });
+    }
+    const order = pendingPayinOrders.get(orderId) || {
+      order_id: orderId,
+      amount: 0,
+      status: 'pending',
+      createdAt: Date.now()
+    };
+    order.status = 'pending';
+    if (utr) order.utr = utr;
+    pendingPayinOrders.set(orderId, order);
+    console.log(`[Payin UTR Submitted] Order ${orderId} received UTR ${utr}. Status remains pending for verification.`);
+    return res.json({ success: true, status: 'pending', orderId, utr: order.utr || null, message: 'UTR submitted for verification' });
+  });
+
+  // Legacy payin confirmation endpoint - now securely keeps status as pending for verification
   app.post('/api/payin/confirm-auto', (req, res) => {
     const { orderId, utr } = req.body || {};
     if (!orderId) {
@@ -204,10 +223,28 @@ async function startServer() {
       status: 'pending',
       createdAt: Date.now()
     };
-    order.status = 'success';
+    order.status = 'pending';
     if (utr) order.utr = utr;
     pendingPayinOrders.set(orderId, order);
-    return res.json({ success: true, status: 'success', orderId, utr: order.utr || null });
+    return res.json({ success: true, status: 'pending', orderId, utr: order.utr || null, message: 'Payment submitted for verification' });
+  });
+
+  // Direct return handler from payment gateways (keeps pending for verification)
+  app.get(['/pay/success', '/pay/return'], (req, res) => {
+    const orderId = (req.query.order_id || req.query.mch_order_no || req.query.orderId || '') as string;
+    if (orderId) {
+      const order = pendingPayinOrders.get(orderId) || {
+        order_id: orderId,
+        amount: Number(req.query.amount) || 0,
+        status: 'pending',
+        createdAt: Date.now()
+      };
+      order.status = 'pending';
+      if (req.query.utr) order.utr = String(req.query.utr);
+      pendingPayinOrders.set(orderId, order);
+      console.log(`[Payment Gateway Return] Order ${orderId} returned to app, awaiting verification.`);
+    }
+    return res.redirect(`/?deposit_submitted=true&order_id=${encodeURIComponent(orderId)}`);
   });
 
   // --- WATCHPAY PUBLIC CONFIG ---

@@ -15,7 +15,7 @@ import {
 import { useApp } from '../context/AppContext';
 
 export const AboutView: React.FC = () => {
-  const { setCurrentView } = useApp();
+  const { goBack } = useApp();
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28 animate-fade-in">
@@ -23,7 +23,7 @@ export const AboutView: React.FC = () => {
       <div className="bg-white px-4 py-3.5 flex items-center justify-between border-b border-gray-100 sticky top-0 z-20">
         <button
           id="about-back-btn"
-          onClick={() => setCurrentView('profile')}
+          onClick={goBack}
           className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5" />

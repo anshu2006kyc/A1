@@ -52,10 +52,13 @@
 /* Periodic Chamak / Light Beam Shimmer */
 @keyframes shineLightBeam {
   0% {
-    transform: translateX(-160%) skewX(-20deg);
+    transform: translateX(-180%) skewX(-25deg);
   }
-  35%, 100% {
-    transform: translateX(260%) skewX(-20deg);
+  30% {
+    transform: translateX(280%) skewX(-25deg);
+  }
+  100% {
+    transform: translateX(280%) skewX(-25deg);
   }
 }
 
@@ -79,11 +82,11 @@
 .btn-chamkila {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, #02b35c 0%, #00944b 48%, #007a3d 100%);
+  background: linear-gradient(180deg, #05c264 0%, #009c4f 50%, #007a3d 100%);
   box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.6),
-    inset 0 -2px 2px rgba(0, 0, 0, 0.2),
-    0 4px 14px rgba(0, 168, 89, 0.35);
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.7),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.22),
+    0 4px 16px rgba(0, 168, 89, 0.42);
   transition: all 0.2s ease;
 }
 
@@ -93,8 +96,8 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 42%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.03) 100%);
+  height: 44%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.04) 100%);
   border-radius: inherit;
   pointer-events: none;
 }
@@ -105,16 +108,16 @@
   top: -50%;
   bottom: -50%;
   left: 0;
-  width: 45%;
+  width: 50%;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.08) 20%,
-    rgba(255, 255, 255, 0.55) 50%,
-    rgba(255, 255, 255, 0.08) 80%,
+    rgba(255, 255, 255, 0.12) 20%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(255, 255, 255, 0.12) 80%,
     transparent 100%
   );
-  animation: shineLightBeam 3.6s ease-in-out infinite;
+  animation: shineLightBeam 3s ease-in-out infinite;
   pointer-events: none;
 }
 
@@ -123,9 +126,9 @@
   overflow: hidden;
   background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
   box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.7),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.8),
     inset 0 -2px 2px rgba(0, 0, 0, 0.25),
-    0 4px 16px rgba(245, 158, 11, 0.45);
+    0 4px 18px rgba(245, 158, 11, 0.5);
   transition: all 0.2s ease;
 }
 
@@ -135,8 +138,8 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 42%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.05) 100%);
+  height: 44%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.05) 100%);
   border-radius: inherit;
   pointer-events: none;
 }
@@ -147,13 +150,82 @@
   top: -50%;
   bottom: -50%;
   left: 0;
-  width: 45%;
+  width: 50%;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.1) 20%,
-    rgba(255, 255, 255, 0.7) 50%,
-    rgba(255, 255, 255, 0.1) 80%,
+    rgba(255, 255, 255, 0.15) 20%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(255, 255, 255, 0.15) 80%,
+    transparent 100%
+  );
+  animation: shineLightBeam 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.btn-chamkila-dark {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 60%, #020617 100%);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.4),
+    0 4px 14px rgba(15, 23, 42, 0.45);
+  transition: all 0.2s ease;
+}
+
+.btn-chamkila-dark::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 42%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.btn-chamkila-dark::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  bottom: -50%;
+  left: 0;
+  width: 50%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 20%,
+    rgba(255, 255, 255, 0.65) 50%,
+    rgba(255, 255, 255, 0.08) 80%,
+    transparent 100%
+  );
+  animation: shineLightBeam 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.btn-chamkila-chip {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #05c264 0%, #009c4f 100%);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    0 2px 8px rgba(0, 168, 89, 0.35);
+  transition: all 0.15s ease;
+}
+
+.btn-chamkila-chip::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  bottom: -50%;
+  left: 0;
+  width: 50%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.75) 50%,
     transparent 100%
   );
   animation: shineLightBeam 3s ease-in-out infinite;

@@ -57,7 +57,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   // Register form states
   const [regPhone, setRegPhone] = useState('');
-  const [regOtp, setRegOtp] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [regTradePin, setRegTradePin] = useState('');
@@ -119,10 +118,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   // 1-Tap Fill Test OTP
-  const handleFillTestOtp = (target: 'login' | 'reg' | 'forgot') => {
+  const handleFillTestOtp = (target: 'login' | 'forgot') => {
     sfx.playTap();
     if (target === 'login') setLoginOtp('123456');
-    if (target === 'reg') setRegOtp('123456');
     if (target === 'forgot') setForgotOtp('123456');
     showToast('Auto-filled test code: 123456', 'info');
   };
@@ -188,10 +186,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     const cleanPhone = regPhone.replace(/\D/g, '');
     if (cleanPhone.length < 10) {
       showToast('Please enter a 10-digit mobile number', 'error');
-      return;
-    }
-    if (!regOtp) {
-      showToast('Please enter the SMS verification code', 'error');
       return;
     }
     if (regPassword.length < 6) {
@@ -536,42 +530,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   className="w-full pl-12 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all font-mono"
                   required
                 />
-              </div>
-            </div>
-
-            {/* SMS OTP */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">
-                SMS Verification Code
-              </label>
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  maxLength={6}
-                  placeholder="Enter 6-digit OTP"
-                  value={regOtp}
-                  onChange={(e) => setRegOtp(e.target.value)}
-                  className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 tracking-wider placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all font-mono"
-                  required
-                />
-                <button
-                  type="button"
-                  disabled={otpTimer > 0 || isSendingOtp}
-                  onClick={() => handleSendOtp(regPhone)}
-                  className="px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all shrink-0"
-                >
-                  {otpTimer > 0 ? `${otpTimer}s` : isSendingOtp ? 'Sending...' : 'Get OTP'}
-                </button>
-              </div>
-              <div className="flex justify-between items-center mt-1 text-[10px] text-gray-500">
-                <span className="text-emerald-700 font-medium">Test OTP: <strong>123456</strong></span>
-                <button
-                  type="button"
-                  onClick={() => handleFillTestOtp('reg')}
-                  className="text-emerald-700 underline font-bold cursor-pointer"
-                >
-                  Auto-Fill 123456
-                </button>
               </div>
             </div>
 

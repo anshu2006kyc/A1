@@ -10,13 +10,14 @@ export const GatewaySimulatorModal: React.FC = () => {
     activeCheckoutModal,
     setActiveCheckoutModal,
     adminSettings,
-    confirmDepositPayment,
+    submitDepositUtr,
     showToast
   } = useApp();
 
   const [utrNumber, setUtrNumber] = useState('');
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [copiedOrder, setCopiedOrder] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
 
   // Prevent background scrolling while modal is open
@@ -47,20 +48,19 @@ export const GatewaySimulatorModal: React.FC = () => {
     setTimeout(() => setCopiedOrder(false), 2000);
   };
 
-  const handleSimulateInstantPay = () => {
-    confirmDepositPayment(orderId, `AUTOPAY_${Date.now()}`);
-    setActiveCheckoutModal(null);
-    showToast(`Deposit of ${formatINR(amount)} completed successfully!`, 'success');
-  };
-
   const handleSubmitUtr = () => {
-    if (!utrNumber || utrNumber.trim().length < 6) {
-      showToast('Please enter a valid 12-digit UTR number', 'error');
+    const clean = (utrNumber || '').trim().replace(/\D/g, '');
+    if (!clean || clean.length < 10) {
+      showToast('Please enter a valid 10-12 digit UPI UTR / Ref number', 'error');
       return;
     }
-    confirmDepositPayment(orderId, utrNumber.trim());
-    setActiveCheckoutModal(null);
-    showToast('UTR submitted! Deposit request is being processed.', 'success');
+    const ok = submitDepositUtr(orderId, clean);
+    if (ok) {
+      setIsSubmitted(true);
+      setTimeout(() => {
+        setActiveCheckoutModal(null);
+      }, 2500);
+    }
   };
 
   return createPortal(
@@ -93,21 +93,6 @@ export const GatewaySimulatorModal: React.FC = () => {
             <Clock className="w-3.5 h-3.5 animate-spin" />
             <span>Expires in: 14:52</span>
           </div>
-        </div>
-
-        {/* Instant UPI Pay Button */}
-        <div className="mb-4">
-          <button
-            type="button"
-            onClick={handleSimulateInstantPay}
-            className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-all text-center cursor-pointer"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Instant Auto-Credit Pay</span>
-          </button>
-          <span className="text-[10px] text-gray-400 block text-center mt-1">
-            Official 256-bit encrypted secure UPI channel
-          </span>
         </div>
 
         {/* Order Details */}
@@ -157,44 +142,55 @@ export const GatewaySimulatorModal: React.FC = () => {
           </div>
         </div>
 
-        {/* UTR Input */}
-        <div className="mb-4">
-          <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-            After payment, enter 12-Digit UTR / Ref No:
-          </label>
-          <div className="flex space-x-2">
-            <input
-              type="text"
-              placeholder="e.g. 423871928371"
-              value={utrNumber}
-              onChange={(e) => setUtrNumber(e.target.value)}
-              className="flex-1 px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
-            />
-            <button
-              onClick={handleSubmitUtr}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-sm"
-            >
-              Submit
-            </button>
+        {isSubmitted ? (
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-center space-y-2 mb-3">
+            <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div className="text-xs font-bold text-amber-900">Deposit Submitted For Verification</div>
+            <p className="text-[11px] text-amber-700 leading-relaxed">
+              Your UTR has been submitted. Balance will be credited to your wallet once approved by our finance team.
+            </p>
           </div>
-        </div>
+        ) : (
+          /* UTR Input */
+          <div className="mb-4">
+            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+              After payment, enter 12-Digit UTR / Ref No:
+            </label>
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                placeholder="e.g. 423871928371"
+                maxLength={12}
+                value={utrNumber}
+                onChange={(e) => setUtrNumber(e.target.value.replace(/\D/g, ''))}
+                className="flex-1 px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+              />
+              <button
+                onClick={handleSubmitUtr}
+                disabled={utrNumber.length < 10}
+                className={`px-4 py-2 font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-sm ${
+                  utrNumber.length < 10
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                }`}
+              >
+                Submit UTR
+              </button>
+            </div>
+            <span className="text-[10px] text-gray-400 block mt-1">
+              Payment will be verified and credited upon bank clearance.
+            </span>
+          </div>
+        )}
 
-        {/* Fast Instant Demo Pay Button */}
         <div className="space-y-2">
           <button
-            id="instant-test-pay-btn"
-            onClick={handleSimulateInstantPay}
-            className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer"
-          >
-            <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
-            <span>Instant Auto-Approve (Simulation Test)</span>
-          </button>
-
-          <button
             onClick={() => setActiveCheckoutModal(null)}
-            className="w-full py-2 rounded-xl text-gray-500 hover:text-gray-700 text-xs font-semibold hover:bg-gray-100 transition-colors cursor-pointer"
+            className="w-full py-2.5 rounded-xl text-gray-600 hover:text-gray-800 text-xs font-semibold bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
           >
-            Cancel Payment
+            Close Window
           </button>
         </div>
 

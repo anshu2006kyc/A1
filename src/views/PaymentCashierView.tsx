@@ -9,10 +9,9 @@ import {
   Loader2,
   Lock,
   QrCode,
-  ShieldCheck,
-  Zap
+  ShieldAlert,
+  ShieldCheck
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { useApp } from '../context/AppContext';
 import { formatINR } from '../utils/currency';
 import { sfx } from '../utils/sound';
@@ -23,7 +22,8 @@ export const PaymentCashierView: React.FC = () => {
     activePayment,
     adminSettings,
     setCurrentView,
-    confirmDepositPayment,
+    goBack,
+    submitDepositUtr,
     showToast
   } = useApp();
 
@@ -33,7 +33,8 @@ export const PaymentCashierView: React.FC = () => {
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [copiedOrderId, setCopiedOrderId] = useState(false);
   const [copiedAmount, setCopiedAmount] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedUtr, setSubmittedUtr] = useState('');
 
   // If no active payment, fallback to default order or redirect to recharge
   const order = useMemo(() => {
@@ -55,7 +56,7 @@ export const PaymentCashierView: React.FC = () => {
 
   // Ticking countdown timer
   useEffect(() => {
-    if (timeLeft <= 0 || paymentSuccess) return;
+    if (timeLeft <= 0 || isSubmitted) return;
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -66,27 +67,7 @@ export const PaymentCashierView: React.FC = () => {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [timeLeft, paymentSuccess]);
-
-  // Background Webhook Polling for Auto-Credit
-  useEffect(() => {
-    if (!order.orderId || paymentSuccess) return;
-
-    const pollInterval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/payin/status/${order.orderId}`);
-        const data = await res.json();
-        if (data && data.status === 'success') {
-          clearInterval(pollInterval);
-          handlePaymentSuccess(data.utr || `AUTO_${Date.now()}`);
-        }
-      } catch {
-        // ignore polling network errors
-      }
-    }, 3500);
-
-    return () => clearInterval(pollInterval);
-  }, [order.orderId, paymentSuccess]);
+  }, [timeLeft, isSubmitted]);
 
   const formatTimer = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -112,24 +93,6 @@ export const PaymentCashierView: React.FC = () => {
     }
   };
 
-  const handlePaymentSuccess = (confirmedUtr: string) => {
-    setPaymentSuccess(true);
-    sfx.playSuccess();
-    confirmDepositPayment(order.orderId, confirmedUtr);
-
-    confetti({
-      particleCount: 120,
-      spread: 80,
-      origin: { y: 0.4 }
-    });
-
-    showToast(`Payment of ₹${order.amount} verified! Balance credited.`, 'success');
-
-    setTimeout(() => {
-      setCurrentView('home');
-    }, 3000);
-  };
-
   const handleUtrSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const cleanUtr = utrNumber.trim().replace(/\D/g, '');
@@ -143,16 +106,11 @@ export const PaymentCashierView: React.FC = () => {
     sfx.playTap();
 
     try {
-      // Call server auto-confirm
-      await fetch('/api/payin/confirm-auto', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: order.orderId, utr: cleanUtr })
-      });
-      handlePaymentSuccess(cleanUtr);
-    } catch {
-      // Fallback local credit
-      handlePaymentSuccess(cleanUtr);
+      const ok = submitDepositUtr(order.orderId, cleanUtr);
+      if (ok) {
+        setSubmittedUtr(cleanUtr);
+        setIsSubmitted(true);
+      }
     } finally {
       setIsSubmittingUtr(false);
     }
@@ -161,33 +119,62 @@ export const PaymentCashierView: React.FC = () => {
   // Dynamic QR code generation URL
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=12&data=${encodeURIComponent(payUpiUrl)}`;
 
-  if (paymentSuccess) {
+  // SUBMITTED VERIFICATION SCREEN (Strictly pending verification, no unearned credit)
+  if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-5 text-center animate-fade-in font-sans">
-        <div className="w-20 h-20 rounded-3xl bg-emerald-500 text-white flex items-center justify-center shadow-xl shadow-emerald-500/30 mb-4 animate-bounce">
-          <Check className="w-10 h-10 stroke-[3]" />
+      <div className="min-h-screen bg-[#0b131e] text-slate-100 flex flex-col items-center justify-center p-5 text-center animate-fade-in font-sans">
+        <div className="w-20 h-20 rounded-3xl bg-amber-500/20 border-2 border-amber-500/40 text-amber-400 flex items-center justify-center shadow-xl shadow-amber-500/10 mb-4">
+          <Clock className="w-10 h-10 animate-pulse" />
         </div>
-        <div className="inline-flex items-center space-x-1 bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full mb-2">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Payment Verified & Auto-Credited</span>
+
+        <div className="inline-flex items-center space-x-1.5 bg-amber-500/15 text-amber-300 border border-amber-500/30 text-xs font-bold px-3 py-1 rounded-full mb-3">
+          <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+          <span>Payment Under Verification</span>
         </div>
-        <h2 className="text-2xl font-black text-gray-900 mt-1">Recharge Successful!</h2>
-        <div className="text-3xl font-black text-emerald-600 mt-2 font-mono">
+
+        <h2 className="text-2xl font-black text-white">Deposit Request Submitted!</h2>
+
+        <div className="text-3xl font-black text-emerald-400 mt-2 font-mono">
           {formatINR(order.amount)}
         </div>
-        <p className="text-xs text-gray-500 mt-2 max-w-xs">
-          Order ID: <span className="font-mono font-bold text-gray-700">{order.orderId}</span>
-        </p>
-        <p className="text-xs text-gray-400 mt-1">
-          Wallet balance has been updated. Redirecting to Home...
+
+        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 w-full max-w-sm mt-4 text-left space-y-2 text-xs">
+          <div className="flex justify-between text-slate-400">
+            <span>Order ID:</span>
+            <span className="font-mono font-bold text-slate-200">{order.orderId}</span>
+          </div>
+          <div className="flex justify-between text-slate-400">
+            <span>Submitted UTR:</span>
+            <span className="font-mono font-bold text-amber-400 tracking-wider">{submittedUtr}</span>
+          </div>
+          <div className="flex justify-between text-slate-400">
+            <span>Review Status:</span>
+            <span className="font-bold text-amber-300">Pending Bank Clearance</span>
+          </div>
+          <div className="flex justify-between pt-2 border-t border-slate-800 text-slate-300">
+            <span>Estimated Verification Time:</span>
+            <span className="font-bold text-slate-200">5 – 15 Minutes</span>
+          </div>
+        </div>
+
+        <p className="text-xs text-slate-400 mt-3 max-w-xs leading-relaxed">
+          Our finance team is verifying this transaction with bank records. Your balance will be credited as soon as payment is confirmed.
         </p>
 
-        <button
-          onClick={() => setCurrentView('home')}
-          className="mt-6 w-full max-w-xs py-3 rounded-xl btn-chamkila text-white font-black text-xs shadow-lg active:scale-95 transition-all cursor-pointer"
-        >
-          Return to Home Now
-        </button>
+        <div className="w-full max-w-sm space-y-2 mt-6">
+          <button
+            onClick={() => setCurrentView('transactions')}
+            className="w-full py-3.5 rounded-xl btn-chamkila text-white font-black text-xs shadow-lg active:scale-95 transition-all cursor-pointer"
+          >
+            Check Deposit Status in Records
+          </button>
+          <button
+            onClick={() => setCurrentView('home')}
+            className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs active:scale-95 transition-all cursor-pointer"
+          >
+            Return to Home
+          </button>
+        </div>
       </div>
     );
   }
@@ -198,10 +185,7 @@ export const PaymentCashierView: React.FC = () => {
       <div className="bg-[#131f2d] border-b border-slate-800 px-4 py-3 sticky top-0 z-30 flex items-center justify-between shadow-md">
         <button
           id="payment-back-btn"
-          onClick={() => {
-            sfx.playTap();
-            setCurrentView('recharge');
-          }}
+          onClick={goBack}
           className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-700 active:scale-95 transition-all cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -257,14 +241,14 @@ export const PaymentCashierView: React.FC = () => {
           </div>
         </div>
 
-        {/* Direct Payment Link Action Card */}
+        {/* Direct Payment Action Card */}
         {order.payUrl && (
           <div className="bg-gradient-to-r from-emerald-950/90 via-teal-950/80 to-slate-900 p-4 rounded-2xl border-2 border-emerald-500/60 shadow-lg space-y-2.5 animate-fade-in">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
                 <span className="text-xs font-black text-emerald-300">
-                  Direct Payment Link Activated
+                  Instant UPI Checkout Activated
                 </span>
               </div>
               <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-mono font-bold border border-emerald-500/40">
@@ -273,7 +257,7 @@ export const PaymentCashierView: React.FC = () => {
             </div>
 
             <p className="text-[11px] text-slate-300">
-              Click below to jump directly to the authorized <span className="text-emerald-300 font-bold">{order.channel}</span> payment gateway window.
+              Click below to proceed to the secure <span className="text-emerald-300 font-bold">{order.channel}</span> payment window.
             </p>
 
             <a
@@ -284,7 +268,7 @@ export const PaymentCashierView: React.FC = () => {
               onClick={() => sfx.playGatewayLaunch()}
               className="w-full py-3 px-4 rounded-xl btn-chamkila text-white font-black text-xs flex items-center justify-center space-x-2 shadow-lg hover:brightness-110 active:scale-95 transition-all cursor-pointer"
             >
-              <span>Launch Direct Payment Gateway</span>
+              <span>Pay Securely Now</span>
               <ExternalLink className="w-4 h-4 stroke-[2.5]" />
             </a>
           </div>
@@ -425,7 +409,7 @@ export const PaymentCashierView: React.FC = () => {
             </div>
             <div>
               <h4 className="text-xs font-black text-white">
-                Step 2: Submit 12-Digit UTR / Ref No.
+                Step 2: Submit 12-Digit UPI UTR / Ref No.
               </h4>
               <p className="text-[10px] text-slate-400">
                 After payment in your UPI app, paste the 12-digit transaction UTR / RRN number
@@ -464,21 +448,21 @@ export const PaymentCashierView: React.FC = () => {
               {isSubmittingUtr ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-white" />
-                  <span>Verifying Transaction Node...</span>
+                  <span>Submitting UTR for Review...</span>
                 </>
               ) : (
                 <>
-                  <Zap className="w-4 h-4 fill-amber-300 text-amber-300" />
-                  <span>Submit UTR & Claim Balance Instant</span>
+                  <ShieldCheck className="w-4 h-4 text-emerald-300" />
+                  <span>Submit UTR for Verification</span>
                 </>
               )}
             </button>
           </form>
 
-          {/* Polling Notice */}
+          {/* Verification Notice */}
           <div className="flex items-center justify-center space-x-1.5 text-[10.5px] text-slate-400 pt-1">
-            <Loader2 className="w-3 h-3 animate-spin text-emerald-400" />
-            <span>Listening for automated payment webhook clearance...</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Bank-statement verified deposits protect against fraudulent claims</span>
           </div>
         </div>
 
@@ -490,7 +474,7 @@ export const PaymentCashierView: React.FC = () => {
           </div>
           <p>• Transfer the exact amount ({formatINR(order.amount)}). Do not change the amount.</p>
           <p>• Each QR code is single-use and linked to your Order ID ({order.orderId}).</p>
-          <p>• If money is deducted, UTR submission guarantees instant credit within seconds.</p>
+          <p>• Only genuine payments verified against bank statements are credited to wallets.</p>
         </div>
       </div>
     </div>
