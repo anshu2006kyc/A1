@@ -8,7 +8,6 @@ import {
   Coins,
   Copy,
   CreditCard,
-  Crown,
   Eye,
   EyeOff,
   History,
