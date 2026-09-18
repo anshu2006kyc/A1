@@ -1,0 +1,110 @@
+{
+  "entities": {
+    "users": {
+      "title": "User",
+      "description": "User profile with balances, VIP tier, credentials and bank info",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "phone": { "type": "string" },
+        "name": { "type": "string" },
+        "balance": { "type": "number" },
+        "totalRecharge": { "type": "number" },
+        "totalWithdraw": { "type": "number" },
+        "totalRevenue": { "type": "number" },
+        "vipLevel": { "type": "number" },
+        "referralCode": { "type": "string" },
+        "invitedBy": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "bankAccount": { "type": "object" }
+      },
+      "required": ["phone"]
+    },
+    "transactions": {
+      "title": "Transaction",
+      "description": "Financial deposit and withdrawal records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "type": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string" },
+        "channel": { "type": "string" },
+        "utr": { "type": "string" },
+        "orderId": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["userId", "amount", "type", "status"]
+    },
+    "userPlans": {
+      "title": "UserPlan",
+      "description": "Active and completed investment plans purchased by users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "planId": { "type": "string" },
+        "planTitle": { "type": "string" },
+        "investAmount": { "type": "number" },
+        "dailyIncome": { "type": "number" },
+        "totalReturn": { "type": "number" },
+        "purchasedAt": { "type": "string" },
+        "expiresAt": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["userId", "planId", "investAmount"]
+    },
+    "plans": {
+      "title": "Plan",
+      "description": "Investment products catalog created and managed by administrators",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "depositAmount": { "type": "number" },
+        "dailyIncome": { "type": "number" },
+        "totalReturn": { "type": "number" },
+        "durationMinutes": { "type": "number" },
+        "returnDays": { "type": "number" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["title", "depositAmount", "totalReturn"]
+    },
+    "adminSettings": {
+      "title": "AdminSettings",
+      "description": "Global platform rules and gateway configurations",
+      "type": "object",
+      "properties": {
+        "maintenanceMode": { "type": "boolean" },
+        "minRecharge": { "type": "number" },
+        "minWithdraw": { "type": "number" },
+        "withdrawFeePercent": { "type": "number" },
+        "upiId": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "User account profiles and balance records"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "transactions",
+      "description": "Ledger of deposits, withdrawals, and revenues"
+    },
+    "/userPlans/{userPlanId}": {
+      "schema": "userPlans",
+      "description": "Active user investment assets"
+    },
+    "/plans/{planId}": {
+      "schema": "plans",
+      "description": "Available investment plans"
+    },
+    "/adminSettings/global": {
+      "schema": "adminSettings",
+      "description": "Global administrative flags and controls"
+    }
+  }
+}

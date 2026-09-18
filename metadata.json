@@ -1,0 +1,6 @@
+{
+  "name": "AKM - Investment & Daily Income",
+  "description": "AKM investment platform with daily return plans, VIP tiers, streak check-ins, multi-tier referral system, WatchPay gateway, and advanced Admin Panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
