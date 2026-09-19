@@ -48,14 +48,16 @@ app.use(
 );
 app.use(express.urlencoded({ extended: true }));
 
-// Vercel Serverless Path Normalizer: restores original URL from x-matched-path header
-app.use((req: any, _res: any, next: any) => {
-  const matchedPath = req.headers['x-matched-path'] || req.headers['x-forwarded-uri'] || req.headers['x-invoke-path'];
-  if (matchedPath && typeof matchedPath === 'string') {
-    req.url = matchedPath;
-  }
-  next();
-});
+// Vercel Serverless Path Normalizer: restores original URL from x-matched-path header only on Vercel
+if (process.env.VERCEL === '1') {
+  app.use((req: any, _res: any, next: any) => {
+    const matchedPath = req.headers['x-matched-path'] || req.headers['x-invoke-path'];
+    if (matchedPath && typeof matchedPath === 'string') {
+      req.url = matchedPath;
+    }
+    next();
+  });
+}
 
   // --- HEALTH CHECK ---
   app.get('/api/health', (_req, res) => {
@@ -1033,11 +1035,11 @@ app.use((req: any, _res: any, next: any) => {
     });
   });
 
-  // Global 404 fallback for API requests
-  app.use((req: any, res: any) => {
+  // 404 fallback only for unhandled API requests
+  app.all('/api/*', (req: any, res: any) => {
     res.status(404).json({
       error: true,
-      message: `Route ${req.method} ${req.originalUrl || req.url} not found on payment server`,
+      message: `API route ${req.method} ${req.originalUrl || req.url} not found on payment server`,
       code: 'NOT_FOUND'
     });
   });

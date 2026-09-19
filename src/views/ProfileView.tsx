@@ -89,15 +89,14 @@ export const ProfileView: React.FC = () => {
     setTimeout(() => setCopiedUid(false), 2000);
   };
 
-  // Effective recorded withdrawal amount (always accurate, non-zero, accounting for processed withdrawals or minimum historical IMPS payout 280)
+  // Effective recorded withdrawal amount from user stats and transactions
   const recordedWithdrawals = transactions
     .filter((t) => t.type === 'withdraw' && t.status !== 'failed')
     .reduce((sum, t) => sum + t.amount, 0);
 
   const effectiveTotalWithdraw = Math.max(
     typeof user.totalWithdraw === 'number' ? user.totalWithdraw : 0,
-    recordedWithdrawals,
-    280.0
+    recordedWithdrawals
   );
 
   const recordedRecharges = transactions
@@ -106,8 +105,7 @@ export const ProfileView: React.FC = () => {
 
   const effectiveTotalRecharge = Math.max(
     typeof user.totalRecharge === 'number' ? user.totalRecharge : 0,
-    recordedRecharges,
-    720.0
+    recordedRecharges
   );
 
   return (

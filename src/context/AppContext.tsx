@@ -319,11 +319,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (!parsed.totalWithdraw || parsed.totalWithdraw === 0) {
-          parsed.totalWithdraw = 280.0;
+        if (typeof parsed.totalWithdraw !== 'number') {
+          parsed.totalWithdraw = 0;
         }
-        if (!parsed.totalRecharge || parsed.totalRecharge === 0) {
-          parsed.totalRecharge = 720.0;
+        if (typeof parsed.totalRecharge !== 'number') {
+          parsed.totalRecharge = 0;
         }
         return parsed;
       } catch {}

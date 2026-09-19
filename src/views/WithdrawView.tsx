@@ -85,6 +85,16 @@ export const WithdrawView: React.FC = () => {
       return;
     }
 
+    if (user.tradePassword && tradePassword.trim()) {
+      if (tradePassword.trim() !== user.tradePassword) {
+        showToast('Incorrect withdrawal security password', 'error');
+        return;
+      }
+    } else if (user.tradePassword && !tradePassword.trim()) {
+      showToast('Please enter your withdrawal security password', 'error');
+      return;
+    }
+
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
