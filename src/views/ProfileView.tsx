@@ -33,10 +33,12 @@ import { useApp } from '../context/AppContext';
 import { formatINR } from '../utils/currency';
 import { maskPhone } from '../utils/phone';
 import { sfx } from '../utils/sound';
+import { AdminAuthModal } from '../components/AdminAuthModal';
 
 export const ProfileView: React.FC = () => {
   const {
     user,
+    isAdminUser,
     userPlans,
     transactions,
     setCurrentView,
@@ -54,6 +56,19 @@ export const ProfileView: React.FC = () => {
   const [showPhone, setShowPhone] = useState<boolean>(false);
   const [copiedPhone, setCopiedPhone] = useState<boolean>(false);
   const [copiedUid, setCopiedUid] = useState<boolean>(false);
+  const [showAdminAuthModal, setShowAdminAuthModal] = useState<boolean>(false);
+  const [secretTapCount, setSecretTapCount] = useState<number>(0);
+
+  const handleSecretTap = () => {
+    const next = secretTapCount + 1;
+    if (next >= 5) {
+      setSecretTapCount(0);
+      setShowAdminAuthModal(true);
+    } else {
+      setSecretTapCount(next);
+      setTimeout(() => setSecretTapCount(0), 3000);
+    }
+  };
 
   const handleLogout = () => {
     logoutUser();
@@ -235,7 +250,7 @@ export const ProfileView: React.FC = () => {
               </div>
             </div>
 
-            {/* Right: VIP Badge & UID */}
+            {/* Right: UID */}
             <div className="flex items-center space-x-1.5">
               <button
                 type="button"
@@ -246,11 +261,6 @@ export const ProfileView: React.FC = () => {
                 <span>{userUid}</span>
                 {copiedUid ? <Check className="w-2.5 h-2.5 text-emerald-400" /> : <Copy className="w-2.5 h-2.5 text-gray-400" />}
               </button>
-
-              <div className="flex items-center space-x-0.5 bg-gradient-to-r from-amber-400 to-amber-300 text-slate-950 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-2xs border border-amber-200">
-                <Crown className="w-2.5 h-2.5" />
-                <span>{user.memberLevel}</span>
-              </div>
             </div>
           </div>
 
@@ -634,14 +644,34 @@ export const ProfileView: React.FC = () => {
             </button>
           )}
 
-          <div className="text-center pt-2">
-            <button
-              onClick={() => setIsAdminOpen(true)}
-              className="text-[10px] text-gray-400 hover:text-emerald-700 underline cursor-pointer"
-            >
-              Admin & Gateway Control Center
-            </button>
-          </div>
+          {/* Admin Control Center - Strictly visible ONLY to verified Admins */}
+          {isAdminUser ? (
+            <div className="text-center pt-2">
+              <button
+                onClick={() => setIsAdminOpen(true)}
+                className="text-[11px] font-bold text-amber-600 hover:text-amber-700 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200 cursor-pointer shadow-xs inline-flex items-center space-x-1"
+              >
+                <span>🔐 Admin & Gateway Control Center</span>
+              </button>
+            </div>
+          ) : (
+            <div className="text-center pt-3 pb-1">
+              <button
+                type="button"
+                onClick={handleSecretTap}
+                className="text-[10px] text-gray-300 hover:text-gray-400 select-none cursor-default transition-colors"
+                title="AKM Platform Secure Node"
+              >
+                AKM Financial v3.2.0 • 256-bit SSL
+              </button>
+            </div>
+          )}
+
+          <AdminAuthModal
+            isOpen={showAdminAuthModal}
+            onClose={() => setShowAdminAuthModal(false)}
+            onSuccess={() => setIsAdminOpen(true)}
+          />
         </div>
       </div>
     </div>

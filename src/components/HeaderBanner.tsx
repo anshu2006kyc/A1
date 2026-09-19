@@ -64,7 +64,7 @@ const SLIDES: BannerSlide[] = [
 ];
 
 export const HeaderBanner: React.FC = () => {
-  const { user, setIsAdminOpen, setIsAnnouncementOpen, setCurrentView } = useApp();
+  const { user, isAdminUser, setIsAdminOpen, setIsAnnouncementOpen, setCurrentView } = useApp();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -147,15 +147,17 @@ export const HeaderBanner: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2">
-          {/* Quick Admin Access Button */}
-          <button
-            id="header-admin-btn"
-            onClick={() => setIsAdminOpen(true)}
-            className="flex items-center space-x-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-2.5 py-1 rounded-full shadow-sm text-[11px] transition-transform active:scale-95 cursor-pointer"
-            title="Open Admin Control Panel"
-          >
-            <span>🔐 Admin</span>
-          </button>
+          {/* Quick Admin Access Button - Only visible to Admins */}
+          {isAdminUser && (
+            <button
+              id="header-admin-btn"
+              onClick={() => setIsAdminOpen(true)}
+              className="flex items-center space-x-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-2.5 py-1 rounded-full shadow-sm text-[11px] transition-transform active:scale-95 cursor-pointer"
+              title="Open Admin Control Panel"
+            >
+              <span>🔐 Admin</span>
+            </button>
+          )}
 
           <button
             id="header-notification-btn"

@@ -4,8 +4,10 @@ import {
   Check,
   CheckCircle2,
   Clock,
+  Copy,
   Headphones,
   Loader2,
+  QrCode,
   ShieldCheck,
   Sun,
   Wallet,
@@ -29,7 +31,8 @@ export const RechargeView: React.FC = () => {
     adminSettings,
     submitDepositUtr,
     showToast,
-    rechargePrefillAmount
+    rechargePrefillAmount,
+    openPaymentPage
   } = useApp();
 
   const quickAmounts = [285, 520, 720, 1000, 2000, 5000];
@@ -54,6 +57,7 @@ export const RechargeView: React.FC = () => {
   const [isSubmittingUtr, setIsSubmittingUtr] = useState<boolean>(false);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [submittedUtr, setSubmittedUtr] = useState<string>('');
+  const [copiedUpi, setCopiedUpi] = useState<boolean>(false);
 
   // Dynamic Cashback Bonus
   const getBonus = (val: number) => {
@@ -101,6 +105,7 @@ export const RechargeView: React.FC = () => {
 
     const isWatchPay = selectedChannel === 'watchpay';
     const channelLabel = isWatchPay ? 'Instant Server 1' : 'Express Server 2';
+    const targetUpiId = adminSettings.upiId || 'akmpayments@okaxis';
 
     try {
       let directPayUrl = '';
@@ -114,7 +119,11 @@ export const RechargeView: React.FC = () => {
           customerPhone: user.phone || '9876543210',
           notifyUrl: `${window.location.origin}/api/watchpay/notify`
         });
-        directPayUrl = res.checkoutUrl || res.directUrl || `/pay/watchpay-redirect?order_id=${orderId}&amount=${amount}`;
+        if (res.checkoutUrl && res.checkoutUrl.startsWith('http') && !res.checkoutUrl.includes('watchpay-redirect')) {
+          directPayUrl = res.checkoutUrl;
+        } else {
+          directPayUrl = `upi://pay?pa=${encodeURIComponent(targetUpiId)}&pn=${encodeURIComponent('AKM Investments')}&am=${amount}&cu=INR&tn=${encodeURIComponent(orderId)}`;
+        }
       } else {
         orderId = generateSunpaysOrderId();
         const res = await createSunpaysPayinOrder({
@@ -123,7 +132,11 @@ export const RechargeView: React.FC = () => {
           customerPhone: user.phone || '9876543210',
           notifyUrl: `${window.location.origin}/api/sunpays/webhook`
         });
-        directPayUrl = res.checkoutUrl || res.paymentUrl || `/pay/sunpay-redirect?order_id=${orderId}&amount=${amount}`;
+        if (res.checkoutUrl && res.checkoutUrl.startsWith('http') && !res.checkoutUrl.includes('sunpay-redirect')) {
+          directPayUrl = res.checkoutUrl;
+        } else {
+          directPayUrl = `upi://pay?pa=${encodeURIComponent(targetUpiId)}&pn=${encodeURIComponent('AKM Investments')}&am=${amount}&cu=INR&tn=${encodeURIComponent(orderId)}`;
+        }
       }
 
       setActiveSession({
@@ -134,7 +147,7 @@ export const RechargeView: React.FC = () => {
         startTime: Date.now()
       });
 
-      if (directPayUrl) {
+      if (directPayUrl && directPayUrl.startsWith('http')) {
         try {
           window.open(directPayUrl, '_blank');
         } catch (e) {
@@ -142,20 +155,18 @@ export const RechargeView: React.FC = () => {
         }
       }
 
-      showToast(`Redirecting to secure payment...`, 'info');
+      showToast(`Payment session initiated for ₹${amount}`, 'info');
     } catch {
       const fallbackId = `ORD${Date.now()}`;
-      const fallbackUrl = `/pay/watchpay-redirect?order_id=${fallbackId}&amount=${amount}`;
+      const directUpiUrl = `upi://pay?pa=${encodeURIComponent(targetUpiId)}&pn=${encodeURIComponent('AKM Investments')}&am=${amount}&cu=INR&tn=${encodeURIComponent(fallbackId)}`;
       setActiveSession({
         orderId: fallbackId,
         amount,
         channel: channelLabel,
-        payUrl: fallbackUrl,
+        payUrl: directUpiUrl,
         startTime: Date.now()
       });
-      try {
-        window.open(fallbackUrl, '_blank');
-      } catch {}
+      showToast(`Ready for payment. Please complete UPI transfer.`, 'info');
     } finally {
       setIsProcessing(false);
     }
@@ -308,17 +319,59 @@ export const RechargeView: React.FC = () => {
             </div>
           </div>
 
-          {activeSession.payUrl && (
-            <a
-              href={activeSession.payUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all"
-            >
-              <Zap className="w-3.5 h-3.5" />
-              <span>Open Payment App / Gateway</span>
-            </a>
-          )}
+          {/* Fast Payment Options */}
+          <div className="space-y-2">
+            {/* Merchant UPI ID Copy Box */}
+            <div className="bg-slate-900/90 p-2.5 rounded-xl border border-slate-700/80 flex items-center justify-between">
+              <div className="text-left overflow-hidden mr-2">
+                <span className="text-[10px] text-slate-400 block font-medium">Merchant UPI ID</span>
+                <span className="text-xs font-mono font-bold text-emerald-300 truncate block">
+                  {adminSettings.upiId || 'akmpayments@okaxis'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(adminSettings.upiId || 'akmpayments@okaxis');
+                  sfx.playTap();
+                  setCopiedUpi(true);
+                  showToast('UPI ID copied to clipboard!', 'info');
+                  setTimeout(() => setCopiedUpi(false), 2000);
+                }}
+                className="shrink-0 px-2.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center space-x-1 cursor-pointer active:scale-95 transition-all"
+              >
+                {copiedUpi ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedUpi ? 'Copied' : 'Copy'}</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {activeSession.payUrl && (
+                <a
+                  href={activeSession.payUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>Open UPI App</span>
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  sfx.playTap();
+                  openPaymentPage(activeSession.amount, activeSession.channel, activeSession.orderId);
+                }}
+                className={`py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30 font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer ${
+                  !activeSession.payUrl ? 'col-span-2' : ''
+                }`}
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>Show QR Cashier</span>
+              </button>
+            </div>
+          </div>
 
           {/* Step 2: Submit UTR Form */}
           <div className="bg-slate-800/90 p-4 rounded-2xl border border-emerald-500/30 space-y-2.5 text-left">

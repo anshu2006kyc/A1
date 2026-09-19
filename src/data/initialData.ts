@@ -6,6 +6,8 @@ export const INITIAL_USER: User = {
   password: "password123",
   tradePassword: "123456",
   name: "Anshu Kumar",
+  role: "admin",
+  isAdmin: true,
   balance: 32.0,
   totalRecharge: 720.0,
   totalWithdraw: 280.0,
@@ -527,6 +529,7 @@ export const INITIAL_TEAM_MEMBERS: TeamMember[] = [
 ];
 
 export const INITIAL_ADMIN_SETTINGS: AdminSettings = {
+  adminPassword: "8340",
   // Merchant details (LGPay / WatchGLB Gateway from User Configuration)
   merchantKey: "4abd8ad7b8a44bfcbeaa8ad8e30dae30",
   mchId: "100666859",

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { AppProvider, useApp } from './context/AppContext';
 import { HomeView } from './views/HomeView';
@@ -21,21 +21,59 @@ import { GatewaySimulatorModal } from './components/GatewaySimulatorModal';
 import { Toast } from './components/Toast';
 import { AnnouncementModal } from './components/AnnouncementModal';
 import { AuthModal } from './components/AuthModal';
-import { ShieldAlert, Wrench } from 'lucide-react';
+import { AdminAuthModal } from './components/AdminAuthModal';
+import { Lock, ShieldAlert, Wrench } from 'lucide-react';
 
 const MainAppContent: React.FC = () => {
   const {
     currentView,
     isAdminOpen,
     setIsAdminOpen,
+    isAdminUser,
     adminSettings,
     isAuthModalOpen,
     setIsAuthModalOpen,
-    authModalInitialMode
+    authModalInitialMode,
+    openPaymentPage
   } = useApp();
+  const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
 
-  // If Admin Panel is open, render full-screen AdminView
+  // Intercept payment cashier deep links (e.g. /pay/watchpay-redirect?order_id=...&amount=...)
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      const pathname = url.pathname.toLowerCase();
+      const orderId = url.searchParams.get('order_id') || url.searchParams.get('orderId');
+      const amountParam = url.searchParams.get('amount');
+      const parsedAmount = amountParam ? parseFloat(amountParam) : 0;
+
+      if (pathname.includes('/pay') || orderId) {
+        const finalOrderId = orderId || `ORD${Date.now()}`;
+        const finalAmount = parsedAmount > 0 ? parsedAmount : 500;
+        const channel = pathname.includes('sunpay') ? 'Sunpays UPI' : 'WatchPay UPI';
+        openPaymentPage(finalAmount, channel, finalOrderId);
+
+        // Normalize URL to root without page reload
+        window.history.replaceState({}, document.title, window.location.origin + '/');
+      }
+    } catch (err) {
+      console.warn('Error checking payment deep link:', err);
+    }
+  }, [openPaymentPage]);
+
+  // If Admin Panel is open, ensure user has admin authorization
   if (isAdminOpen) {
+    if (!isAdminUser) {
+      return (
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+          <AdminAuthModal
+            isOpen={true}
+            onClose={() => setIsAdminOpen(false)}
+            onSuccess={() => setIsAdminOpen(true)}
+          />
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen bg-slate-900 text-slate-100">
         <AdminView />
@@ -55,13 +93,23 @@ const MainAppContent: React.FC = () => {
         <p className="text-xs text-slate-400 max-w-xs mt-2 leading-relaxed">
           AKM financial nodes are undergoing scheduled maintenance to upgrade payout speed. Regular user actions are temporarily paused.
         </p>
-        <button
-          id="admin-maintenance-bypass"
-          onClick={() => setIsAdminOpen(true)}
-          className="mt-6 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-lg active:scale-95"
-        >
-          Open Admin Control Panel
-        </button>
+        {isAdminUser ? (
+          <button
+            id="admin-maintenance-bypass"
+            onClick={() => setIsAdminOpen(true)}
+            className="mt-6 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-lg active:scale-95"
+          >
+            Open Admin Control Panel
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsAdminAuthModalOpen(true)}
+            className="mt-8 text-slate-600 hover:text-slate-400 transition-colors p-2 text-xs flex items-center space-x-1 cursor-pointer"
+            title="Admin Login"
+          >
+            <Lock className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
     );
   }
@@ -106,16 +154,18 @@ const MainAppContent: React.FC = () => {
     <div className="min-h-screen bg-neutral-900 flex justify-center selection:bg-emerald-500 selection:text-white">
       {/* Mobile-sized container with high-end app layout */}
       <div className="w-full max-w-md bg-white min-h-screen shadow-2xl relative flex flex-col">
-        {/* Floating Quick Admin Access Button */}
-        <button
-          id="floating-admin-toggle"
-          onClick={() => setIsAdminOpen(true)}
-          className="fixed bottom-20 right-4 z-30 bg-slate-900/90 hover:bg-slate-950 text-amber-400 p-2.5 rounded-full shadow-xl border border-amber-400/40 backdrop-blur-md flex items-center space-x-1.5 active:scale-95 transition-all cursor-pointer group"
-          title="Open Admin Control Panel"
-        >
-          <ShieldAlert className="w-5 h-5 text-amber-400 group-hover:rotate-12 transition-transform" />
-          <span className="text-[10px] font-bold text-white pr-1">Admin</span>
-        </button>
+        {/* Floating Quick Admin Access Button - ONLY visible to verified Admins */}
+        {isAdminUser && (
+          <button
+            id="floating-admin-toggle"
+            onClick={() => setIsAdminOpen(true)}
+            className="fixed bottom-20 right-4 z-30 bg-slate-900/90 hover:bg-slate-950 text-amber-400 p-2.5 rounded-full shadow-xl border border-amber-400/40 backdrop-blur-md flex items-center space-x-1.5 active:scale-95 transition-all cursor-pointer group"
+            title="Open Admin Control Panel"
+          >
+            <ShieldAlert className="w-5 h-5 text-amber-400 group-hover:rotate-12 transition-transform" />
+            <span className="text-[10px] font-bold text-white pr-1">Admin</span>
+          </button>
+        )}
 
         {/* Dynamic View Component with smooth view transitions */}
         <main className="flex-1 overflow-x-hidden flex flex-col">
@@ -138,6 +188,10 @@ const MainAppContent: React.FC = () => {
           isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}
           initialMode={authModalInitialMode}
+        />
+        <AdminAuthModal
+          isOpen={isAdminAuthModalOpen}
+          onClose={() => setIsAdminAuthModalOpen(false)}
         />
         <GatewaySimulatorModal />
         <AnnouncementModal />

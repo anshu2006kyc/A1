@@ -31,6 +31,8 @@ export interface User {
   password?: string;
   tradePassword?: string;
   name?: string;
+  role?: 'admin' | 'user';
+  isAdmin?: boolean;
   balance: number;
   totalRecharge: number;
   totalWithdraw?: number;
@@ -131,6 +133,7 @@ export interface SecurityAlert {
 }
 
 export interface AdminSettings {
+  adminPassword?: string;
   // LGPay / WatchGLB Gateway Credentials (User's Merchant Configuration)
   merchantKey: string;
   mchId: string;
