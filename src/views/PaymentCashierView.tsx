@@ -7,9 +7,7 @@ import {
   ShieldCheck,
   Sparkles,
   Wallet,
-  AlertCircle,
   Loader2,
-  ExternalLink,
   Zap,
   Sun,
   Copy,
@@ -58,18 +56,15 @@ export const PaymentCashierView: React.FC = () => {
   const gatewayName = isWatchPay ? 'WATCHPAY' : 'SUNPAY';
   const gatewaySubtitle = isWatchPay ? 'WatchGLB Automated Gateway' : 'SunPay VIP Express Gateway';
 
-  // Direct official gateway checkout URL
-  const directGatewayUrl = useMemo(() => {
-    if (order.payUrl && order.payUrl.startsWith('http')) {
+  // Direct official gateway checkout URL - Opens 100% inside app
+  const frameSrc = useMemo(() => {
+    if (order.payUrl && (order.payUrl.startsWith('http://') || order.payUrl.startsWith('https://'))) {
       return order.payUrl;
     }
-    return `/pay/checkout?order_id=${encodeURIComponent(order.orderId)}&amount=${order.amount}&channel=${isWatchPay ? 'watchpay' : 'sunpay'}`;
+    // If relative path, resolve to current origin
+    const path = order.payUrl || `/pay/checkout?order_id=${encodeURIComponent(order.orderId)}&amount=${order.amount}&channel=${isWatchPay ? 'watchpay' : 'sunpay'}`;
+    return path.startsWith('/') ? path : `/${path}`;
   }, [order.payUrl, order.orderId, order.amount, isWatchPay]);
-
-  // In-app embedded frame URL (via server proxy to eliminate X-Frame-Options blocking)
-  const frameSrc = useMemo(() => {
-    return `/api/cashier-frame?url=${encodeURIComponent(directGatewayUrl)}&orderId=${encodeURIComponent(order.orderId)}&amount=${order.amount}`;
-  }, [directGatewayUrl, order.orderId, order.amount]);
 
   // Automated background payment polling - Only credits when REAL settlement occurs
   useEffect(() => {
@@ -80,6 +75,9 @@ export const PaymentCashierView: React.FC = () => {
       try {
         const res = await fetch(`/api/payin/status/${order.orderId}`);
         if (!res.ok) return;
+        const contentType = res.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) return;
+
         const data = await res.json();
         if (data && data.status === 'success' && isMounted && !isSuccess) {
           clearInterval(pollInterval);
@@ -111,6 +109,12 @@ export const PaymentCashierView: React.FC = () => {
 
     try {
       const res = await fetch(`/api/payin/status/${order.orderId}`);
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        showToast(`Waiting for ${gatewayName} bank settlement. Please complete the transfer first.`, 'warning');
+        return;
+      }
+
       const data = await res.json();
 
       if (data && data.status === 'success') {
@@ -138,18 +142,12 @@ export const PaymentCashierView: React.FC = () => {
     }
   };
 
-  // Reload the in-app frame
+  // Reload the in-app frame without exiting the app
   const handleReloadFrame = () => {
     sfx.playTap();
     setIsFrameLoading(true);
     setFrameKey((prev) => prev + 1);
-    showToast(`Reloading ${gatewayName} gateway...`, 'info');
-  };
-
-  // Open official gateway directly in a new window/app
-  const handleOpenExternal = () => {
-    sfx.playTap();
-    window.open(directGatewayUrl, '_blank');
+    showToast(`Reloading ${gatewayName} gateway inside app...`, 'info');
   };
 
   // Copy Order ID
@@ -222,10 +220,10 @@ export const PaymentCashierView: React.FC = () => {
     );
   }
 
-  // COMPLETE IN-APP GATEWAY CASHIER (WATCHPAY & SUNPAY EXCLUSIVE)
+  // 100% IN-APP NATIVE GATEWAY CASHIER VIEW (NO EXTERNAL POPUPS / REDIRECTS)
   return (
     <div className="h-[100dvh] max-h-screen bg-[#0b131e] text-slate-100 font-sans flex flex-col justify-between select-none max-w-md mx-auto overflow-hidden">
-      {/* 1. Header Bar with Gateway Branding */}
+      {/* 1. In-App Header Bar with Gateway Branding */}
       <div className="bg-[#101c2a] border-b border-slate-800 px-3.5 py-2.5 flex items-center justify-between shrink-0 z-20 shadow-md">
         <button
           id="cashier-back-btn"
@@ -256,28 +254,19 @@ export const PaymentCashierView: React.FC = () => {
           </span>
         </div>
 
-        <div className="flex items-center space-x-1">
-          <button
-            onClick={handleReloadFrame}
-            className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition-all cursor-pointer"
-            title="Reload Gateway"
-          >
-            <RotateCw className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={handleOpenExternal}
-            className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition-all cursor-pointer"
-            title="Open in Browser / UPI"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        <button
+          onClick={handleReloadFrame}
+          className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition-all cursor-pointer shrink-0"
+          title="Refresh in-app cashier"
+        >
+          <RotateCw className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       {/* 2. Order Quick Summary Strip */}
       <div className="bg-[#142335] px-3 py-1.5 border-b border-slate-800 flex items-center justify-between text-xs shrink-0">
         <div className="flex items-center space-x-2">
-          <span className="text-slate-400 text-[11px]">Pay:</span>
+          <span className="text-slate-400 text-[11px]">Amount:</span>
           <span className="text-emerald-400 font-mono font-black text-sm">
             {formatINR(order.amount)}
           </span>
@@ -294,8 +283,8 @@ export const PaymentCashierView: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. In-App Embedded Payment Gateway (Renders WatchPay or SunPay Directly) */}
-      <div className="flex-1 relative w-full h-full bg-[#0a0f18] overflow-hidden">
+      {/* 3. In-App Embedded Payment Gateway (Renders WatchPay or SunPay inside App) */}
+      <div className="flex-1 relative w-full h-full bg-[#ffffff] overflow-hidden">
         {isFrameLoading && (
           <div className="absolute inset-0 z-10 bg-[#0b131e] flex flex-col items-center justify-center p-6 text-center space-y-3">
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center animate-pulse ${
@@ -304,18 +293,11 @@ export const PaymentCashierView: React.FC = () => {
               <Loader2 className="w-6 h-6 animate-spin" />
             </div>
             <div>
-              <div className="text-sm font-bold text-white">Opening {gatewayName} Gateway...</div>
+              <div className="text-sm font-bold text-white">Opening {gatewayName} inside App...</div>
               <div className="text-xs text-slate-400 mt-0.5">
-                Connecting to official bank cashier desk
+                Connecting directly to official payment desk
               </div>
             </div>
-            <button
-              onClick={handleOpenExternal}
-              className="mt-2 py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center space-x-1.5 active:scale-95 transition-all cursor-pointer border border-slate-700"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Tap here if page does not load</span>
-            </button>
           </div>
         )}
 
@@ -323,11 +305,10 @@ export const PaymentCashierView: React.FC = () => {
           key={frameKey}
           ref={iframeRef}
           src={frameSrc}
-          title={`${gatewayName} Payment Cashier`}
-          className="w-full h-full border-none block"
+          title={`${gatewayName} In-App Payment Cashier`}
+          className="w-full h-full border-none block bg-white"
           onLoad={() => setIsFrameLoading(false)}
-          allow="payment *; camera *; geolocation *"
-          sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals allow-top-navigation-by-user-activation"
+          allow="payment *; camera *; geolocation *; clipboard-read; clipboard-write; display-capture"
         />
       </div>
 
@@ -338,7 +319,7 @@ export const PaymentCashierView: React.FC = () => {
             <Lock className="w-3 h-3" />
             <span>Official {gatewayName} Encrypted Channel</span>
           </div>
-          <span className="font-mono text-slate-500">Instant Verification</span>
+          <span className="font-mono text-slate-500">Auto-Verifying</span>
         </div>
 
         <button

@@ -28,20 +28,31 @@ const LGPAY_MCH_ID = WATCHPAY_MCH_ID;
 const LGPAY_KEY = WATCHPAY_KEY;
 const LGPAY_GATEWAY_URL = WATCHPAY_GATEWAY_URL;
 
+const app = express();
+const pendingPayinOrders = new Map<string, any>();
+
+// Global CORS Middleware for seamless Vercel & cross-origin deployment
+app.use((_req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key, x-signature');
+  if (_req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
+// Capture raw body for webhook HMAC-SHA256 signature verification
+app.use(
+  express.json({
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf;
+    }
+  })
+);
+app.use(express.urlencoded({ extended: true }));
+
 async function startServer() {
-  const app = express();
-  const pendingPayinOrders = new Map<string, any>();
-
-  // Capture raw body for webhook HMAC-SHA256 signature verification
-  app.use(
-    express.json({
-      verify: (req: any, _res, buf) => {
-        req.rawBody = buf;
-      }
-    })
-  );
-  app.use(express.urlencoded({ extended: true }));
-
   // --- HEALTH CHECK ---
   app.get('/api/health', (_req, res) => {
     res.json({
@@ -1008,4 +1019,11 @@ async function startServer() {
   });
 }
 
-startServer();
+// Export Express app for Vercel Serverless Function deployment
+export { app, pendingPayinOrders };
+export default app;
+
+// Auto-start standalone server unless running in Vercel Serverless environment
+if (process.env.VERCEL !== '1') {
+  startServer();
+}
