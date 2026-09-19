@@ -93,21 +93,13 @@ const MainAppContent: React.FC = () => {
         <p className="text-xs text-slate-400 max-w-xs mt-2 leading-relaxed">
           AKM financial nodes are undergoing scheduled maintenance to upgrade payout speed. Regular user actions are temporarily paused.
         </p>
-        {isAdminUser ? (
+        {isAdminUser && (
           <button
             id="admin-maintenance-bypass"
             onClick={() => setIsAdminOpen(true)}
             className="mt-6 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-lg active:scale-95"
           >
             Open Admin Control Panel
-          </button>
-        ) : (
-          <button
-            onClick={() => setIsAdminAuthModalOpen(true)}
-            className="mt-8 text-slate-600 hover:text-slate-400 transition-colors p-2 text-xs flex items-center space-x-1 cursor-pointer"
-            title="Admin Login"
-          >
-            <Lock className="w-3.5 h-3.5" />
           </button>
         )}
       </div>

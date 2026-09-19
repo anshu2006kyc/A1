@@ -4,7 +4,12 @@ import {
   AlertOctagon,
   AlertTriangle,
   Ban,
+  Check,
   CheckCircle2,
+  Copy,
+  Eye,
+  EyeOff,
+  KeyRound,
   Lock,
   LockOpen,
   Plus,
@@ -35,6 +40,41 @@ export const AdminRiskTab: React.FC = () => {
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const [alertIp, setAlertIp] = useState('103.21.244.0');
+
+  // Master Admin PIN Manager State
+  const [showPin, setShowPin] = useState(false);
+  const [newAdminPin, setNewAdminPin] = useState(adminSettings.adminPassword || '8340');
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedPin, setCopiedPin] = useState(false);
+
+  const handleUpdateAdminPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanPin = newAdminPin.trim();
+    if (!cleanPin || cleanPin.length < 4) {
+      showToast('Master Admin PIN must be at least 4 characters long', 'error');
+      return;
+    }
+    updateAdminSettings({ adminPassword: cleanPin });
+    showToast(`Master Admin PIN successfully updated to: ${cleanPin}`, 'success');
+  };
+
+  const handleCopyLink = () => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const pin = adminSettings.adminPassword || '8340';
+    const link = `${origin}/?admin=${encodeURIComponent(pin)}`;
+    navigator.clipboard?.writeText(link);
+    setCopiedLink(true);
+    showToast('1-Click Admin Access Link copied to clipboard!', 'success');
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
+
+  const handleCopyPin = () => {
+    const pin = adminSettings.adminPassword || '8340';
+    navigator.clipboard?.writeText(pin);
+    setCopiedPin(true);
+    showToast(`Master PIN copied: ${pin}`, 'info');
+    setTimeout(() => setCopiedPin(false), 2000);
+  };
 
   const handleCreateAlert = (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,6 +204,126 @@ export const AdminRiskTab: React.FC = () => {
             <div className="text-[11px] text-slate-400 mt-1">
               {adminSettings.duplicateUtrBlockEnabled ? 'Active (Re-used UTRs blocked)' : 'Off (Re-submissions allowed)'}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ============================================================ */}
+      {/* MASTER ADMIN ACCESS CODE & CREDENTIAL CONTROL                */}
+      {/* ============================================================ */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950/40 p-5 rounded-3xl border border-amber-500/30 space-y-4 shadow-xl relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center space-x-3">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-inner">
+              <KeyRound className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <h3 className="text-sm font-black text-white tracking-wide">Master Admin Access Code & PIN</h3>
+                <span className="bg-amber-400/20 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-400/30">
+                  TOP SECURITY
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Current platform security passcode required to unlock the Admin Treasury Console
+              </p>
+            </div>
+          </div>
+
+          {/* Quick 1-Click Copy Access Link Button */}
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className="flex items-center justify-center space-x-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
+          >
+            {copiedLink ? <Check className="w-4 h-4 text-slate-950" /> : <Copy className="w-4 h-4 text-slate-950" />}
+            <span>{copiedLink ? 'Link Copied!' : 'Copy 1-Click Admin Link'}</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+          {/* Card 1: Current Master PIN Display */}
+          <div className="bg-slate-950/80 p-4 rounded-2xl border border-amber-500/20 flex flex-col justify-between space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Current Master PIN</span>
+              <button
+                type="button"
+                onClick={() => setShowPin(!showPin)}
+                className="text-slate-400 hover:text-white p-1 rounded-md transition-colors cursor-pointer"
+                title={showPin ? 'Hide PIN' : 'Reveal PIN'}
+              >
+                {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-2xl font-black text-amber-400 tracking-widest">
+                {showPin ? (adminSettings.adminPassword || '8340') : '••••'}
+              </span>
+              <button
+                type="button"
+                onClick={handleCopyPin}
+                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg font-bold flex items-center space-x-1 cursor-pointer transition-colors"
+              >
+                {copiedPin ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                <span>{copiedPin ? 'Copied' : 'Copy'}</span>
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-500">
+              Default passcode: <code className="text-amber-300 font-bold">8340</code> (Also accepts: admin8340, 123456)
+            </p>
+          </div>
+
+          {/* Card 2: Update PIN Form */}
+          <form
+            onSubmit={handleUpdateAdminPin}
+            className="bg-slate-950/80 p-4 rounded-2xl border border-slate-700/80 flex flex-col justify-between space-y-3 md:col-span-2"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Change Master Admin PIN</span>
+              <span className="text-[10px] text-slate-400">Min 4 characters or digits</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                value={newAdminPin}
+                onChange={(e) => setNewAdminPin(e.target.value)}
+                placeholder="Enter new Master PIN..."
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm tracking-wider focus:outline-none focus:border-amber-500"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition-all shadow-md active:scale-95 cursor-pointer whitespace-nowrap"
+              >
+                Save New PIN
+              </button>
+            </div>
+            <div className="flex items-center justify-between text-[10px] text-slate-400">
+              <span>Syncs automatically across localStorage & Cloud DB</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setNewAdminPin('8340');
+                  updateAdminSettings({ adminPassword: '8340' });
+                  showToast('Admin PIN reset to default: 8340', 'info');
+                }}
+                className="text-amber-400 hover:underline cursor-pointer"
+              >
+                Reset to 8340
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Emergency Master Passcodes Info */}
+        <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center space-x-2 text-slate-300">
+            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>
+              Direct Browser Access: <code className="text-amber-300 font-mono bg-slate-900 px-1.5 py-0.5 rounded">https://your-domain.com/?admin=8340</code>
+            </span>
+          </div>
+          <div className="text-[11px] text-slate-400">
+            Emergency Master Passcode: <span className="font-mono text-white font-bold">REC-AKM-8340-9921</span>
           </div>
         </div>
       </div>

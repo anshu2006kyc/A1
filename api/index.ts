@@ -109,7 +109,7 @@ app.use((req: any, _res: any, next: any) => {
         customer_email: customer_email || 'investor@akm-portal.com',
         notify_url: notify_url || defaultNotifyUrl,
         metadata: {
-          platform: 'AKM Investment',
+          platform: 'AKM ENTERPRISES',
           mch_id: SUNPAYS_MERCHANT_ID
         }
       };
@@ -511,7 +511,7 @@ app.use((req: any, _res: any, next: any) => {
     } catch (err: any) {
       console.error('[WatchPay Redirect Error]', err);
     }
-    return sendSafeCashierPage(res, req.query.order_id || 'RECHARGE', req.query.amount || 500, `upi://pay?pa=akmpayments@okaxis&pn=AKM+Investments&am=${req.query.amount || 500}&cu=INR&tn=${req.query.order_id || 'RECHARGE'}`);
+    return sendSafeCashierPage(res, req.query.order_id || 'RECHARGE', req.query.amount || 500, `upi://pay?pa=akmpayments@okaxis&pn=AKM+ENTERPRISES&am=${req.query.amount || 500}&cu=INR&tn=${req.query.order_id || 'RECHARGE'}`);
   });
 
   // --- DIRECT SERVER REDIRECT TO SUNPAY CASHIER ---
@@ -544,7 +544,7 @@ app.use((req: any, _res: any, next: any) => {
     } catch (err: any) {
       console.warn('[Sunpay Direct Redirect Exception]', err.message);
     }
-    return sendSafeCashierPage(res, orderId, amount, `upi://pay?pa=akmpayments@okaxis&pn=SunPay+VIP&am=${amount}&cu=INR&tn=${orderId}`);
+    return sendSafeCashierPage(res, orderId, amount, `upi://pay?pa=akmpayments@okaxis&pn=AKM+ENTERPRISES&am=${amount}&cu=INR&tn=${orderId}`);
   });
 
   function sendSafeCashierPage(res: any, orderId: any, amount: any, upiUrl: string) {
@@ -556,7 +556,7 @@ app.use((req: any, _res: any, next: any) => {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-          <title>Express Payment Checkout</title>
+          <title>AKM ENTERPRISES Secure Checkout</title>
           <style>
             * { box-sizing: border-box; margin: 0; padding: 0; }
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; }
@@ -574,7 +574,7 @@ app.use((req: any, _res: any, next: any) => {
         </head>
         <body>
           <div class="card">
-            <span class="badge">SECURE IN-APP CHECKOUT</span>
+            <span class="badge">AKM ENTERPRISES SECURE CHECKOUT</span>
             <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Recharge Amount</div>
             <div class="amount">₹${amount}</div>
             <div class="order">Order ID: ${orderId}</div>
@@ -584,10 +584,10 @@ app.use((req: any, _res: any, next: any) => {
             </a>
 
             <div class="grid">
-              <a href="phonepe://pay?pa=${encodeURIComponent(targetUpi)}&pn=AKM&am=${amount}&cu=INR&tn=${orderId}" class="grid-btn">PhonePe</a>
-              <a href="tez://upi/pay?pa=${encodeURIComponent(targetUpi)}&pn=AKM&am=${amount}&cu=INR&tn=${orderId}" class="grid-btn">Google Pay</a>
-              <a href="paytmmp://pay?pa=${encodeURIComponent(targetUpi)}&pn=AKM&am=${amount}&cu=INR&tn=${orderId}" class="grid-btn">Paytm</a>
-              <a href="bhim://pay?pa=${encodeURIComponent(targetUpi)}&pn=AKM&am=${amount}&cu=INR&tn=${orderId}" class="grid-btn">BHIM UPI</a>
+              <a href="phonepe://pay?pa=${encodeURIComponent(targetUpi)}&pn=AKM+ENTERPRISES&am=${amount}&cu=INR&tn=${orderId}" class="grid-btn">PhonePe</a>
+              <a href="tez://upi/pay?pa=${encodeURIComponent(targetUpi)}&pn=AKM+ENTERPRISES&am=${amount}&cu=INR&tn=${orderId}" class="grid-btn">Google Pay</a>
+              <a href="paytmmp://pay?pa=${encodeURIComponent(targetUpi)}&pn=AKM+ENTERPRISES&am=${amount}&cu=INR&tn=${orderId}" class="grid-btn">Paytm</a>
+              <a href="bhim://pay?pa=${encodeURIComponent(targetUpi)}&pn=AKM+ENTERPRISES&am=${amount}&cu=INR&tn=${orderId}" class="grid-btn">BHIM UPI</a>
             </div>
 
             <div class="qr-box">
@@ -640,7 +640,7 @@ app.use((req: any, _res: any, next: any) => {
     }
     res.json({
       status: 'ok',
-      service: 'AKM Investment Gateway API',
+      service: 'AKM ENTERPRISES Gateway API',
       timestamp: new Date().toISOString()
     });
   });

@@ -50,11 +50,8 @@ export const PaymentCashierView: React.FC = () => {
   }, [activePayment]);
 
   const isWatchPay = useMemo(() => {
-    return (order.channel || '').toUpperCase().includes('WATCH');
+    return (order.channel || '').toUpperCase().includes('WATCH') || (order.channel || '').includes('1');
   }, [order.channel]);
-
-  const gatewayName = isWatchPay ? 'WATCHPAY' : 'SUNPAY';
-  const gatewaySubtitle = isWatchPay ? 'WatchGLB Automated Gateway' : 'SunPay VIP Express Gateway';
 
   // Direct official gateway checkout URL - Opens 100% inside app
   const frameSrc = useMemo(() => {
@@ -87,7 +84,7 @@ export const PaymentCashierView: React.FC = () => {
           try {
             confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
           } catch {}
-          showToast(`Deposit of ₹${order.amount} verified by ${gatewayName}!`, 'success');
+          showToast(`Deposit of ₹${order.amount} verified and credited to wallet!`, 'success');
         }
       } catch {
         // Silently retry
@@ -98,7 +95,7 @@ export const PaymentCashierView: React.FC = () => {
       isMounted = false;
       clearInterval(pollInterval);
     };
-  }, [order.orderId, isSuccess, confirmDepositPayment, order.amount, showToast, gatewayName]);
+  }, [order.orderId, isSuccess, confirmDepositPayment, order.amount, showToast]);
 
   // Strict Real Verification Handler - Bina payment kiye balance KABHI nahi aayega
   const handleVerifyStatus = async () => {
@@ -111,7 +108,7 @@ export const PaymentCashierView: React.FC = () => {
       const res = await fetch(`/api/payin/status/${order.orderId}`);
       const contentType = res.headers.get('content-type') || '';
       if (!contentType.includes('application/json')) {
-        showToast(`Waiting for ${gatewayName} bank settlement. Please complete the transfer first.`, 'warning');
+        showToast('Waiting for bank settlement. Please complete the transfer first.', 'warning');
         return;
       }
 
@@ -128,15 +125,15 @@ export const PaymentCashierView: React.FC = () => {
             origin: { y: 0.6 }
           });
         } catch {}
-        showToast(`Deposit of ₹${order.amount} verified by ${gatewayName}!`, 'success');
+        showToast(`Deposit of ₹${order.amount} verified and credited!`, 'success');
       } else {
         // Payment not completed yet - STRICTLY DO NOT CREDIT
         sfx.playWarning();
-        showToast(`Payment not received on ${gatewayName} yet. Please complete payment first.`, 'warning');
+        showToast('Payment not received yet. Please complete payment in your UPI app first.', 'warning');
       }
     } catch {
       sfx.playWarning();
-      showToast(`Unable to verify ${gatewayName} settlement. Please check connection.`, 'error');
+      showToast('Unable to verify bank settlement. Please check your network connection.', 'error');
     } finally {
       setIsVerifying(false);
     }
@@ -147,7 +144,7 @@ export const PaymentCashierView: React.FC = () => {
     sfx.playTap();
     setIsFrameLoading(true);
     setFrameKey((prev) => prev + 1);
-    showToast(`Reloading ${gatewayName} gateway inside app...`, 'info');
+    showToast('Reloading secure payment desk inside app...', 'info');
   };
 
   // Copy Order ID
@@ -169,12 +166,12 @@ export const PaymentCashierView: React.FC = () => {
 
         <div className="inline-flex items-center space-x-1.5 bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full mb-2">
           <ShieldCheck className="w-3.5 h-3.5 fill-current text-emerald-400" />
-          <span>{gatewayName} Settlement Verified</span>
+          <span>AKM ENTERPRISES Settlement Verified</span>
         </div>
 
         <h2 className="text-2xl font-black text-white mt-1">Deposit Successful!</h2>
         <p className="text-xs text-slate-400 mt-1 max-w-xs">
-          Your payment via {gatewayName} was confirmed and added to your wallet.
+          Your payment was confirmed and credited directly to your wallet.
         </p>
 
         <div className="text-4xl font-black text-emerald-400 mt-3 font-mono">
@@ -187,8 +184,8 @@ export const PaymentCashierView: React.FC = () => {
             <span className="font-mono font-bold text-slate-200">{order.orderId}</span>
           </div>
           <div className="flex justify-between text-slate-400">
-            <span>Gateway:</span>
-            <span className="font-bold text-emerald-400">{gatewayName} Official</span>
+            <span>Payment Method:</span>
+            <span className="font-bold text-emerald-400">Instant UPI Direct</span>
           </div>
           <div className="flex justify-between text-slate-400">
             <span>Status:</span>
@@ -220,10 +217,10 @@ export const PaymentCashierView: React.FC = () => {
     );
   }
 
-  // 100% IN-APP NATIVE GATEWAY CASHIER VIEW (NO EXTERNAL POPUPS / REDIRECTS)
+  // 100% IN-APP NATIVE CASHIER VIEW (NO EXTERNAL POPUPS / REDIRECTS)
   return (
     <div className="h-[100dvh] max-h-screen bg-[#0b131e] text-slate-100 font-sans flex flex-col justify-between select-none max-w-md mx-auto overflow-hidden">
-      {/* 1. In-App Header Bar with Gateway Branding */}
+      {/* 1. In-App Header Bar with AKM ENTERPRISES Branding */}
       <div className="bg-[#101c2a] border-b border-slate-800 px-3.5 py-2.5 flex items-center justify-between shrink-0 z-20 shadow-md">
         <button
           id="cashier-back-btn"
@@ -236,21 +233,15 @@ export const PaymentCashierView: React.FC = () => {
 
         <div className="flex flex-col items-center">
           <div className="flex items-center space-x-1.5">
-            {isWatchPay ? (
-              <div className="w-4 h-4 rounded bg-[#00ba58] text-white flex items-center justify-center">
-                <Zap className="w-2.5 h-2.5 fill-current" />
-              </div>
-            ) : (
-              <div className="w-4 h-4 rounded bg-amber-500 text-white flex items-center justify-center">
-                <Sun className="w-2.5 h-2.5 fill-current" />
-              </div>
-            )}
+            <div className="w-4 h-4 rounded bg-[#00ba58] text-white flex items-center justify-center">
+              <Zap className="w-2.5 h-2.5 fill-current" />
+            </div>
             <span className="text-xs font-black tracking-wider uppercase text-white">
-              {gatewayName} CASHIER
+              AKM ENTERPRISES CASHIER
             </span>
           </div>
           <span className="text-[9.5px] text-slate-400 font-medium">
-            {gatewaySubtitle}
+            256-Bit Encrypted Official Payment Desk
           </span>
         </div>
 
@@ -283,17 +274,15 @@ export const PaymentCashierView: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. In-App Embedded Payment Gateway (Renders WatchPay or SunPay inside App) */}
+      {/* 3. In-App Embedded Payment Desk */}
       <div className="flex-1 relative w-full h-full bg-[#ffffff] overflow-hidden">
         {isFrameLoading && (
           <div className="absolute inset-0 z-10 bg-[#0b131e] flex flex-col items-center justify-center p-6 text-center space-y-3">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center animate-pulse ${
-              isWatchPay ? 'bg-emerald-500/20 text-[#00ba58]' : 'bg-amber-500/20 text-amber-500'
-            }`}>
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-[#00ba58] flex items-center justify-center animate-pulse">
               <Loader2 className="w-6 h-6 animate-spin" />
             </div>
             <div>
-              <div className="text-sm font-bold text-white">Opening {gatewayName} inside App...</div>
+              <div className="text-sm font-bold text-white">Opening Secure Cashier...</div>
               <div className="text-xs text-slate-400 mt-0.5">
                 Connecting directly to official payment desk
               </div>
@@ -305,7 +294,7 @@ export const PaymentCashierView: React.FC = () => {
           key={frameKey}
           ref={iframeRef}
           src={frameSrc}
-          title={`${gatewayName} In-App Payment Cashier`}
+          title="AKM ENTERPRISES Secure Payment Cashier"
           className="w-full h-full border-none block bg-white"
           onLoad={() => setIsFrameLoading(false)}
           allow="payment *; camera *; geolocation *; clipboard-read; clipboard-write; display-capture"
@@ -317,7 +306,7 @@ export const PaymentCashierView: React.FC = () => {
         <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
           <div className="flex items-center space-x-1 text-emerald-400">
             <Lock className="w-3 h-3" />
-            <span>Official {gatewayName} Encrypted Channel</span>
+            <span>AKM ENTERPRISES 256-Bit Encrypted Channel</span>
           </div>
           <span className="font-mono text-slate-500">Auto-Verifying</span>
         </div>
@@ -326,23 +315,17 @@ export const PaymentCashierView: React.FC = () => {
           id="verify-payment-btn"
           onClick={handleVerifyStatus}
           disabled={isVerifying}
-          className={`w-full py-3 rounded-xl font-black text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-lg active:scale-95 ${
-            isVerifying
-              ? 'bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-700'
-              : isWatchPay
-              ? 'bg-[#00ba58] hover:bg-emerald-600 text-white shadow-emerald-500/25'
-              : 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/25'
-          }`}
+          className="w-full py-3 rounded-xl font-black text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-lg active:scale-95 bg-[#00ba58] hover:bg-emerald-600 text-white shadow-emerald-500/25"
         >
           {isVerifying ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin text-white" />
-              <span>Checking {gatewayName} Bank Settlement...</span>
+              <span>Checking Bank Settlement...</span>
             </>
           ) : (
             <>
               <RotateCw className="w-4 h-4" />
-              <span>🔄 Verify {gatewayName} Payment / Confirm</span>
+              <span>🔄 Check Bank Settlement / Confirm Credit</span>
             </>
           )}
         </button>

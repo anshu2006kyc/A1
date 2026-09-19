@@ -26,7 +26,7 @@ async function startServer() {
   }
 
   app.listen(PORT, HOST, () => {
-    console.log(`AKM Investment Server running on http://${HOST}:${PORT}`);
+    console.log(`AKM ENTERPRISES Server running on http://${HOST}:${PORT}`);
   });
 }
 

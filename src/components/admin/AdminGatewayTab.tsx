@@ -286,6 +286,123 @@ app.post('/api/sunpays/webhook', (req, res) => {
         </div>
       </div>
 
+      {/* ============================================================ */}
+      {/* MASTER DEFAULT PAYMENT GATEWAY SELECTOR                      */}
+      {/* ============================================================ */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 p-5 rounded-3xl border border-emerald-500/30 shadow-xl space-y-3.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+              <Zap className="w-5 h-5 fill-current" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-white">Default Payment Gateway Selector</h4>
+              <p className="text-xs text-slate-400">Choose which gateway is preselected or enforced when users tap "Recharge / Deposit"</p>
+            </div>
+          </div>
+          <span className="text-[11px] font-mono font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 self-start sm:self-center">
+            Active: {(form.defaultGateway || form.selectedDepositGateway || 'watchpay').toUpperCase()}
+          </span>
+        </div>
+
+        {/* 3 Gateway Choice Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          {/* Option 1: WatchPay */}
+          <div
+            onClick={() => {
+              const updated = { ...form, defaultGateway: 'watchpay' as const, selectedDepositGateway: 'watchpay' as const };
+              setForm(updated);
+              updateAdminSettings(updated);
+              showToast('Default Gateway set to WatchPay (WatchGLB Engine)!', 'success');
+            }}
+            className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+              (form.defaultGateway || 'watchpay') === 'watchpay'
+                ? 'bg-emerald-950/60 border-emerald-500 shadow-md shadow-emerald-950/50'
+                : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-white">WatchPay (Channel 1)</span>
+              <div className={`w-4 h-4 rounded-full flex items-center justify-center border-2 ${
+                (form.defaultGateway || 'watchpay') === 'watchpay' ? 'border-emerald-400 bg-emerald-500 text-slate-950' : 'border-slate-600'
+              }`}>
+                {(form.defaultGateway || 'watchpay') === 'watchpay' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+              </div>
+            </div>
+            <div className="text-[11px] text-slate-400 mt-2">
+              Fast automated UPI desk • WatchGLB MD5 signing • Direct Cashier
+            </div>
+            <div className="text-[10px] font-mono text-emerald-400 mt-2 font-bold">
+              Customer Label: "UPI Fast Pay (Channel 1)"
+            </div>
+          </div>
+
+          {/* Option 2: Sunpays */}
+          <div
+            onClick={() => {
+              const updated = { ...form, defaultGateway: 'sunpays' as const, selectedDepositGateway: 'sunpays' as const };
+              setForm(updated);
+              updateAdminSettings(updated);
+              showToast('Default Gateway set to SunPay (TTPay Engine)!', 'success');
+            }}
+            className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+              form.defaultGateway === 'sunpays'
+                ? 'bg-emerald-950/60 border-emerald-500 shadow-md shadow-emerald-950/50'
+                : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-white">SunPay (Channel 2)</span>
+              <div className={`w-4 h-4 rounded-full flex items-center justify-center border-2 ${
+                form.defaultGateway === 'sunpays' ? 'border-emerald-400 bg-emerald-500 text-slate-950' : 'border-slate-600'
+              }`}>
+                {form.defaultGateway === 'sunpays' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+              </div>
+            </div>
+            <div className="text-[11px] text-slate-400 mt-2">
+              Automated VIP clearing • TTPay Business REST API
+            </div>
+            <div className="text-[10px] font-mono text-emerald-400 mt-2 font-bold">
+              Customer Label: "UPI Express (Channel 2)"
+            </div>
+          </div>
+
+          {/* Option 3: Auto / Multi-Channel */}
+          <div
+            onClick={() => {
+              const updated = { ...form, defaultGateway: 'auto' as const, selectedDepositGateway: 'all' as const };
+              setForm(updated);
+              updateAdminSettings(updated);
+              showToast('Default Gateway set to Multi-Channel Auto!', 'success');
+            }}
+            className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+              form.defaultGateway === 'auto' || form.selectedDepositGateway === 'all'
+                ? 'bg-emerald-950/60 border-emerald-500 shadow-md shadow-emerald-950/50'
+                : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-white">Multi-Channel Mode</span>
+              <div className={`w-4 h-4 rounded-full flex items-center justify-center border-2 ${
+                form.defaultGateway === 'auto' || form.selectedDepositGateway === 'all' ? 'border-emerald-400 bg-emerald-500 text-slate-950' : 'border-slate-600'
+              }`}>
+                {(form.defaultGateway === 'auto' || form.selectedDepositGateway === 'all') && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+              </div>
+            </div>
+            <div className="text-[11px] text-slate-400 mt-2">
+              Users see both Channel 1 & Channel 2 • Smart load balancing
+            </div>
+            <div className="text-[10px] font-mono text-emerald-400 mt-2 font-bold">
+              Both channels active
+            </div>
+          </div>
+        </div>
+
+        <div className="text-[11px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl flex items-center justify-between">
+          <span>🔒 Customer Privacy: Internal gateway names (WatchPay / SunPay) are hidden from end users. Users only see clean "UPI Channel 1" and "UPI Channel 2" branded with <strong>AKM ENTERPRISES</strong>.</span>
+        </div>
+      </div>
+
       {/* --- TAB: LGPAY (WATCHGLB) GATEWAY CONFIGURATION --- */}
       {activeGatewayTab === 'lgpay' && (
         <div className="space-y-4 animate-fade-in">

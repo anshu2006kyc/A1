@@ -554,6 +554,7 @@ export const INITIAL_ADMIN_SETTINGS: AdminSettings = {
   sunpaysPayoutKey: "354f21cf1f27cbadcf136fbd64e7fd1da6a4d95e1385ff704fa79b8060bae7a4",
   sunpaysPayoutSecret: "ed7350044c65779df3b9222756d765db20860ed843d6e9fb74722d693c8ef8a7",
   selectedDepositGateway: "all",
+  defaultGateway: "watchpay",
   gatewayPriority: "lgpay_first",
 
   minRecharge: 285,
@@ -580,7 +581,7 @@ export const INITIAL_ADMIN_SETTINGS: AdminSettings = {
   globalReturnMultiplier: 1.0,
 
   announcementTitle: "Official Platform Notice",
-  announcementMessage: "Welcome to AKM Investment Platform! Instant UPI 24/7 channels are fully active. Earn daily returns with our high-return enterprise investment plans.",
+  announcementMessage: "Welcome to AKM ENTERPRISES! Instant UPI 24/7 channels are fully active. Earn daily returns with our high-return enterprise investment plans.",
   announcementEnabled: true,
   announcementTag: "IMPORTANT",
 

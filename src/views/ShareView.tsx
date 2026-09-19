@@ -32,7 +32,7 @@ export const ShareView: React.FC = () => {
   };
 
   const handleShare = (platform: string) => {
-    const text = `Join AKM Investment & earn daily profits! Use my invite code: ${inviteCode}`;
+    const text = `Join AKM ENTERPRISES & earn daily profits! Use my invite code: ${inviteCode}`;
     if (platform === 'whatsapp') {
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + shareUrl)}`);
     } else if (platform === 'telegram') {
@@ -44,7 +44,7 @@ export const ShareView: React.FC = () => {
     } else {
       if (navigator.share) {
         navigator.share({
-          title: 'AKM Investment',
+          title: 'AKM ENTERPRISES',
           text: text,
           url: shareUrl
         }).catch(() => handleCopyLink());

@@ -163,6 +163,7 @@ export interface AdminSettings {
   sunpaysPayoutKey: string;
   sunpaysPayoutSecret: string;
   selectedDepositGateway: 'lgpay' | 'sunpays' | 'watchpay' | 'all';
+  defaultGateway?: 'watchpay' | 'sunpays' | 'auto';
   gatewayPriority: 'lgpay_first' | 'sunpays_first' | 'watchpay_first' | 'auto_failover';
   
   // Platform limits & fees

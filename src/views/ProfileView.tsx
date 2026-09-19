@@ -616,8 +616,9 @@ export const ProfileView: React.FC = () => {
             <div className="text-center pt-2">
               <button
                 onClick={() => setIsAdminOpen(true)}
-                className="text-[11px] font-bold text-amber-600 hover:text-amber-700 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200 cursor-pointer shadow-xs inline-flex items-center space-x-1"
+                className="text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 px-3.5 py-1.5 rounded-full border border-amber-300 cursor-pointer shadow-xs inline-flex items-center space-x-1.5 transition-all active:scale-95"
               >
+                <Lock className="w-3 h-3 text-amber-600" />
                 <span>🔐 Admin & Gateway Control Center</span>
               </button>
             </div>
@@ -627,9 +628,9 @@ export const ProfileView: React.FC = () => {
                 type="button"
                 onClick={handleSecretTap}
                 className="text-[10px] text-gray-300 hover:text-gray-400 select-none cursor-default transition-colors"
-                title="AKM Platform Secure Node"
+                title="AKM ENTERPRISES Secure Node"
               >
-                AKM Financial v3.2.0 • 256-bit SSL
+                AKM ENTERPRISES v3.2.0 • 256-bit SSL
               </button>
             </div>
           )}

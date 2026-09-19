@@ -69,7 +69,7 @@ export const TeamView: React.FC = () => {
 
   // Social share
   const handleShareWhatsApp = () => {
-    const text = `🔥 Earn daily returns with AKM Investment Platform!
+    const text = `🔥 Earn daily returns with AKM ENTERPRISES Platform!
 💰 Join my VIP team and start earning up to 30% daily returns.
 👉 Use my Invitation Code: ${inviteCode}
 🚀 Register link: ${referralLink}`;
@@ -77,7 +77,7 @@ export const TeamView: React.FC = () => {
   };
 
   const handleShareTelegram = () => {
-    const text = `Earn daily guaranteed returns with AKM! Register using my code: ${inviteCode}`;
+    const text = `Earn daily guaranteed returns with AKM ENTERPRISES! Register using my code: ${inviteCode}`;
     window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`, '_blank');
   };
 

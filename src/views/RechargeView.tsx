@@ -31,11 +31,26 @@ export const RechargeView: React.FC = () => {
   const quickAmounts = [285, 520, 720, 1000, 2000, 5000];
   const initialAmount = rechargePrefillAmount && rechargePrefillAmount > 0 ? rechargePrefillAmount : 720;
 
+  // Read default gateway preference configured by Admin
+  const defaultChannelPreference: 'watchpay' | 'sunpay' =
+    (adminSettings.defaultGateway === 'sunpays' || adminSettings.selectedDepositGateway === 'sunpays')
+      ? 'sunpay'
+      : 'watchpay';
+
   const [amount, setAmount] = useState<number>(initialAmount);
   const [customInput, setCustomInput] = useState<string>(String(initialAmount));
-  const [selectedChannel, setSelectedChannel] = useState<'watchpay' | 'sunpay'>('watchpay');
+  const [selectedChannel, setSelectedChannel] = useState<'watchpay' | 'sunpay'>(defaultChannelPreference);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
+
+  // Sync if admin default gateway changes
+  useEffect(() => {
+    if (adminSettings.defaultGateway === 'sunpays') {
+      setSelectedChannel('sunpay');
+    } else if (adminSettings.defaultGateway === 'watchpay') {
+      setSelectedChannel('watchpay');
+    }
+  }, [adminSettings.defaultGateway]);
 
   const isWatchPay = selectedChannel === 'watchpay';
 
@@ -84,7 +99,7 @@ export const RechargeView: React.FC = () => {
     sfx.playGatewayLaunch();
 
     const isWatchPay = selectedChannel === 'watchpay';
-    const channelLabel = isWatchPay ? 'WATCHPAY' : 'SUNPAY';
+    const channelLabel = isWatchPay ? 'Fast Pay (Channel 1)' : 'Express Pay (Channel 2)';
 
     try {
       let directPayUrl = '';
@@ -119,12 +134,12 @@ export const RechargeView: React.FC = () => {
       }
 
       openPaymentPage(amount, channelLabel, orderId, directPayUrl);
-      showToast(`${channelLabel} cashier opened for ₹${amount}`, 'info');
+      showToast(`Opening secure payment cashier for ₹${amount}...`, 'info');
     } catch {
       const fallbackId = `ORD${Date.now()}`;
       const fallbackUrl = `/pay/checkout?order_id=${encodeURIComponent(fallbackId)}&amount=${amount}&channel=${selectedChannel}`;
       openPaymentPage(amount, channelLabel, fallbackId, fallbackUrl);
-      showToast(`${channelLabel} cashier ready for ₹${amount}`, 'info');
+      showToast(`Opening payment cashier for ₹${amount}...`, 'info');
     } finally {
       setIsProcessing(false);
     }
@@ -251,15 +266,15 @@ export const RechargeView: React.FC = () => {
           </div>
         </div>
 
-        {/* C. Payment Server Selection (WATCHPAY & SUNPAY ONLY) */}
+        {/* C. Payment Channel Selection (Gateway Names Hidden from Users) */}
         <div className="bg-white p-3 rounded-2xl border border-gray-200/80 shadow-xs space-y-2">
           <div className="text-xs font-bold text-gray-800 flex items-center justify-between">
-            <span>Select Payment Gateway</span>
-            <span className="text-[10px] text-emerald-600 font-bold">100% Automated</span>
+            <span>Select Payment Channel</span>
+            <span className="text-[10px] text-emerald-600 font-bold">100% Automated Instant</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            {/* WATCHPAY Gateway */}
+            {/* Channel 1 */}
             <div
               onClick={() => {
                 sfx.playTap();
@@ -286,16 +301,23 @@ export const RechargeView: React.FC = () => {
                 </div>
               </div>
               <div className="mt-1.5">
-                <span className="text-[11px] font-black text-gray-900 block leading-tight">
-                  WATCHPAY
-                </span>
+                <div className="flex items-center space-x-1">
+                  <span className="text-[11px] font-black text-gray-900 block leading-tight">
+                    UPI Fast Pay
+                  </span>
+                  {(adminSettings.defaultGateway || 'watchpay') === 'watchpay' && (
+                    <span className="text-[8px] bg-emerald-100 text-emerald-800 font-bold px-1 rounded-full">
+                      Default
+                    </span>
+                  )}
+                </div>
                 <span className="text-[9.5px] text-gray-500 block leading-tight mt-0.5">
-                  Automated High-Speed
+                  Channel 1 • GPay/PhonePe
                 </span>
               </div>
             </div>
 
-            {/* SUNPAY Gateway */}
+            {/* Channel 2 */}
             <div
               onClick={() => {
                 sfx.playTap();
@@ -322,11 +344,18 @@ export const RechargeView: React.FC = () => {
                 </div>
               </div>
               <div className="mt-1.5">
-                <span className="text-[11px] font-black text-gray-900 block leading-tight">
-                  SUNPAY
-                </span>
+                <div className="flex items-center space-x-1">
+                  <span className="text-[11px] font-black text-gray-900 block leading-tight">
+                    UPI Express
+                  </span>
+                  {adminSettings.defaultGateway === 'sunpays' && (
+                    <span className="text-[8px] bg-amber-100 text-amber-800 font-bold px-1 rounded-full">
+                      Default
+                    </span>
+                  )}
+                </div>
                 <span className="text-[9.5px] text-gray-500 block leading-tight mt-0.5">
-                  VIP Express Instant
+                  Channel 2 • Dynamic QR
                 </span>
               </div>
             </div>

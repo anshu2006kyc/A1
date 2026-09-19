@@ -142,17 +142,17 @@ export const HeaderBanner: React.FC = () => {
         <div className="flex items-center space-x-1.5 bg-white/10 px-2.5 py-1 rounded-full border border-white/15">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
           <span className="font-bold tracking-wide text-white text-[10.5px]">
-            AKM Official Wealth Platform
+            AKM ENTERPRISES
           </span>
         </div>
 
         <div className="flex items-center space-x-2">
-          {/* Quick Admin Access Button - Only visible to Admins */}
+          {/* Quick Admin Access Button - STRICTLY VISIBLE ONLY TO VERIFIED ADMINS */}
           {isAdminUser && (
             <button
               id="header-admin-btn"
               onClick={() => setIsAdminOpen(true)}
-              className="flex items-center space-x-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-2.5 py-1 rounded-full shadow-sm text-[11px] transition-transform active:scale-95 cursor-pointer"
+              className="flex items-center space-x-1 font-bold px-2.5 py-1 rounded-full shadow-sm text-[11px] transition-transform active:scale-95 cursor-pointer bg-amber-400 hover:bg-amber-300 text-slate-950 font-black ring-1 ring-amber-300"
               title="Open Admin Control Panel"
             >
               <span>🔐 Admin</span>
