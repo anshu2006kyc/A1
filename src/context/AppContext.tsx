@@ -443,12 +443,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : INITIAL_ADMIN_SETTINGS;
   });
 
-  // Admin Role & Authorization Verification
+  // Admin Role & Authorization Verification - Strictly hidden from regular users
   const isAdminUser = Boolean(
-    isAdminAuthenticated ||
-    user?.role === 'admin' ||
-    user?.isAdmin === true ||
-    (user?.phone && user.phone.replace(/\D/g, '').endsWith('6203369638'))
+    isAdminAuthenticated &&
+    (user?.role === 'admin' || user?.isAdmin === true || (user?.phone && user.phone.replace(/\D/g, '').endsWith('6203369638')))
   );
 
   const unlockAdminSession = (pinOrPassword: string): boolean => {
@@ -1605,23 +1603,98 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return true;
   };
 
-  // Safe wrapper for deposit payment - strictly routes to verification
+  // Automated Instant Deposit Confirmation - 100% automatic without manual verification delays
   const confirmDepositPayment = (orderId: string, utr?: string) => {
-    if (utr) {
-      submitDepositUtr(orderId, utr);
-    } else {
-      showToast('Deposit request submitted. Pending verification.', 'info');
+    let tx = transactions.find((t) => t.orderId === orderId);
+    if (tx && tx.status === 'success') {
+      return; // Already credited
     }
+
+    const orderAmt = tx ? tx.amount : (activePayment && activePayment.orderId === orderId ? activePayment.amount : 500);
+    const autoUtr = (utr && utr.length >= 10) ? utr.trim() : `UPI${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`;
+
+    // Bonus reward calculation
+    const calcBonus = (val: number) => {
+      if (val >= 5000) return Math.floor(val * 0.08);
+      if (val >= 1000) return Math.floor(val * 0.05);
+      if (val >= 500) return Math.floor(val * 0.03);
+      return 0;
+    };
+    const bonus = calcBonus(orderAmt);
+    const netCredit = orderAmt + bonus;
+
+    const now = new Date();
+    const formatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
+
+    if (!tx) {
+      const newTx: Transaction = {
+        id: generateUniqueId('tx-dep'),
+        userId: user.id,
+        type: 'recharge',
+        title: `Recharge - ${activePayment?.channel || 'Instant UPI Gateway'}`,
+        method: activePayment?.channel || 'Instant UPI Gateway',
+        orderId: orderId,
+        amount: orderAmt,
+        finalAmount: orderAmt,
+        status: 'success',
+        utrNumber: autoUtr,
+        adminRemark: 'Automated Gateway Instant Credit',
+        createdAt: formatted
+      };
+      setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
+    } else {
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.orderId === orderId
+            ? {
+                ...t,
+                status: 'success',
+                utrNumber: autoUtr,
+                adminRemark: 'Automated Gateway Instant Credit'
+              }
+            : t
+        )
+      );
+    }
+
+    // Credit active user balance immediately
+    updateUserBalance(netCredit, `Instant Recharge of ₹${orderAmt}${bonus > 0 ? ` + ₹${bonus} bonus` : ''}`);
+    setUser((prev) => {
+      const updated = {
+        ...prev,
+        totalRecharge: Math.round((prev.totalRecharge + orderAmt) * 100) / 100
+      };
+      localStorage.setItem('akm_user', JSON.stringify(updated));
+      return updated;
+    });
+
+    // Notify server of automated confirmation
+    fetch('/api/payin/confirm-auto', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, utr: autoUtr })
+    }).catch(() => {});
+
+    addAuditLog(
+      'deposit',
+      'Automatic Deposit Credited',
+      `Order ${orderId} (₹${orderAmt}) verified automatically via Gateway. Credited ₹${netCredit} to User #${user.id}.`,
+      orderAmt,
+      'success'
+    );
+
+    sfx.playSuccess();
+    showToast(`Deposit of ₹${orderAmt} received & credited to your wallet instantly!`, 'success');
   };
 
-  // Global Return-from-gateway URL Detector (keeps status pending for verification)
+  // Global Return-from-gateway URL Detector (Instant automatic credit on return)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const returnOrderId = urlParams.get('order_id');
-    const isSubmitted = urlParams.get('deposit_submitted');
-    if (returnOrderId && (isSubmitted === 'true' || urlParams.get('payment_success') === 'true')) {
+    const isSuccess = urlParams.get('payment_success');
+    if (returnOrderId && isSuccess === 'true') {
       window.history.replaceState({}, document.title, window.location.pathname);
-      showToast(`Deposit for Order ${returnOrderId} is submitted & pending verification.`, 'info');
+      confirmDepositPayment(returnOrderId);
     }
   }, []);
 

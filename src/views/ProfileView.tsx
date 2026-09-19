@@ -441,7 +441,7 @@ export const ProfileView: React.FC = () => {
               <div>
                 <span className="text-xs font-bold text-gray-800 block">Recharge Record</span>
                 <span className="text-[10px] text-gray-400 block mt-0.5">
-                  Deposit receipts, UPI confirmations & UTR slips
+                  Deposit receipts & payment confirmations
                 </span>
               </div>
             </div>

@@ -119,6 +119,29 @@ class SoundEffects {
     } catch {}
   }
 
+  // Warning tone
+  playWarning() {
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.setValueAtTime(370, ctx.currentTime + 0.08);
+
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.18);
+    } catch {}
+  }
+
   // Aliases
   click() {
     this.playTap();
@@ -134,6 +157,10 @@ class SoundEffects {
 
   cash() {
     this.playSuccess();
+  }
+
+  warning() {
+    this.playWarning();
   }
 }
 

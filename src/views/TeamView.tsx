@@ -268,30 +268,45 @@ export const TeamView: React.FC = () => {
             </div>
           </div>
 
-          {/* Social Share Buttons */}
-          <div className="grid grid-cols-3 gap-2 pt-1">
-            <button
-              onClick={handleShareWhatsApp}
-              className="py-2.5 px-3 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer tracking-wide"
-            >
-              <WhatsAppIcon className="w-4 h-4 fill-white drop-shadow-xs" />
-              <span className="drop-shadow-xs">WhatsApp</span>
-            </button>
+          {/* Social Share Buttons with Large WhatsApp & Telegram Icons */}
+          <div className="pt-2 space-y-2">
+            <div className="grid grid-cols-2 gap-2.5">
+              {/* Large WhatsApp Share Card */}
+              <button
+                onClick={handleShareWhatsApp}
+                className="py-3 px-3 rounded-2xl bg-gradient-to-r from-[#25D366] to-[#1eb855] hover:brightness-105 text-white flex items-center space-x-3 shadow-md active:scale-95 transition-all cursor-pointer border border-[#25D366]/40"
+              >
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 shadow-xs">
+                  <WhatsAppIcon className="w-6 h-6 fill-white drop-shadow-sm" />
+                </div>
+                <div className="text-left">
+                  <span className="text-xs font-black block tracking-wide">WhatsApp</span>
+                  <span className="text-[9.5px] text-white/90 font-medium block">Invite Friends</span>
+                </div>
+              </button>
 
-            <button
-              onClick={handleShareTelegram}
-              className="py-2.5 px-3 rounded-2xl bg-[#0088cc] hover:bg-[#007ab8] text-white font-black text-xs flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer tracking-wide"
-            >
-              <TelegramIcon className="w-4 h-4 fill-white drop-shadow-xs" />
-              <span className="drop-shadow-xs">Telegram</span>
-            </button>
+              {/* Large Telegram Share Card */}
+              <button
+                onClick={handleShareTelegram}
+                className="py-3 px-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#0074ad] hover:brightness-105 text-white flex items-center space-x-3 shadow-md active:scale-95 transition-all cursor-pointer border border-[#0088cc]/40"
+              >
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 shadow-xs">
+                  <TelegramIcon className="w-6 h-6 fill-white drop-shadow-sm" />
+                </div>
+                <div className="text-left">
+                  <span className="text-xs font-black block tracking-wide">Telegram</span>
+                  <span className="text-[9.5px] text-white/90 font-medium block">Invite Channel</span>
+                </div>
+              </button>
+            </div>
 
+            {/* QR Code Option */}
             <button
               onClick={() => setShowQrModal(!showQrModal)}
-              className="py-2.5 px-3 rounded-2xl bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-700 hover:brightness-110 text-white font-black text-xs flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer border-t border-white/20 tracking-wide"
+              className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-bold text-xs flex items-center justify-center space-x-2 shadow-xs active:scale-95 transition-all cursor-pointer border border-slate-700"
             >
-              <QrCode className="w-4 h-4 drop-shadow-xs text-emerald-400" />
-              <span className="drop-shadow-xs">QR Code</span>
+              <QrCode className="w-4 h-4 text-emerald-400" />
+              <span>{showQrModal ? 'Hide Invite QR Code' : 'Show Referral QR Code'}</span>
             </button>
           </div>
 

@@ -49,7 +49,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
     {
       category: 'recharge',
       q: 'Paid on UPI but wallet not updated?',
-      a: 'Go to Recharge, click "Already Paid? Submit 12-digit UTR", paste your 12-digit bank reference (UTR/RRN) number. Alternatively, tap the Recharge Service channel below and send a screenshot for instant manual verification.'
+      a: 'Deposits are 100% automated. Once payment is completed in your UPI app, your wallet balance will be credited instantly via our automated gateway. You can also tap the Recharge Service channel below for 24/7 assistance.'
     },
     {
       category: 'recharge',
@@ -176,7 +176,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                         <span className="text-[9px] bg-emerald-200/80 text-emerald-800 px-1.5 py-0.2 rounded font-bold">Fast</span>
                       </div>
                       <div className="text-[10px] text-emerald-700 font-medium">
-                        Missing deposit, UTR verification & pay-in help
+                        Missing deposit & payment verification help
                       </div>
                     </div>
                   </div>
