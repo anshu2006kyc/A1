@@ -25,7 +25,6 @@ import {
   User,
   UserCheck,
   UserPlus,
-  Users,
   Wallet,
   Wifi
 } from 'lucide-react';
@@ -48,9 +47,7 @@ export const ProfileView: React.FC = () => {
     navigateToTransactions,
     isLoggedIn,
     logoutUser,
-    openAuthModal,
-    registeredUsers,
-    switchUser
+    openAuthModal
   } = useApp();
   const [showBalance, setShowBalance] = useState<boolean>(true);
   const [showPhone, setShowPhone] = useState<boolean>(false);
@@ -160,14 +157,16 @@ export const ProfileView: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2">
-          <button
-            onClick={() => openAuthModal('login')}
-            className="px-2.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-100 active:scale-95 transition-all flex items-center space-x-1 cursor-pointer"
-            title="Switch / Sign In Account"
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Account</span>
-          </button>
+          {!isLoggedIn && (
+            <button
+              onClick={() => openAuthModal('login')}
+              className="px-2.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-100 active:scale-95 transition-all flex items-center space-x-1 cursor-pointer"
+              title="Sign In"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sign In</span>
+            </button>
+          )}
 
           <button
             onClick={() => setCurrentView('bank')}
@@ -178,38 +177,6 @@ export const ProfileView: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {/* Account Switch Bar if multiple registered accounts exist */}
-      {registeredUsers.length > 1 && (
-        <div className="bg-emerald-50/60 border-b border-emerald-100/60 px-4 py-2 flex items-center justify-between text-xs">
-          <div className="flex items-center space-x-1.5 text-emerald-800 font-bold text-[11px]">
-            <Users className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Switch Account:</span>
-          </div>
-          <div className="flex items-center space-x-1.5 overflow-x-auto">
-            {registeredUsers.slice(0, 3).map((u) => (
-              <button
-                key={u.id}
-                onClick={() => switchUser(u.id)}
-                className={`px-2 py-0.5 rounded-lg text-[10.5px] font-bold transition-all cursor-pointer truncate max-w-[110px] ${
-                  u.id === user.id
-                    ? 'bg-[#00ba58] text-white shadow-xs'
-                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-emerald-200'
-                }`}
-              >
-                {u.name ? u.name.split(' ')[0] : maskPhone(u.phone, false)}
-              </button>
-            ))}
-            <button
-              onClick={() => openAuthModal('register')}
-              className="px-2 py-0.5 rounded-lg text-[10.5px] font-bold bg-white text-emerald-700 hover:bg-emerald-100 border border-dashed border-emerald-300 flex items-center space-x-0.5 cursor-pointer"
-            >
-              <Plus className="w-3 h-3" />
-              <span>New</span>
-            </button>
-          </div>
-        </div>
-      )}
 
       <div className="p-3.5 space-y-3.5">
         {/* ADVANCE TITANIUM VIP PROFILE CARD (COMPACT & SLEEK) */}

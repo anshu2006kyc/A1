@@ -125,19 +125,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     showToast('Auto-filled test code: 123456', 'info');
   };
 
-  // Quick Demo Account Selector
-  const handleQuickLogin = (phone: string, pass: string) => {
-    sfx.playTap();
-    const res = login(phone, pass);
-    if (res.success) {
-      sfx.playSuccess();
-      showToast(`Logged in successfully as ${phone}!`, 'success');
-      onClose();
-    } else {
-      showToast(res.message, 'error');
-    }
-  };
-
   // Handle Login Submit
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -459,39 +446,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <span>Sign In Securely</span>
               <ArrowRight className="w-4 h-4" />
             </button>
-
-            {/* Fast 1-Tap Demo Switcher */}
-            <div className="pt-3 border-t border-gray-100">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-gray-500">
-                  ⚡ 1-Tap Fast Test Login:
-                </span>
-                <span className="text-[10px] text-gray-400">Click to auto-load</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('+91 6203369638', 'password123')}
-                  className="p-2 rounded-xl bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-300 text-left transition-all cursor-pointer group"
-                >
-                  <div className="text-[11px] font-bold text-gray-800 group-hover:text-emerald-800 truncate">
-                    Anshu Kumar
-                  </div>
-                  <div className="text-[10px] text-gray-500 font-mono">6203369638</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('+91 9988776655', 'password123')}
-                  className="p-2 rounded-xl bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-300 text-left transition-all cursor-pointer group"
-                >
-                  <div className="text-[11px] font-bold text-amber-700 group-hover:text-amber-800 truncate flex items-center space-x-1">
-                    <span>Rajesh (VIP 3)</span>
-                  </div>
-                  <div className="text-[10px] text-gray-500 font-mono">9988776655</div>
-                </button>
-              </div>
-            </div>
           </form>
         )}
 
