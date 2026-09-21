@@ -91,7 +91,7 @@ const MainAppContent: React.FC = () => {
         </div>
         <h2 className="text-xl font-black tracking-wide">Platform Maintenance Mode</h2>
         <p className="text-xs text-slate-400 max-w-xs mt-2 leading-relaxed">
-          AKM financial nodes are undergoing scheduled maintenance to upgrade payout speed. Regular user actions are temporarily paused.
+          AKM financial systems are undergoing scheduled maintenance to upgrade payout speed. Regular user actions are temporarily paused.
         </p>
         {isAdminUser && (
           <button

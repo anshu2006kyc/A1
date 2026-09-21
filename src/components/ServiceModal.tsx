@@ -64,7 +64,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
     {
       category: 'withdraw',
       q: 'Withdrawal status is pending / delayed?',
-      a: 'During peak banking hours, IMPS nodes may queue batches for 15-30 minutes. If delayed beyond 1 hour, tap the Withdrawal Service channel below with your Order ID for priority clearance.'
+      a: 'During peak banking hours, IMPS banking channels may queue batches for 15-30 minutes. If delayed beyond 1 hour, tap the Withdrawal Service channel below with your Order ID for priority clearance.'
     }
   ];
 

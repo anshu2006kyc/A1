@@ -5,7 +5,6 @@ import {
   Lock,
   RotateCw,
   ShieldCheck,
-  Sparkles,
   Wallet,
   Loader2,
   Zap,
@@ -202,7 +201,7 @@ export const PaymentCashierView: React.FC = () => {
             onClick={() => setCurrentView('home')}
             className="w-full py-3.5 rounded-xl btn-chamkila text-white font-black text-xs shadow-lg active:scale-95 transition-all cursor-pointer flex items-center justify-center space-x-2"
           >
-            <Sparkles className="w-4 h-4 text-emerald-200" />
+            <Zap className="w-4 h-4 text-emerald-200" />
             <span>Invest in High-Yield Plans</span>
           </button>
           <button

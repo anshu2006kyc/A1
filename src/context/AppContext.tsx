@@ -83,6 +83,7 @@ interface AppContextType {
   openAuthModal: (mode?: 'login' | 'register' | 'forgot') => void;
   login: (phone: string, password?: string) => { success: boolean; message: string };
   loginWithOtp: (phone: string, otp: string) => { success: boolean; message: string };
+  quickMobileAuth: (phone: string, inviteCode?: string) => { success: boolean; message: string; isNewUser: boolean; user?: User };
   registerUser: (data: { phone: string; password?: string; tradePassword?: string; inviteCode?: string }) => { success: boolean; message: string };
   logoutUser: () => void;
   switchUser: (userId: number) => void;
@@ -443,13 +444,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : INITIAL_ADMIN_SETTINGS;
   });
 
-  // Admin Role & Authorization Verification - Open to authenticated admin session
-  const isAdminUser = Boolean(
-    isAdminAuthenticated ||
-    user?.role === 'admin' ||
-    user?.isAdmin === true ||
-    (user?.phone && user.phone.replace(/\D/g, '').endsWith('6203369638'))
-  );
+  // Admin Role & Authorization Verification - strictly visible ONLY to authenticated admin session
+  const isAdminUser = Boolean(isAdminAuthenticated);
 
   const unlockAdminSession = (pinOrPassword: string): boolean => {
     const clean = pinOrPassword.trim();
@@ -893,6 +889,91 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         password: 'password123',
         tradePassword: '123456'
       });
+    }
+  };
+
+  const quickMobileAuth = (phone: string, inviteCode?: string): { success: boolean; message: string; isNewUser: boolean; user?: User } => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length < 10) {
+      return { success: false, message: 'Please enter a valid 10-digit mobile number.', isNewUser: false };
+    }
+    const last10 = cleanPhone.slice(-10);
+    const existing = registeredUsers.find(
+      (u) => u.phone.replace(/\D/g, '').endsWith(last10)
+    );
+    if (existing) {
+      const updatedUser: User = {
+        ...existing,
+        lastLogin: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      };
+      setUser(updatedUser);
+      setIsLoggedIn(true);
+      try {
+        localStorage.setItem('akm_is_logged_in', JSON.stringify(true));
+        localStorage.setItem('akm_user', JSON.stringify(updatedUser));
+      } catch {}
+      return {
+        success: true,
+        message: `Welcome back, ${updatedUser.name || 'Investor'}! Logged in successfully.`,
+        isNewUser: false,
+        user: updatedUser
+      };
+    } else {
+      // Instant automated registration with mobile number
+      const newId = registeredUsers.reduce((max, u) => Math.max(max, u.id), 100) + 1;
+      const newUser: User = {
+        id: newId,
+        phone: `+91 ${last10}`,
+        password: 'password123',
+        tradePassword: '123456',
+        name: `User_${last10.slice(-4)}`,
+        balance: 28.0,
+        totalRecharge: 0,
+        totalWithdraw: 0,
+        totalRevenue: 28.0,
+        memberLevel: 'Member',
+        vipLevel: 0,
+        inviteCode: Math.floor(10000 + Math.random() * 90000).toString(),
+        invitedBy: inviteCode || 'AKM888',
+        status: 'active',
+        role: 'user',
+        isAdmin: false,
+        createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        lastLogin: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      };
+
+      const updatedList = [newUser, ...registeredUsers];
+      setRegisteredUsers(updatedList);
+      setUser(newUser);
+      setIsLoggedIn(true);
+      try {
+        localStorage.setItem('akm_is_logged_in', JSON.stringify(true));
+        localStorage.setItem('akm_user', JSON.stringify(newUser));
+        localStorage.setItem('akm_registered_users', JSON.stringify(updatedList));
+      } catch {}
+
+      // Welcome Bonus transaction
+      const welcomeTx: Transaction = {
+        id: generateUniqueId('tx-bonus'),
+        userId: newId,
+        type: 'referral_commission',
+        title: 'AKM New Member Welcome Joining Bonus',
+        method: 'Bonus Ledger Credit',
+        orderId: `BONUS_${Date.now()}`,
+        amount: 28.0,
+        finalAmount: 28.0,
+        status: 'success',
+        createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        adminRemark: 'System automated ₹28 registration reward'
+      };
+      setTransactions((prev) => [welcomeTx, ...prev]);
+
+      return {
+        success: true,
+        message: 'Registration complete! ₹28 Welcome Bonus credited to wallet.',
+        isNewUser: true,
+        user: newUser
+      };
     }
   };
 
@@ -2320,6 +2401,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         openAuthModal,
         login,
         loginWithOtp,
+        quickMobileAuth,
         registerUser,
         logoutUser,
         switchUser,

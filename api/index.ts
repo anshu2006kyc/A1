@@ -27,6 +27,17 @@ const LGPAY_GATEWAY_URL = WATCHPAY_GATEWAY_URL;
 const app = express();
 const pendingPayinOrders = new Map<string, any>();
 
+// Memory safety for high concurrency: prune orders older than 6 hours
+const pruneOldOrders = () => {
+  const sixHoursAgo = Date.now() - 6 * 60 * 60 * 1000;
+  for (const [key, val] of pendingPayinOrders.entries()) {
+    if (val.createdAt && val.createdAt < sixHoursAgo) {
+      pendingPayinOrders.delete(key);
+    }
+  }
+};
+setInterval(pruneOldOrders, 30 * 60 * 1000);
+
 // Global CORS Middleware for seamless Vercel & cross-origin deployment
 app.use((_req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');

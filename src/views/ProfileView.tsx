@@ -626,7 +626,7 @@ export const ProfileView: React.FC = () => {
                 type="button"
                 onClick={handleSecretTap}
                 className="text-[10px] text-gray-300 hover:text-gray-400 select-none cursor-default transition-colors"
-                title="AKM ENTERPRISES Secure Node"
+                title="AKM ENTERPRISES Secure System"
               >
                 AKM ENTERPRISES v3.2.0 • 256-bit SSL
               </button>

@@ -158,7 +158,7 @@ export const AdminView: React.FC = () => {
               <div className="flex items-center space-x-1.5 mt-0.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
-                  MASTER NODE V3.2
+                  MASTER SYSTEM V3.2
                 </span>
               </div>
             </div>

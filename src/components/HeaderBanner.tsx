@@ -54,7 +54,7 @@ const SLIDES: BannerSlide[] = [
     id: 'akm-fintech-growth',
     title: 'DIRECT GATEWAY SETTLEMENT',
     subtitle: 'WATCHPAY & SUNPAY VIP',
-    badge: 'VERIFIED NODE',
+    badge: 'VERIFIED SYSTEM',
     imageUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80',
     tagline: 'Zero surcharge deposits and real-time IMPS direct banking',
     statLabel: 'Clearance Speed',

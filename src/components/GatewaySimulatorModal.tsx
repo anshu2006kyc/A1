@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CheckCircle2, Clock, Copy, Loader2, QrCode, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { CheckCircle2, Clock, Copy, Loader2, QrCode, ShieldCheck, Zap } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { formatINR } from '../utils/currency';
 import { sfx } from '../utils/sound';
@@ -77,7 +77,7 @@ export const GatewaySimulatorModal: React.FC = () => {
               <div className="text-xs font-black text-gray-900 leading-tight">
                 Secure Instant UPI Gateway
               </div>
-              <div className="text-[10px] text-gray-500 font-medium">100% Automated Node</div>
+              <div className="text-[10px] text-gray-500 font-medium">100% Automated System</div>
             </div>
           </div>
           <div className="flex items-center text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
@@ -99,7 +99,7 @@ export const GatewaySimulatorModal: React.FC = () => {
         {/* Order Details */}
         <div className="space-y-1.5 text-xs bg-gray-50 p-3 rounded-xl mb-4 border border-gray-100">
           <div className="flex justify-between items-center text-gray-600">
-            <span>Routing Node:</span>
+            <span>Routing System:</span>
             <span className="font-mono font-bold text-emerald-700">{channel}</span>
           </div>
           <div className="flex justify-between items-center text-gray-600">
@@ -164,7 +164,7 @@ export const GatewaySimulatorModal: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4 text-emerald-200" />
+                  <Zap className="w-4 h-4 text-emerald-200" />
                   <span>⚡ Paid in UPI App - Auto-Credit Wallet</span>
                 </>
               )}
@@ -196,7 +196,7 @@ export const GatewaySimulatorModal: React.FC = () => {
           {showDebug && (
             <div className="text-left mt-2 p-2 bg-gray-900 text-emerald-400 rounded-lg text-[10px] font-mono overflow-x-auto space-y-1">
               <div>
-                <span className="text-gray-400">Gateway:</span> Automated Enterprise Node
+                <span className="text-gray-400">Gateway:</span> Automated Enterprise System
               </div>
               <div>
                 <span className="text-gray-400">Order Ref:</span> {orderId}

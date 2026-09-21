@@ -140,7 +140,7 @@ export const WithdrawView: React.FC = () => {
             Withdraw Funds
           </h1>
           <span className="text-[10px] text-emerald-600 font-bold block mt-0.5">
-            Direct Bank IMPS Node
+            Direct Bank IMPS Channel
           </span>
         </div>
 
@@ -413,7 +413,7 @@ export const WithdrawView: React.FC = () => {
               <p>1. Daily withdrawal window: 07:00 – 18:00.</p>
               <p>2. Minimum withdrawal amount: ₹{adminSettings.minWithdraw || 150}.</p>
               <p>3. Handling fee: {taxPercent}%. Zero additional hidden charges.</p>
-              <p>4. Payout is transferred directly to your bound bank account via IMPS node.</p>
+              <p>4. Payout is transferred directly to your bound bank account via IMPS banking channel.</p>
             </div>
             <button
               onClick={() => setShowRulesModal(false)}

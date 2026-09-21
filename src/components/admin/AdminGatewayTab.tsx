@@ -185,7 +185,7 @@ if (isset($res['data']['payUrl'])) {
 }
 echo "Gateway Error: " . $response;`;
 
-  const sunpaysNodeWebhookCode = `// Sunpays Gateway HMAC-SHA256 Webhook Handler (Express.js)
+  const sunpaysNodeWebhookCode = `// Sunpays Gateway HMAC-SHA256 Webhook Handler (Express.js Backend)
 const crypto = require('crypto');
 
 app.post('/api/sunpays/webhook', (req, res) => {
@@ -799,7 +799,7 @@ app.post('/api/sunpays/webhook', (req, res) => {
             )}
           </div>
 
-          {/* Node.js / Express Webhook Integration Snippet */}
+          {/* Express.js Webhook Integration Snippet */}
           <div className="bg-slate-900 p-5 rounded-3xl border border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -809,11 +809,11 @@ app.post('/api/sunpays/webhook', (req, res) => {
                 </h4>
               </div>
               <button
-                onClick={() => copyCode(sunpaysNodeWebhookCode, 'sunpays-node')}
+                onClick={() => copyCode(sunpaysNodeWebhookCode, 'sunpays-express')}
                 className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 cursor-pointer"
               >
-                {copiedCode === 'sunpays-node' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedCode === 'sunpays-node' ? 'Copied' : 'Copy Code'}</span>
+                {copiedCode === 'sunpays-express' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedCode === 'sunpays-express' ? 'Copied' : 'Copy Code'}</span>
               </button>
             </div>
 
@@ -954,11 +954,11 @@ app.post('/api/sunpays/webhook', (req, res) => {
                 </h4>
               </div>
               <button
-                onClick={() => copyCode(sunpaysNodeWebhookCode, 'node-webhook')}
+                onClick={() => copyCode(sunpaysNodeWebhookCode, 'express-webhook')}
                 className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 cursor-pointer"
               >
-                {copiedCode === 'node-webhook' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedCode === 'node-webhook' ? 'Copied' : 'Copy Code'}</span>
+                {copiedCode === 'express-webhook' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedCode === 'express-webhook' ? 'Copied' : 'Copy Code'}</span>
               </button>
             </div>
 
