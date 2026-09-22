@@ -54,7 +54,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
         {/* Floating Brand Pill (Bottom-Left) */}
         <div className="absolute bottom-1.5 left-2 z-10 flex items-center space-x-1 bg-black/70 backdrop-blur-xs px-2 py-0.5 rounded-full border border-white/20">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span className="text-[9px] font-black tracking-wider text-emerald-300">AKM CAPITAL</span>
+          <span className="text-[9px] font-black tracking-wider text-emerald-300">AKM ENTERPRISES</span>
         </div>
 
         {/* Limit or Turbo Badge Top Right (Exact match to video) */}

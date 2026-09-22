@@ -78,15 +78,57 @@
   animation: pulseGlow 2.5s ease-in-out infinite;
 }
 
+:root {
+  --brand-primary: #00ba58;
+  --brand-secondary: #008a44;
+  --brand-glow: rgba(0, 186, 88, 0.45);
+  --brand-chamkila-gradient: linear-gradient(180deg, #05c264 0%, #009c4f 50%, #007a3d 100%);
+}
+
+/* Global Dynamic Theme Overrides for hardcoded branding accents */
+[data-theme] [class*="text-[#00ba58]"] {
+  color: var(--brand-primary) !important;
+}
+[data-theme] [class*="text-[#008a44]"] {
+  color: var(--brand-secondary) !important;
+}
+[data-theme] [class*="bg-[#00ba58]"] {
+  background-color: var(--brand-primary) !important;
+}
+[data-theme] [class*="bg-[#008a44]"] {
+  background-color: var(--brand-secondary) !important;
+}
+[data-theme] [class*="border-[#00ba58]"] {
+  border-color: var(--brand-primary) !important;
+}
+[data-theme] [class*="border-[#008a44]"] {
+  border-color: var(--brand-secondary) !important;
+}
+[data-theme] [class*="to-[#00ba58]"] {
+  --tw-gradient-to: var(--brand-primary) !important;
+}
+[data-theme] [class*="from-[#00ba58]"] {
+  --tw-gradient-from: var(--brand-primary) !important;
+}
+[data-theme] [class*="focus:border-[#00ba58]"]:focus {
+  border-color: var(--brand-primary) !important;
+}
+[data-theme] [class*="focus-within:border-[#00ba58]"]:focus-within {
+  border-color: var(--brand-primary) !important;
+}
+[data-theme] [class*="focus:ring-[#00ba58]"]:focus {
+  --tw-ring-color: var(--brand-primary) !important;
+}
+
 /* Chamak / Shine Effects */
 .btn-chamkila {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, #05c264 0%, #009c4f 50%, #007a3d 100%);
+  background: var(--brand-chamkila-gradient, linear-gradient(180deg, #05c264 0%, #009c4f 50%, #007a3d 100%));
   box-shadow: 
     inset 0 1.5px 1px rgba(255, 255, 255, 0.7),
     inset 0 -2px 2px rgba(0, 0, 0, 0.22),
-    0 4px 16px rgba(0, 168, 89, 0.42);
+    0 4px 16px var(--brand-glow, rgba(0, 168, 89, 0.42));
   transition: all 0.2s ease;
 }
 
@@ -208,10 +250,10 @@
 .btn-chamkila-chip {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, #05c264 0%, #009c4f 100%);
+  background: var(--brand-chamkila-gradient, linear-gradient(180deg, #05c264 0%, #009c4f 100%));
   box-shadow: 
     inset 0 1px 1px rgba(255, 255, 255, 0.6),
-    0 2px 8px rgba(0, 168, 89, 0.35);
+    0 2px 8px var(--brand-glow, rgba(0, 168, 89, 0.35));
   transition: all 0.15s ease;
 }
 

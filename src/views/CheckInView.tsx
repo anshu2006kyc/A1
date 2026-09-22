@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ArrowLeft,
   Award,
   Calendar,
   Check,
@@ -26,7 +25,6 @@ export const CheckInView: React.FC = () => {
   const {
     user,
     setCurrentView,
-    goBack,
     checkIns,
     hasCheckedInToday,
     claimDailyCheckIn,
@@ -35,7 +33,8 @@ export const CheckInView: React.FC = () => {
     totalCheckInEarned,
     claimedStreakMilestones,
     claimStreakMilestone,
-    adminSettings
+    adminSettings,
+    showToast
   } = useApp();
 
   const [showRules, setShowRules] = useState(false);
@@ -109,36 +108,40 @@ export const CheckInView: React.FC = () => {
 
   const handleClaim = () => {
     sfx.cash();
-    claimDailyCheckIn();
+    const res = claimDailyCheckIn();
+    if (res?.message) {
+      showToast(res.message, res.success ? 'success' : 'info');
+    }
   };
 
   const handleClaimMilestone = (days: number, reward: number) => {
     sfx.success();
-    claimStreakMilestone(days, reward);
+    const res = claimStreakMilestone(days, reward);
+    if (res?.message) {
+      showToast(res.message, res.success ? 'success' : 'info');
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28 animate-fade-in">
-      {/* Top Navigation */}
-      <div className="bg-white px-4 py-3.5 flex items-center justify-between border-b border-gray-100 sticky top-0 z-20">
-        <button
-          id="checkin-back-btn"
-          onClick={goBack}
-          className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <div className="text-center">
-          <h1 className="text-base font-bold text-gray-900">Daily Check-in</h1>
+      {/* Top Navigation - Clean & Working Header (Back button & ? icon removed) */}
+      <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-100 sticky top-0 z-20">
+        <div className="flex items-center space-x-1.5 min-w-[70px]">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[11px] font-black tracking-wider text-emerald-700 uppercase">AKM</span>
+        </div>
+
+        <div className="text-center flex-1">
+          <h1 className="text-base font-bold text-gray-900 leading-tight">Daily Check-in</h1>
           <span className="text-[10px] text-emerald-600 font-medium">Daily Streak & Reward Center</span>
         </div>
-        <button
-          onClick={() => setShowRules(!showRules)}
-          className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center hover:bg-emerald-100 active:scale-95 transition-all cursor-pointer"
-          title="Check-in Rules"
-        >
-          <HelpCircle className="w-4 h-4" />
-        </button>
+
+        <div className="min-w-[70px] flex justify-end">
+          <div className="flex items-center space-x-1 bg-emerald-50 border border-emerald-200/70 px-2.5 py-1 rounded-full text-emerald-700 text-[10px] font-bold shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Active</span>
+          </div>
+        </div>
       </div>
 
       <div className="p-4 space-y-4">

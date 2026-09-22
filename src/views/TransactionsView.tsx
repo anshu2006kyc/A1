@@ -6,6 +6,7 @@ import {
   CalendarCheck,
   Check,
   CheckCircle2,
+  ChevronRight,
   Clock,
   Copy,
   Download,
@@ -49,7 +50,7 @@ export const TransactionsView: React.FC = () => {
     .filter((t) => t.type === 'withdraw' && t.status === 'success')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const totalYield = transactions
+  const totalEarnings = transactions
     .filter((t) => ['checkin', 'daily_income', 'referral_commission'].includes(t.type))
     .reduce((sum, t) => sum + t.amount, 0);
 
@@ -153,7 +154,7 @@ export const TransactionsView: React.FC = () => {
               <span>Earnings</span>
             </div>
             <div className="text-xs font-black mt-1 font-mono tracking-tight text-amber-200">
-              {formatINR(totalYield)}
+              {formatINR(totalEarnings)}
             </div>
             <div className="text-[8.5px] text-amber-100/80 mt-0.5 font-medium">
               Dividends Earned
@@ -398,15 +399,21 @@ export const TransactionsView: React.FC = () => {
                       <div className="pt-2 flex items-center justify-between border-t border-emerald-200/50">
                         <button
                           onClick={() => setReceiptTx(tx)}
-                          className="flex items-center space-x-1 bg-white hover:bg-emerald-50 text-emerald-800 font-bold px-3 py-1.5 rounded-xl border border-emerald-300 text-[11px] shadow-2xs cursor-pointer active:scale-95"
+                          className="group inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-700 via-emerald-600 to-[#008a44] text-white text-[9.5px] font-black tracking-wide shadow-xs shadow-emerald-700/20 hover:shadow-md hover:shadow-emerald-700/30 hover:brightness-105 active:scale-95 transition-all cursor-pointer border border-emerald-400/40"
                         >
-                          <FileCheck className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>View Official Slip</span>
+                          <span className="relative flex h-1.5 w-1.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+                          </span>
+                          <FileCheck className="w-3 h-3 text-emerald-100 group-hover:scale-110 transition-transform" />
+                          <span className="uppercase tracking-wider">Official Slip</span>
+                          <ChevronRight className="w-2.5 h-2.5 text-emerald-200 group-hover:translate-x-0.5 transition-transform" />
                         </button>
 
-                        <span className="text-[10px] text-gray-400 font-mono">
-                          256-Bit Ledger Hash Verified
-                        </span>
+                        <div className="flex items-center space-x-1 text-[9px] text-emerald-800 font-mono font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+                          <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                          <span>E-Voucher</span>
+                        </div>
                       </div>
                     </div>
                   )}

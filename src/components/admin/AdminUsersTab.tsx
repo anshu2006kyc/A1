@@ -5,8 +5,11 @@ import {
   Building2,
   CheckCircle2,
   CreditCard,
+  Download,
   Edit,
   Eye,
+  Filter,
+  Gift,
   KeyRound,
   Lock,
   LogIn,
@@ -17,6 +20,7 @@ import {
   Search,
   Shield,
   ShieldAlert,
+  Sparkles,
   Trash2,
   Unlock,
   UserCheck,
@@ -46,7 +50,7 @@ export const AdminUsersTab: React.FC = () => {
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended' | 'vip' | 'high_balance' | 'zero_balance'>('all');
   const [selectedUserId, setSelectedUserId] = useState<number>(user.id);
 
   // Balance adjust modal state
@@ -55,6 +59,12 @@ export const AdminUsersTab: React.FC = () => {
   const [adjustType, setAdjustType] = useState<'credit' | 'debit'>('credit');
   const [adjustAmount, setAdjustAmount] = useState('');
   const [adjustReason, setAdjustReason] = useState('Admin Bonus / Correction');
+
+  // Bulk Bonus modal state
+  const [showBulkBonusModal, setShowBulkBonusModal] = useState(false);
+  const [bulkBonusAmount, setBulkBonusAmount] = useState('50');
+  const [bulkBonusReason, setBulkBonusReason] = useState('Diwali & Performance Platform Bonus');
+  const [bulkBonusTarget, setBulkBonusTarget] = useState<'all' | 'active' | 'vip'>('active');
 
   // Create User modal state
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -83,16 +93,92 @@ export const AdminUsersTab: React.FC = () => {
       u.inviteCode.toLowerCase().includes(q) ||
       u.memberLevel.toLowerCase().includes(q);
 
-    const matchesStatus =
-      statusFilter === 'all' ||
-      (statusFilter === 'active' && u.status !== 'suspended') ||
-      (statusFilter === 'suspended' && u.status === 'suspended');
+    let matchesStatus = true;
+    if (statusFilter === 'active') {
+      matchesStatus = u.status !== 'suspended';
+    } else if (statusFilter === 'suspended') {
+      matchesStatus = u.status === 'suspended';
+    } else if (statusFilter === 'vip') {
+      matchesStatus = Boolean(u.memberLevel && u.memberLevel !== 'Member');
+    } else if (statusFilter === 'high_balance') {
+      matchesStatus = (u.balance || 0) >= 1000;
+    } else if (statusFilter === 'zero_balance') {
+      matchesStatus = (u.balance || 0) <= 0;
+    }
 
     return matchesQuery && matchesStatus;
   });
 
   const totalBalanceAllUsers = registeredUsers.reduce((sum, u) => sum + (u.balance || 0), 0);
   const totalRechargeAllUsers = registeredUsers.reduce((sum, u) => sum + (u.totalRecharge || 0), 0);
+
+  const handleExportUsersCSV = () => {
+    if (registeredUsers.length === 0) {
+      showToast('No user records found to export', 'info');
+      return;
+    }
+
+    const headers = ['UID', 'Mobile Number', 'Name', 'Role', 'Status', 'VIP Level', 'Wallet Balance', 'Total Recharge', 'Total Withdraw', 'Total Revenue', 'Invite Code', 'Registration Date'];
+    const rows = registeredUsers.map((u) => [
+      u.id,
+      `"${u.phone}"`,
+      `"${u.name || ''}"`,
+      u.role || 'user',
+      u.status || 'active',
+      `"${u.memberLevel || 'Member'}"`,
+      u.balance || 0,
+      u.totalRecharge || 0,
+      u.totalWithdraw || 0,
+      u.totalRevenue || 0,
+      `"${u.inviteCode || ''}"`,
+      `"${u.createdAt || ''}"`
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `akm_users_registry_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast(`Exported ${registeredUsers.length} user records to CSV!`, 'success');
+  };
+
+  const handleBulkBonusSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const bonusAmt = parseFloat(bulkBonusAmount);
+    if (isNaN(bonusAmt) || bonusAmt <= 0) {
+      showToast('Please enter a valid bonus amount greater than 0', 'error');
+      return;
+    }
+
+    let targets = registeredUsers;
+    if (bulkBonusTarget === 'active') {
+      targets = registeredUsers.filter((u) => u.status !== 'suspended');
+    } else if (bulkBonusTarget === 'vip') {
+      targets = registeredUsers.filter((u) => u.memberLevel && u.memberLevel !== 'Member');
+    }
+
+    if (targets.length === 0) {
+      showToast('No eligible users found for bonus distribution', 'info');
+      return;
+    }
+
+    targets.forEach((tgt) => {
+      if (tgt.id === user.id) {
+        updateUserBalance(bonusAmt, bulkBonusReason);
+      } else {
+        adminUpdateUser(tgt.id, {
+          balance: (tgt.balance || 0) + bonusAmt,
+          totalRevenue: (tgt.totalRevenue || 0) + bonusAmt
+        });
+      }
+    });
+
+    showToast(`Successfully disbursed ${formatINR(bonusAmt)} bonus to ${targets.length} users!`, 'success');
+    setShowBulkBonusModal(false);
+  };
 
   const handleOpenAdjust = (target: User, type: 'credit' | 'debit') => {
     setAdjustTargetUser(target);
@@ -215,7 +301,7 @@ export const AdminUsersTab: React.FC = () => {
           <div className="text-[10px] text-slate-400 mt-0.5">Cumulative Inflow</div>
         </div>
 
-        <div className="bg-slate-900/90 p-3.5 rounded-3xl border border-slate-800 shadow-md flex items-center justify-between">
+        <div className="bg-slate-900/90 p-3.5 rounded-3xl border border-slate-800 shadow-md flex flex-wrap items-center justify-between gap-2">
           <div>
             <div className="text-xs text-slate-400">Current Live Session</div>
             <div className="text-sm font-black text-white mt-0.5 truncate max-w-[130px]">
@@ -223,13 +309,31 @@ export const AdminUsersTab: React.FC = () => {
             </div>
             <div className="text-[10px] text-emerald-400 font-mono">UID #{user.id}</div>
           </div>
-          <button
-            onClick={() => setShowAddUserModal(true)}
-            className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center space-x-1 shadow-md active:scale-95 transition-all cursor-pointer shrink-0"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>Add User</span>
-          </button>
+          <div className="flex items-center space-x-1.5 shrink-0">
+            <button
+              onClick={handleExportUsersCSV}
+              className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold flex items-center space-x-1 border border-slate-700 active:scale-95 transition-all cursor-pointer"
+              title="Export all users to CSV spreadsheet"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Export CSV</span>
+            </button>
+            <button
+              onClick={() => setShowBulkBonusModal(true)}
+              className="px-2.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl text-xs font-black flex items-center space-x-1 shadow-md active:scale-95 transition-all cursor-pointer"
+              title="Disburse instant festival / event bonus to users"
+            >
+              <Gift className="w-3.5 h-3.5" />
+              <span>Bulk Bonus</span>
+            </button>
+            <button
+              onClick={() => setShowAddUserModal(true)}
+              className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center space-x-1 shadow-md active:scale-95 transition-all cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Add User</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -246,10 +350,10 @@ export const AdminUsersTab: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center space-x-2 w-full md:w-auto overflow-x-auto text-xs">
+        <div className="flex items-center space-x-1.5 w-full md:w-auto overflow-x-auto text-xs pb-1 md:pb-0">
           <button
             onClick={() => setStatusFilter('all')}
-            className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
               statusFilter === 'all'
                 ? 'bg-slate-700 text-white'
                 : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
@@ -259,7 +363,7 @@ export const AdminUsersTab: React.FC = () => {
           </button>
           <button
             onClick={() => setStatusFilter('active')}
-            className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
               statusFilter === 'active'
                 ? 'bg-emerald-600 text-white'
                 : 'bg-slate-950 text-slate-400 hover:text-emerald-400 border border-slate-800'
@@ -268,8 +372,38 @@ export const AdminUsersTab: React.FC = () => {
             Active ({registeredUsers.filter((u) => u.status !== 'suspended').length})
           </button>
           <button
+            onClick={() => setStatusFilter('vip')}
+            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
+              statusFilter === 'vip'
+                ? 'bg-amber-500 text-slate-950 font-black'
+                : 'bg-slate-950 text-slate-400 hover:text-amber-400 border border-slate-800'
+            }`}
+          >
+            VIP ({registeredUsers.filter((u) => u.memberLevel && u.memberLevel !== 'Member').length})
+          </button>
+          <button
+            onClick={() => setStatusFilter('high_balance')}
+            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
+              statusFilter === 'high_balance'
+                ? 'bg-teal-600 text-white'
+                : 'bg-slate-950 text-slate-400 hover:text-teal-400 border border-slate-800'
+            }`}
+          >
+            Bal &ge; ₹1K ({registeredUsers.filter((u) => (u.balance || 0) >= 1000).length})
+          </button>
+          <button
+            onClick={() => setStatusFilter('zero_balance')}
+            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
+              statusFilter === 'zero_balance'
+                ? 'bg-slate-600 text-white'
+                : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            Zero Bal ({registeredUsers.filter((u) => (u.balance || 0) <= 0).length})
+          </button>
+          <button
             onClick={() => setStatusFilter('suspended')}
-            className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
               statusFilter === 'suspended'
                 ? 'bg-rose-600 text-white'
                 : 'bg-slate-950 text-slate-400 hover:text-rose-400 border border-slate-800'
@@ -478,7 +612,7 @@ export const AdminUsersTab: React.FC = () => {
           <div className="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800 flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="text-xs font-bold text-white">Manual Balance Operations</div>
-              <div className="text-[10px] text-slate-400">Directly add or deduct user balance ledger</div>
+              <div className="text-[10px] text-slate-400">Directly add or deduct user balance record</div>
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -792,6 +926,96 @@ export const AdminUsersTab: React.FC = () => {
         </div>,
         document.body
       )}
+
+      {/* Bulk Bonus Modal */}
+      {showBulkBonusModal &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+            <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+              <div className="flex items-center space-x-3 pb-3 border-b border-slate-800">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30 shadow-xs">
+                  <Gift className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">Disburse Bulk Festival Bonus</h3>
+                  <p className="text-[11px] text-slate-400">Credit rewards across multiple user accounts in one action</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleBulkBonusSubmit} className="space-y-3.5 text-xs">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">Target Recipients</label>
+                  <select
+                    value={bulkBonusTarget}
+                    onChange={(e: any) => setBulkBonusTarget(e.target.value)}
+                    className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-amber-500"
+                  >
+                    <option value="active">All Active Accounts ({registeredUsers.filter(u => u.status !== 'suspended').length} users)</option>
+                    <option value="vip">VIP Members Only ({registeredUsers.filter(u => u.memberLevel && u.memberLevel !== 'Member').length} users)</option>
+                    <option value="all">Entire Registry ({registeredUsers.length} users)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">Bonus Amount per User (₹)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={bulkBonusAmount}
+                    onChange={(e) => setBulkBonusAmount(e.target.value)}
+                    placeholder="e.g. 50"
+                    className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-base font-bold focus:outline-none focus:border-amber-500"
+                    required
+                  />
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    {['25', '50', '100', '200', '500'].map((amt) => (
+                      <button
+                        type="button"
+                        key={amt}
+                        onClick={() => setBulkBonusAmount(amt)}
+                        className="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-mono cursor-pointer"
+                      >
+                        +₹{amt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">Audit Record Remark</label>
+                  <input
+                    type="text"
+                    value={bulkBonusReason}
+                    onChange={(e) => setBulkBonusReason(e.target.value)}
+                    className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    required
+                  />
+                </div>
+
+                <div className="bg-amber-950/40 border border-amber-500/30 p-3 rounded-2xl text-[11px] text-amber-200">
+                  Total Treasury Disbursement: <strong className="text-white font-mono">{formatINR((parseFloat(bulkBonusAmount) || 0) * (bulkBonusTarget === 'vip' ? registeredUsers.filter(u => u.memberLevel && u.memberLevel !== 'Member').length : bulkBonusTarget === 'all' ? registeredUsers.length : registeredUsers.filter(u => u.status !== 'suspended').length))}</strong>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowBulkBonusModal(false)}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl font-black shadow-lg cursor-pointer active:scale-95 transition-all"
+                  >
+                    Disburse Bonus Now
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

@@ -165,6 +165,7 @@ export interface AdminSettings {
   selectedDepositGateway: 'lgpay' | 'sunpays' | 'watchpay' | 'all';
   defaultGateway?: 'watchpay' | 'sunpays' | 'auto';
   gatewayPriority: 'lgpay_first' | 'sunpays_first' | 'watchpay_first' | 'auto_failover';
+  paymentOpenMode: 'in_app' | 'external'; // 'in_app' = Cashier screen inside app, 'external' = Open gateway link in browser tab
   
   // Platform limits & fees
   minRecharge: number;
@@ -209,4 +210,7 @@ export interface AdminSettings {
   telegramSupportUrl: string;
   telegramChannelUrl: string;
   whatsappSupportUrl: string;
+
+  // Theme & Appearance Customization
+  activeThemeId?: string;
 }

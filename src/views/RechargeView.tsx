@@ -330,13 +330,13 @@ export const RechargeView: React.FC = () => {
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="w-6 h-6 rounded-lg bg-amber-500 text-white flex items-center justify-center">
-                  <Sun className="w-3.5 h-3.5 fill-current" />
+                <div className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center">
+                  <ShieldCheck className="w-3.5 h-3.5" />
                 </div>
                 <div
                   className={`w-4 h-4 rounded-full flex items-center justify-center border-2 ${
                     selectedChannel === 'sunpay'
-                      ? 'border-amber-500 bg-amber-500 text-white'
+                      ? 'border-emerald-600 bg-emerald-600 text-white'
                       : 'border-gray-300 bg-white'
                   }`}
                 >
@@ -349,7 +349,7 @@ export const RechargeView: React.FC = () => {
                     UPI Express
                   </span>
                   {adminSettings.defaultGateway === 'sunpays' && (
-                    <span className="text-[8px] bg-amber-100 text-amber-800 font-bold px-1 rounded-full">
+                    <span className="text-[8px] bg-emerald-100 text-emerald-800 font-bold px-1 rounded-full">
                       Default
                     </span>
                   )}
@@ -391,7 +391,7 @@ export const RechargeView: React.FC = () => {
           ) : (
             <div className="flex items-center space-x-1.5">
               <Zap className="w-4 h-4 fill-current" />
-              <span>Deposit ₹{amount} via {isWatchPay ? 'WATCHPAY' : 'SUNPAY'}</span>
+              <span>Deposit ₹{amount} via Instant UPI</span>
             </div>
           )}
         </button>

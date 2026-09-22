@@ -10,9 +10,10 @@ import {
   CreditCard,
   Eye,
   EyeOff,
-  History,
+  History as HistoryIcon,
   Info,
   KeyRound,
+  Lock,
   LogIn,
   LogOut,
   Package,
@@ -313,10 +314,10 @@ export const ProfileView: React.FC = () => {
           </div>
 
           {/* Security Guarantee Bottom Pill */}
-          <div className="mt-2 pt-1.5 border-t border-emerald-500/15 flex items-center justify-between text-[8.5px] text-emerald-300/70 font-mono">
+          <div className="mt-2 pt-1.5 border-t border-emerald-500/15 flex items-center justify-between text-[8px] text-emerald-300/70 font-mono">
             <div className="flex items-center space-x-1">
-              <ShieldCheck className="w-2.5 h-2.5 text-emerald-400" />
-              <span>256-Bit SSL Encrypted Vault</span>
+              <ShieldCheck className="w-2 h-2 text-emerald-400" />
+              <span>SSL 256-Bit • Enterprise Vault</span>
             </div>
             <span>IMPS 24x7 Settlement</span>
           </div>
@@ -545,7 +546,7 @@ export const ProfileView: React.FC = () => {
           >
             <div className="flex items-center space-x-3">
               <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <History className="w-4 h-4" />
+                <HistoryIcon className="w-4 h-4" />
               </div>
               <div>
                 <span className="text-xs font-bold text-gray-800 block">All Financial Statements</span>
@@ -582,7 +583,7 @@ export const ProfileView: React.FC = () => {
               <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                 <Info className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-gray-800">About AKM Portal</span>
+              <span className="text-xs font-bold text-gray-800">About AKM Enterprises</span>
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </button>
@@ -625,10 +626,10 @@ export const ProfileView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSecretTap}
-                className="text-[10px] text-gray-300 hover:text-gray-400 select-none cursor-default transition-colors"
+                className="text-[8.5px] text-gray-300 hover:text-gray-400 select-none cursor-default transition-colors font-mono"
                 title="AKM ENTERPRISES Secure System"
               >
-                AKM ENTERPRISES v3.2.0 • 256-bit SSL
+                AKM ENTERPRISES LTD • SECURE PROTOCOL • 256-BIT SSL
               </button>
             </div>
           )}

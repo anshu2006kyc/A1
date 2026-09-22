@@ -219,7 +219,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-product-2",
-    title: "Product 2 - AKM Apex Yield",
+    title: "Product 2 - AKM Apex Premium",
     category: "normal",
     limit: 10,
     returnDays: 35,
@@ -556,6 +556,7 @@ export const INITIAL_ADMIN_SETTINGS: AdminSettings = {
   selectedDepositGateway: "all",
   defaultGateway: "watchpay",
   gatewayPriority: "lgpay_first",
+  paymentOpenMode: "in_app",
 
   minRecharge: 285,
   minWithdraw: 150,
@@ -601,7 +602,8 @@ export const INITIAL_ADMIN_SETTINGS: AdminSettings = {
 
   telegramSupportUrl: "https://t.me/akm_official_support",
   telegramChannelUrl: "https://t.me/akm_official_channel",
-  whatsappSupportUrl: "https://wa.me/916203369638"
+  whatsappSupportUrl: "https://wa.me/916203369638",
+  activeThemeId: "emerald"
 };
 
 export const INITIAL_SECURITY_ALERTS = [

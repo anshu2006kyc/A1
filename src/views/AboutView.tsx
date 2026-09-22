@@ -113,7 +113,7 @@ export const AboutView: React.FC = () => {
           </p>
           <p className="text-xs leading-relaxed text-gray-700 font-normal">
             Today AKM serves investors across <strong className="text-emerald-800">160+ regions</strong>, powering
-            smart digital portfolios, daily compounding yields, and high-frequency automated capital dividends.
+            smart digital portfolios, daily compounding returns, and high-frequency automated capital dividends.
           </p>
         </div>
 
@@ -128,7 +128,7 @@ export const AboutView: React.FC = () => {
             <div className="flex items-start space-x-2.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold text-gray-900">Wealth Technology Specialist:</span> Leading institutional platform in digital wealth assets, daily dividends, and automated compounding.
+                <span className="font-bold text-gray-900">Wealth Technology Specialist:</span> Leading digital enterprise platform in digital wealth assets, daily dividends, and automated compounding.
               </div>
             </div>
 
@@ -195,8 +195,7 @@ export const AboutView: React.FC = () => {
             Our Mission
           </div>
           <p className="text-xs leading-relaxed font-medium">
-            To deliver world-class Off-Highway tyres that keep farms growing, sites building and
-            industries moving — Growing Together with our partners everywhere.
+            To empower individuals and businesses with secure, high-return digital investment portfolios and automated return systems — Growing Together with our investment partners everywhere.
           </p>
         </div>
       </div>

@@ -2,10 +2,12 @@ import React from 'react';
 import {
   Activity,
   ArrowDownToLine,
+  Check,
   CheckCircle2,
   ChevronRight,
   Database,
   Lock,
+  Palette,
   PieChart,
   Play,
   RotateCcw,
@@ -19,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatINR } from '../../utils/currency';
+import { AVAILABLE_THEMES } from '../../utils/theme';
 
 interface AdminOverviewTabProps {
   onNavigateTab: (tab: any) => void;
@@ -97,7 +100,7 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onNavigateTa
         <div className="flex items-center space-x-3 text-[11px] text-slate-400 font-mono">
           <span>Latency: <strong className="text-emerald-400">14ms</strong></span>
           <span>Workers: <strong className="text-white">4 Active</strong></span>
-          <span>Gateway: <strong className="text-emerald-400">Sunpays 200 OK</strong></span>
+          <span>Gateway: <strong className="text-emerald-400">Instant UPI 200 OK</strong></span>
         </div>
       </div>
 
@@ -318,6 +321,61 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onNavigateTa
             <RotateCcw className="w-4 h-4 text-purple-400" />
             <span>Inject Demo Feed</span>
           </button>
+        </div>
+      </div>
+
+      {/* 1-Click Platform Theme & Colors Quick-Control */}
+      <div className="bg-slate-800/90 p-5 rounded-3xl border border-slate-700 space-y-3 shadow-md">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Palette className="w-4 h-4 text-emerald-400" />
+            <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+              1-Click Website Color Theme ({AVAILABLE_THEMES.length} Palettes)
+            </span>
+          </div>
+          <button
+            onClick={() => onNavigateTab('theme')}
+            className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 cursor-pointer"
+          >
+            <span>Open Studio</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
+          {AVAILABLE_THEMES.map((theme) => {
+            const isActive = (adminSettings.activeThemeId || 'emerald') === theme.id;
+            return (
+              <button
+                key={theme.id}
+                onClick={() => updateAdminSettings({ activeThemeId: theme.id })}
+                className={`p-2.5 rounded-2xl flex flex-col items-center justify-center space-y-1.5 transition-all cursor-pointer border ${
+                  isActive
+                    ? 'bg-slate-900 border-2 shadow-lg ring-1 ring-white/50'
+                    : 'bg-slate-900/60 hover:bg-slate-900 border-slate-800'
+                }`}
+                style={{
+                  borderColor: isActive ? theme.previewColor : undefined
+                }}
+                title={`Switch website to ${theme.name} (${theme.hindiName})`}
+              >
+                <div
+                  className="w-7 h-7 rounded-xl flex items-center justify-center text-white shadow-xs"
+                  style={{ background: theme.chamkilaGradient }}
+                >
+                  {isActive && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                </div>
+                <div className="text-center">
+                  <div className="text-[10px] font-black text-white truncate max-w-[80px]">
+                    {theme.name.split(' ')[0]}
+                  </div>
+                  <div className="text-[8.5px] font-medium text-slate-400 truncate max-w-[80px]">
+                    {theme.hindiName.split(' ')[0]}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 

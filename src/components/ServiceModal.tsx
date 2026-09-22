@@ -54,7 +54,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
     {
       category: 'recharge',
       q: 'How does Instant UPI recharge work?',
-      a: 'Our platform uses high-speed WatchPay & SunPay automated UPI pay-in channels. After selecting amount, pay with any UPI app (GPay, PhonePe, Paytm). Your wallet is auto-credited via instant webhook.'
+      a: 'Our platform uses high-speed automated UPI pay-in channels (Fast Pay & Express Pay). After selecting amount, pay with any UPI app (GPay, PhonePe, Paytm). Your wallet is auto-credited via instant webhook.'
     },
     {
       category: 'withdraw',

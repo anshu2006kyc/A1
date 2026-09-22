@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
+  AlertCircle,
   ArrowDownToLine,
+  Building2,
   CheckCircle2,
+  Clock,
   Copy,
   Download,
   Filter,
   Search,
-  XCircle
+  ShieldCheck,
+  XCircle,
+  Zap
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatINR } from '../../utils/currency';
+import { Transaction } from '../../types';
 
 export const AdminWithdrawalsTab: React.FC = () => {
   const {
@@ -25,6 +32,24 @@ export const AdminWithdrawalsTab: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // Reject Modal State
+  const [rejectTx, setRejectTx] = useState<Transaction | null>(null);
+  const [rejectReason, setRejectReason] = useState('Invalid IFSC or Account Number');
+  const [customRejectReason, setCustomRejectReason] = useState('');
+
+  // Disburse Modal State
+  const [disburseTx, setDisburseTx] = useState<Transaction | null>(null);
+  const [impsRrn, setImpsRrn] = useState('');
+
+  const presetReasons = [
+    'Invalid IFSC or Account Number',
+    'Beneficiary Name Mismatch with Bank KYC',
+    'Receiving Bank Server Down / Transaction Timeout',
+    'Account Frozen or Restricted by User Bank',
+    'Suspicious Arbitrage Activity - Under Audit',
+    'Daily Withdrawal Frequency Limit Exceeded'
+  ];
+
   const withdrawals = transactions.filter((t) => t.type === 'withdraw');
 
   const filteredWithdrawals = withdrawals.filter((tx) => {
@@ -39,13 +64,43 @@ export const AdminWithdrawalsTab: React.FC = () => {
     return true;
   });
 
-  const pendingCount = withdrawals.filter((t) => t.status === 'pending').length;
+  const pendingList = withdrawals.filter((t) => t.status === 'pending');
+  const pendingCount = pendingList.length;
+  const pendingSum = pendingList.reduce((sum, t) => sum + (t.finalAmount || t.amount), 0);
+  const successSum = withdrawals.filter((t) => t.status === 'success').reduce((sum, t) => sum + (t.finalAmount || t.amount), 0);
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard?.writeText(text);
     setCopiedId(id);
     showToast('Copied to clipboard!', 'info');
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleOpenDisburse = (tx: Transaction) => {
+    setDisburseTx(tx);
+    setImpsRrn(`${Date.now().toString().slice(-12)}`);
+  };
+
+  const handleConfirmDisburse = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!disburseTx) return;
+    approveWithdrawal(disburseTx.id);
+    showToast(`Disbursed ${formatINR(disburseTx.finalAmount || disburseTx.amount)} via IMPS RRN #${impsRrn}!`, 'success');
+    setDisburseTx(null);
+  };
+
+  const handleOpenReject = (tx: Transaction) => {
+    setRejectTx(tx);
+    setRejectReason(presetReasons[0]);
+    setCustomRejectReason('');
+  };
+
+  const handleConfirmReject = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rejectTx) return;
+    const finalReason = customRejectReason.trim() || rejectReason;
+    rejectWithdrawal(rejectTx.id, finalReason);
+    setRejectTx(null);
   };
 
   const handleExportBankCSV = () => {
@@ -79,6 +134,42 @@ export const AdminWithdrawalsTab: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      {/* Top Metrics Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="bg-slate-800/90 p-3.5 rounded-3xl border border-slate-700 shadow-md">
+          <div className="flex items-center justify-between text-slate-400 text-xs">
+            <span>Pending Payouts</span>
+            <Clock className="w-4 h-4 text-amber-400" />
+          </div>
+          <div className="text-xl font-black text-amber-400 font-mono mt-1">
+            {formatINR(pendingSum)}
+          </div>
+          <div className="text-[10px] text-slate-400 mt-0.5">{pendingCount} requests awaiting dispatch</div>
+        </div>
+
+        <div className="bg-slate-800/90 p-3.5 rounded-3xl border border-slate-700 shadow-md">
+          <div className="flex items-center justify-between text-slate-400 text-xs">
+            <span>Disbursed Total</span>
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div className="text-xl font-black text-emerald-400 font-mono mt-1">
+            {formatINR(successSum)}
+          </div>
+          <div className="text-[10px] text-slate-400 mt-0.5">Successful IMPS Payouts</div>
+        </div>
+
+        <div className="col-span-2 sm:col-span-1 bg-slate-800/90 p-3.5 rounded-3xl border border-slate-700 shadow-md">
+          <div className="flex items-center justify-between text-slate-400 text-xs">
+            <span>IMPS Speed</span>
+            <Zap className="w-4 h-4 text-teal-400" />
+          </div>
+          <div className="text-xl font-black text-teal-400 font-mono mt-1">
+            Instant (T+0)
+          </div>
+          <div className="text-[10px] text-slate-400 mt-0.5">NPCI Fast Payout Router</div>
+        </div>
+      </div>
+
       {/* Search & Actions Bar */}
       <div className="bg-slate-800/90 p-4 rounded-3xl border border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
         <div className="relative w-full sm:w-80">
@@ -207,14 +298,14 @@ export const AdminWithdrawalsTab: React.FC = () => {
                   {tx.status === 'pending' && (
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => approveWithdrawal(tx.id)}
+                        onClick={() => handleOpenDisburse(tx)}
                         className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center space-x-1 cursor-pointer shadow-md active:scale-95 transition-all"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Disburse</span>
                       </button>
                       <button
-                        onClick={() => rejectWithdrawal(tx.id, 'Bank account verification failed')}
+                        onClick={() => handleOpenReject(tx)}
                         className="px-3 py-1.5 bg-rose-600/80 hover:bg-rose-500 text-white font-bold rounded-xl text-xs flex items-center space-x-1 cursor-pointer active:scale-95 transition-all"
                       >
                         <XCircle className="w-3.5 h-3.5" />
@@ -228,6 +319,145 @@ export const AdminWithdrawalsTab: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Disbursal Confirmation Modal */}
+      {disburseTx &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+            <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+              <div className="flex items-center space-x-3 pb-3 border-b border-slate-800">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">Disburse Bank Payout</h3>
+                  <p className="text-[11px] text-slate-400 font-mono">Order #{disburseTx.orderId || disburseTx.id}</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleConfirmDisburse} className="space-y-3.5 text-xs">
+                <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1.5">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span>Beneficiary:</span>
+                    <strong className="text-white">{user.bankAccount?.holderName || 'Anshu Kumar'}</strong>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span>Account Number:</span>
+                    <strong className="text-white font-mono">{user.bankAccount?.accountNumber || '620336963812'}</strong>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span>Bank IFSC:</span>
+                    <strong className="text-white font-mono">{user.bankAccount?.ifscCode || 'SBIN0001234'}</strong>
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+                    <span className="text-slate-400">Net Amount to Credit:</span>
+                    <strong className="text-base text-emerald-400 font-mono">{formatINR(disburseTx.finalAmount || disburseTx.amount)}</strong>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">Bank IMPS RRN / Reference Number</label>
+                  <input
+                    type="text"
+                    value={impsRrn}
+                    onChange={(e) => setImpsRrn(e.target.value)}
+                    className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-emerald-500"
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setDisburseTx(null)}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-md cursor-pointer active:scale-95 transition-all"
+                  >
+                    Confirm & Mark Paid
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* Rejection Modal with Refund */}
+      {rejectTx &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+            <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+              <div className="flex items-center space-x-3 pb-3 border-b border-slate-800">
+                <div className="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30">
+                  <AlertCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">Reject Withdrawal & Refund</h3>
+                  <p className="text-[11px] text-slate-400 font-mono">Order #{rejectTx.orderId || rejectTx.id}</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleConfirmReject} className="space-y-3.5 text-xs">
+                <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex items-center justify-between">
+                  <span className="text-slate-400">Refund to Wallet:</span>
+                  <span className="text-sm font-black text-amber-400 font-mono">+{formatINR(rejectTx.amount)}</span>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">Select Rejection Cause</label>
+                  <select
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-rose-500"
+                  >
+                    {presetReasons.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">Custom Notes / Bank Error Code (Optional)</label>
+                  <input
+                    type="text"
+                    value={customRejectReason}
+                    onChange={(e) => setCustomRejectReason(e.target.value)}
+                    placeholder="e.g. Beneficiary IFSC inactive at receiving branch"
+                    className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-rose-500"
+                  />
+                </div>
+
+                <div className="p-3 bg-amber-950/30 border border-amber-500/30 rounded-2xl text-[11px] text-amber-300">
+                  Note: The full deduction of {formatINR(rejectTx.amount)} will be immediately credited back to the user&apos;s wallet balance.
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setRejectTx(null)}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold shadow-md cursor-pointer active:scale-95 transition-all"
+                  >
+                    Reject & Refund Wallet
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

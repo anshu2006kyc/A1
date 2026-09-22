@@ -23,10 +23,15 @@ export function formatINR(
     return withSymbol ? `₹${zeroVal}` : zeroVal;
   }
 
-  const formatted = new Intl.NumberFormat('en-IN', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(Math.abs(num));
+  let formatted: string;
+  try {
+    formatted = new Intl.NumberFormat('en-IN', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    }).format(Math.abs(num));
+  } catch {
+    formatted = Math.abs(num).toFixed(decimals);
+  }
 
   const sign = num < 0 ? '-' : (options.showSign && num > 0 ? '+' : '');
   const prefix = withSymbol ? '₹' : '';

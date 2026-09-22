@@ -8,6 +8,7 @@ import {
   Database,
   Layers,
   Megaphone,
+  Palette,
   ShieldAlert,
   Sliders,
   Terminal,
@@ -25,6 +26,7 @@ export type AdminTabId =
   | 'withdrawals'
   | 'plans'
   | 'engine'
+  | 'theme'
   | 'risk'
   | 'broadcast'
   | 'gateway'
@@ -69,6 +71,7 @@ export const AdminTabNav: React.FC<AdminTabNavProps> = ({ activeTab, onSelectTab
     },
     { id: 'plans', label: 'Products', icon: Layers },
     { id: 'engine', label: 'Turbo Engine', icon: Zap },
+    { id: 'theme', label: 'Theme & Colors', icon: Palette },
     {
       id: 'risk',
       label: 'Risk Shield',
@@ -77,7 +80,7 @@ export const AdminTabNav: React.FC<AdminTabNavProps> = ({ activeTab, onSelectTab
       badgeColor: 'bg-rose-500 text-white'
     },
     { id: 'broadcast', label: 'Broadcast', icon: Megaphone },
-    { id: 'gateway', label: 'Sunpays Gateway', icon: CreditCard },
+    { id: 'gateway', label: 'Payment Gateways', icon: CreditCard },
     { id: 'backup', label: 'Backup & Recovery', icon: Database },
     { id: 'logs', label: 'Audit Logs', icon: Terminal }
   ];

@@ -248,7 +248,7 @@ export const AdminPlansTab: React.FC = () => {
                   >
                     <option value="turbo">⚡ Turbo (Minute Flash)</option>
                     <option value="normal">🌱 Normal (Daily Farm)</option>
-                    <option value="vip">💎 VIP Institutional</option>
+                    <option value="vip">💎 VIP Enterprise</option>
                   </select>
                 </div>
 

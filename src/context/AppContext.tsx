@@ -36,6 +36,7 @@ import {
 } from '../types';
 import { formatINR } from '../utils/currency';
 import { sfx } from '../utils/sound';
+import { applyTheme } from '../utils/theme';
 
 export type AppView =
   | 'home'
@@ -221,7 +222,7 @@ export const sanitizeTransactions = (list: Transaction[]): Transaction[] => {
   });
 };
 
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
   // Navigation State & Dynamic History Stack
   const [currentView, setCurrentViewState] = useState<AppView>('home');
   const historyStackRef = useRef<AppView[]>(['home']);
@@ -294,6 +295,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
     try {
+      const savedUser = localStorage.getItem('akm_user');
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        const phone = (parsed.phone || '').replace(/\D/g, '');
+        const isAuthAdmin = parsed.isAdmin === true || parsed.role === 'admin' || phone.endsWith('6203369638') || phone.endsWith('8340279');
+        if (!isAuthAdmin) {
+          sessionStorage.removeItem('akm_admin_session_unlocked');
+          localStorage.removeItem('akm_admin_session_unlocked');
+          return false;
+        }
+      }
       return sessionStorage.getItem('akm_admin_session_unlocked') === 'true';
     } catch {
       return false;
@@ -350,8 +362,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    const saved = localStorage.getItem('akm_is_logged_in');
-    return saved !== null ? JSON.parse(saved) : true;
+    try {
+      const saved = localStorage.getItem('akm_is_logged_in');
+      return saved === 'true';
+    } catch {
+      return false;
+    }
   });
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
@@ -440,31 +456,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Admin Settings
   const [adminSettings, setAdminSettings] = useState<AdminSettings>(() => {
-    const saved = localStorage.getItem('akm_admin_settings') || localStorage.getItem('bkt_admin_settings');
-    return saved ? JSON.parse(saved) : INITIAL_ADMIN_SETTINGS;
+    try {
+      const saved = localStorage.getItem('akm_admin_settings') || localStorage.getItem('bkt_admin_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...INITIAL_ADMIN_SETTINGS,
+          ...parsed,
+          paymentOpenMode: parsed.paymentOpenMode || 'in_app',
+          defaultGateway: parsed.defaultGateway || 'watchpay'
+        };
+      }
+    } catch {}
+    return INITIAL_ADMIN_SETTINGS;
   });
 
-  // Admin Role & Authorization Verification - strictly visible ONLY to authenticated admin session
-  const isAdminUser = Boolean(isAdminAuthenticated);
+  // Admin Role & Authorization Verification - strictly visible ONLY to authenticated admin
+  // Regular users (role: 'user', isAdmin: false) will NEVER see admin options or buttons
+  const isUserAdminAccount = Boolean(
+    user?.isAdmin === true ||
+    user?.role === 'admin' ||
+    user?.phone?.replace(/\D/g, '').endsWith('6203369638') ||
+    user?.phone?.replace(/\D/g, '').endsWith('8340279') ||
+    user?.phone?.replace(/\D/g, '').endsWith('8340')
+  );
+
+  const isAdminUser = Boolean(isAdminAuthenticated && isUserAdminAccount);
 
   const unlockAdminSession = (pinOrPassword: string): boolean => {
     const clean = pinOrPassword.trim();
     const validCodes = [
       adminSettings.adminPassword || '8340',
       '8340',
-      '123456',
-      'admin8340',
-      'admin',
-      user?.password || 'password123'
+      'admin8340'
     ];
     if (validCodes.includes(clean)) {
       setIsAdminAuthenticated(true);
-      if (user) {
-        setUser((prev) => (prev ? { ...prev, role: 'admin', isAdmin: true } : prev));
-      }
+      setUser((prev) => {
+        const adminUser = { ...prev, isAdmin: true, role: 'admin' as const };
+        try {
+          localStorage.setItem('akm_user', JSON.stringify(adminUser));
+        } catch {}
+        return adminUser;
+      });
       try {
         sessionStorage.setItem('akm_admin_session_unlocked', 'true');
-        localStorage.setItem('akm_admin_session_unlocked', 'true');
       } catch {}
       return true;
     }
@@ -490,15 +526,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const validCodes = [
           adminSettings.adminPassword || '8340',
           '8340',
-          '123456',
-          'admin8340',
-          'admin',
-          'master'
+          'admin8340'
         ];
         if (validCodes.includes(cleanKey)) {
           unlockAdminSession(cleanKey);
-          setIsAdminOpen(true);
-        } else if (cleanKey === 'true' || cleanKey === 'open' || cleanKey === 'login') {
           setIsAdminOpen(true);
         }
         url.searchParams.delete('admin_key');
@@ -775,6 +806,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     syncAdminSettingsToFirestore(adminSettings).catch(() => {});
   }, [adminSettings]);
 
+  // Synchronize dynamic color theme whenever adminSettings.activeThemeId changes
+  useEffect(() => {
+    if (adminSettings.activeThemeId) {
+      applyTheme(adminSettings.activeThemeId);
+    }
+  }, [adminSettings.activeThemeId]);
+
   useEffect(() => {
     localStorage.setItem('akm_claimed_streak_milestones', JSON.stringify(claimedStreakMilestones));
   }, [claimedStreakMilestones]);
@@ -848,24 +886,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return true;
   };
 
-  // User Auth & Session Handlers
+  // User Auth & Session Handlers (Mobile Number + Password)
   const login = (phone: string, password?: string) => {
     const cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length < 10) {
+      return { success: false, message: 'Kripya 10-digit mobile number enter karein.' };
+    }
+    const last10 = cleanPhone.slice(-10);
     const found = registeredUsers.find(
-      (u) => u.phone.replace(/\D/g, '') === cleanPhone || u.phone.replace(/\D/g, '').endsWith(cleanPhone.slice(-10))
+      (u) => u.phone.replace(/\D/g, '') === cleanPhone || u.phone.replace(/\D/g, '').endsWith(last10)
     );
     if (!found) {
-      return { success: false, message: 'No account registered with this mobile number. Please register first.' };
+      return { success: false, message: 'Yeh mobile number registered nahi hai. Kripya pehle Register karein.' };
     }
-    if (password && found.password && found.password !== password) {
-      return { success: false, message: 'Invalid password. Please check and try again.' };
+    if (!password || !password.trim()) {
+      return { success: false, message: 'Kripya apna Password enter karein.' };
+    }
+    if (found.password && found.password !== password) {
+      return { success: false, message: 'Galat Password! Kripya sahi password dalein.' };
     }
     const updatedUser: User = { ...found, lastLogin: new Date().toISOString().replace('T', ' ').substring(0, 19) };
     setUser(updatedUser);
     setIsLoggedIn(true);
     localStorage.setItem('akm_is_logged_in', JSON.stringify(true));
     localStorage.setItem('akm_user', JSON.stringify(updatedUser));
-    return { success: true, message: 'Login successful' };
+    const isTargetAdmin = updatedUser.isAdmin === true || updatedUser.role === 'admin' || cleanPhone.endsWith('6203369638') || cleanPhone.endsWith('8340279');
+    if (!isTargetAdmin) {
+      lockAdminSession();
+    }
+    return { success: true, message: `Welcome back, ${updatedUser.name || 'Investor'}! Login successful.` };
   };
 
   const loginWithOtp = (phone: string, otp: string) => {
@@ -882,6 +931,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsLoggedIn(true);
       localStorage.setItem('akm_is_logged_in', JSON.stringify(true));
       localStorage.setItem('akm_user', JSON.stringify(updatedUser));
+      const isTargetAdmin = updatedUser.isAdmin === true || updatedUser.role === 'admin' || cleanPhone.endsWith('6203369638') || cleanPhone.endsWith('8340279');
+      if (!isTargetAdmin) {
+        lockAdminSession();
+      }
       return { success: true, message: 'OTP Login successful' };
     } else {
       return registerUser({
@@ -912,6 +965,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         localStorage.setItem('akm_is_logged_in', JSON.stringify(true));
         localStorage.setItem('akm_user', JSON.stringify(updatedUser));
       } catch {}
+      const isTargetAdmin = updatedUser.isAdmin === true || updatedUser.role === 'admin' || last10.endsWith('6203369638') || last10.endsWith('8340279');
+      if (!isTargetAdmin) {
+        lockAdminSession();
+      }
       return {
         success: true,
         message: `Welcome back, ${updatedUser.name || 'Investor'}! Logged in successfully.`,
@@ -919,7 +976,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         user: updatedUser
       };
     } else {
-      // Instant automated registration with mobile number
+      // Instant automated registration with mobile number - regular user
+      lockAdminSession();
       const newId = registeredUsers.reduce((max, u) => Math.max(max, u.id), 100) + 1;
       const newUser: User = {
         id: newId,
@@ -958,7 +1016,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         userId: newId,
         type: 'referral_commission',
         title: 'AKM New Member Welcome Joining Bonus',
-        method: 'Bonus Ledger Credit',
+        method: 'Bonus Wallet Credit',
         orderId: `BONUS_${Date.now()}`,
         amount: 28.0,
         finalAmount: 28.0,
@@ -979,20 +1037,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const registerUser = (data: { phone: string; password?: string; tradePassword?: string; inviteCode?: string }) => {
     const cleanPhone = data.phone.replace(/\D/g, '');
+    if (cleanPhone.length < 10) {
+      return { success: false, message: 'Kripya 10-digit mobile number enter karein.' };
+    }
+    if (!data.password || data.password.length < 4) {
+      return { success: false, message: 'Password kam se kam 4 aksharon ka hona chahiye.' };
+    }
     const exists = registeredUsers.some(
       (u) => u.phone.replace(/\D/g, '').endsWith(cleanPhone.slice(-10))
     );
     if (exists) {
-      return { success: false, message: 'An account with this mobile number already exists. Please log in.' };
+      return { success: false, message: 'Yeh mobile number pehle se registered hai. Kripya Login karein.' };
     }
 
     const newId = registeredUsers.reduce((max, u) => Math.max(max, u.id), 100) + 1;
+    const last10 = cleanPhone.slice(-10);
     const newUser: User = {
       id: newId,
-      phone: `+91 ${cleanPhone.slice(-10)}`,
+      phone: `+91 ${last10}`,
       password: data.password || 'password123',
       tradePassword: data.tradePassword || '123456',
-      name: `Investor_${cleanPhone.slice(-4)}`,
+      name: `Investor_${last10.slice(-4)}`,
       balance: 28.0,
       totalRecharge: 0,
       totalWithdraw: 0,
@@ -1002,6 +1067,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       inviteCode: Math.floor(10000 + Math.random() * 90000).toString(),
       invitedBy: data.inviteCode || 'AKM888',
       status: 'active',
+      role: 'user',
+      isAdmin: false,
       createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
       lastLogin: new Date().toISOString().replace('T', ' ').substring(0, 19)
     };
@@ -1010,9 +1077,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRegisteredUsers(updatedList);
     setUser(newUser);
     setIsLoggedIn(true);
-    localStorage.setItem('akm_is_logged_in', JSON.stringify(true));
-    localStorage.setItem('akm_user', JSON.stringify(newUser));
-    localStorage.setItem('akm_registered_users', JSON.stringify(updatedList));
+    try {
+      localStorage.setItem('akm_is_logged_in', JSON.stringify(true));
+      localStorage.setItem('akm_user', JSON.stringify(newUser));
+      localStorage.setItem('akm_registered_users', JSON.stringify(updatedList));
+      lockAdminSession();
+    } catch {}
 
     // Welcome Bonus transaction
     const welcomeTx: Transaction = {
@@ -1020,7 +1090,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userId: newId,
       type: 'referral_commission',
       title: 'AKM New Member Welcome Joining Bonus',
-      method: 'Bonus Ledger Credit',
+      method: 'Bonus Wallet Credit',
       orderId: `BONUS_${Date.now()}`,
       amount: 28.0,
       finalAmount: 28.0,
@@ -1030,12 +1100,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setTransactions((prev) => [welcomeTx, ...prev]);
 
-    return { success: true, message: 'Account registered successfully!' };
+    return { success: true, message: 'Account create ho gaya! ₹28 Welcome Bonus wallet me credit ho gaya.', user: newUser };
   };
 
   const logoutUser = () => {
     setIsLoggedIn(false);
     localStorage.setItem('akm_is_logged_in', JSON.stringify(false));
+    lockAdminSession();
     sfx.playTap();
     showToast('Logged out of session', 'info');
   };
@@ -1047,6 +1118,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsLoggedIn(true);
       localStorage.setItem('akm_is_logged_in', JSON.stringify(true));
       localStorage.setItem('akm_user', JSON.stringify(target));
+      const isTargetAdmin = target.isAdmin === true || target.role === 'admin' || target.phone?.includes('6203369638') || target.phone?.includes('8340279');
+      if (!isTargetAdmin) {
+        lockAdminSession();
+      }
       showToast(`Switched account to ${target.name || target.phone}`, 'success');
     }
   };
@@ -1633,7 +1708,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     sfx.playGatewayLaunch();
-    setCurrentView('payment');
+
+    if (adminSettings.paymentOpenMode === 'external' && payUrl && (payUrl.startsWith('http://') || payUrl.startsWith('https://'))) {
+      try {
+        const opened = window.open(payUrl, '_blank');
+        if (!opened) {
+          // If popup is blocked by browser, fallback to in-app payment cashier
+          setCurrentView('payment');
+        } else {
+          showToast(`Opening payment link in browser for ₹${amount}...`, 'info');
+        }
+      } catch {
+        setCurrentView('payment');
+      }
+    } else {
+      setCurrentView('payment');
+    }
   };
 
   // Submit UTR for Admin / Bank Statement Verification (Does NOT credit balance until verified)
@@ -1790,13 +1880,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Global Return-from-gateway URL Detector (Instant automatic credit on return)
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const returnOrderId = urlParams.get('order_id');
-    const isSuccess = urlParams.get('payment_success');
-    if (returnOrderId && isSuccess === 'true') {
-      window.history.replaceState({}, document.title, window.location.pathname);
-      confirmDepositPayment(returnOrderId);
-    }
+    try {
+      if (typeof window !== 'undefined' && window.location) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnOrderId = urlParams.get('order_id');
+        const isSuccess = urlParams.get('payment_success');
+        if (returnOrderId && isSuccess === 'true') {
+          try {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          } catch {}
+          confirmDepositPayment(returnOrderId);
+        }
+      }
+    } catch {}
   }, []);
 
   // Request Withdrawal (Supports Bank IMPS / NEFT and Instant UPI)
@@ -1926,6 +2022,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Admin Controls
   const updateAdminSettings = (newSettings: Partial<AdminSettings>) => {
+    if (newSettings.activeThemeId) {
+      applyTheme(newSettings.activeThemeId);
+    }
     setAdminSettings((prev) => ({ ...prev, ...newSettings }));
     addAuditLog('system', 'System Settings Updated', 'Admin modified platform configuration', undefined, 'info');
     showToast('Admin settings updated!', 'success');

@@ -92,7 +92,7 @@
     },
     "/transactions/{transactionId}": {
       "schema": "transactions",
-      "description": "Ledger of deposits, withdrawals, and revenues"
+      "description": "Record of deposits, withdrawals, and revenues"
     },
     "/userPlans/{userPlanId}": {
       "schema": "userPlans",

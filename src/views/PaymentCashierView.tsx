@@ -10,7 +10,8 @@ import {
   Zap,
   Sun,
   Copy,
-  Check
+  Check,
+  ExternalLink
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useApp } from '../context/AppContext';
@@ -202,7 +203,7 @@ export const PaymentCashierView: React.FC = () => {
             className="w-full py-3.5 rounded-xl btn-chamkila text-white font-black text-xs shadow-lg active:scale-95 transition-all cursor-pointer flex items-center justify-center space-x-2"
           >
             <Zap className="w-4 h-4 text-emerald-200" />
-            <span>Invest in High-Yield Plans</span>
+            <span>Invest in Growth Plans</span>
           </button>
           <button
             onClick={() => setCurrentView('transactions')}
@@ -244,13 +245,28 @@ export const PaymentCashierView: React.FC = () => {
           </span>
         </div>
 
-        <button
-          onClick={handleReloadFrame}
-          className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition-all cursor-pointer shrink-0"
-          title="Refresh in-app cashier"
-        >
-          <RotateCw className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center space-x-1.5 shrink-0">
+          {frameSrc && frameSrc.startsWith('http') && (
+            <button
+              onClick={() => {
+                sfx.playTap();
+                window.open(frameSrc, '_blank');
+                showToast('Opening payment gateway in external browser...', 'info');
+              }}
+              className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition-all cursor-pointer"
+              title="Open in External Browser"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <button
+            onClick={handleReloadFrame}
+            className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition-all cursor-pointer"
+            title="Refresh in-app cashier"
+          >
+            <RotateCw className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       {/* 2. Order Quick Summary Strip */}

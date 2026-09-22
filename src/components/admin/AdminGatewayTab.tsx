@@ -12,6 +12,7 @@ import {
   Play,
   Send,
   ShieldCheck,
+  Smartphone,
   Terminal,
   Zap
 } from 'lucide-react';
@@ -185,7 +186,7 @@ if (isset($res['data']['payUrl'])) {
 }
 echo "Gateway Error: " . $response;`;
 
-  const sunpaysNodeWebhookCode = `// Sunpays Gateway HMAC-SHA256 Webhook Handler (Express.js Backend)
+  const sunpaysExpressWebhookCode = `// Sunpays Gateway HMAC-SHA256 Webhook Handler (Express.js Backend)
 const crypto = require('crypto');
 
 app.post('/api/sunpays/webhook', (req, res) => {
@@ -400,6 +401,96 @@ app.post('/api/sunpays/webhook', (req, res) => {
 
         <div className="text-[11px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl flex items-center justify-between">
           <span>🔒 Customer Privacy: Internal gateway names (WatchPay / SunPay) are hidden from end users. Users only see clean "UPI Channel 1" and "UPI Channel 2" branded with <strong>AKM ENTERPRISES</strong>.</span>
+        </div>
+      </div>
+
+      {/* ============================================================ */}
+      {/* ADVANCED PAYMENT LINK OPENING MODE (APP KE ANDAR YA BAHAR)   */}
+      {/* ============================================================ */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 p-5 rounded-3xl border border-blue-500/30 shadow-xl space-y-3.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
+              <ExternalLink className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-white">Payment Link Opening Mode (App Ke Andar Ya Bahar)</h4>
+              <p className="text-xs text-slate-400">Set whether gateway payment links open inside the application or in external browser</p>
+            </div>
+          </div>
+          <span className="text-[11px] font-mono font-bold px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 self-start sm:self-center">
+            Active: {(form.paymentOpenMode || 'in_app') === 'external' ? 'EXTERNAL (BAHAR BROWSER)' : 'IN-APP (APP KE ANDAR)'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          {/* Mode 1: In-App */}
+          <div
+            onClick={() => {
+              const updated = { ...form, paymentOpenMode: 'in_app' as const };
+              setForm(updated);
+              updateAdminSettings(updated);
+              showToast('Payment Link Mode: IN-APP (App ke andar khulega)!', 'success');
+            }}
+            className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+              (form.paymentOpenMode || 'in_app') === 'in_app'
+                ? 'bg-blue-950/60 border-blue-500 shadow-md shadow-blue-950/50'
+                : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Smartphone className="w-4 h-4 text-blue-400" />
+                <span className="text-xs font-black text-white">App Ke Andar (In-App Cashier / Screen)</span>
+              </div>
+              <div className={`w-4 h-4 rounded-full flex items-center justify-center border-2 ${
+                (form.paymentOpenMode || 'in_app') === 'in_app' ? 'border-blue-400 bg-blue-500 text-slate-950' : 'border-slate-600'
+              }`}>
+                {(form.paymentOpenMode || 'in_app') === 'in_app' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+              Payment link aur QR cashier seedha app ke andar hi load hoga. User app se bahar nahi jayega aur 3-second automatic real-time settlement tracking on rahegi.
+            </p>
+            <div className="text-[10px] font-mono text-blue-300 mt-2 font-bold flex items-center space-x-1">
+              <CheckCircle2 className="w-3 h-3 text-blue-400" />
+              <span>Recommended for Seamless In-App Experience</span>
+            </div>
+          </div>
+
+          {/* Mode 2: External */}
+          <div
+            onClick={() => {
+              const updated = { ...form, paymentOpenMode: 'external' as const };
+              setForm(updated);
+              updateAdminSettings(updated);
+              showToast('Payment Link Mode: EXTERNAL (Bahar browser me khulega)!', 'success');
+            }}
+            className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+              form.paymentOpenMode === 'external'
+                ? 'bg-blue-950/60 border-blue-500 shadow-md shadow-blue-950/50'
+                : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <ExternalLink className="w-4 h-4 text-amber-400" />
+                <span className="text-xs font-black text-white">Bahar Browser (External Tab / Window)</span>
+              </div>
+              <div className={`w-4 h-4 rounded-full flex items-center justify-center border-2 ${
+                form.paymentOpenMode === 'external' ? 'border-blue-400 bg-blue-500 text-slate-950' : 'border-slate-600'
+              }`}>
+                {form.paymentOpenMode === 'external' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+              Payment link direct user ke external browser (Chrome / Safari / Default) me new window/tab me open hoga. Official bank/gateway cashier bahar load hoga.
+            </p>
+            <div className="text-[10px] font-mono text-amber-300 mt-2 font-bold flex items-center space-x-1">
+              <ExternalLink className="w-3 h-3 text-amber-400" />
+              <span>Direct Official External Tab</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -809,7 +900,7 @@ app.post('/api/sunpays/webhook', (req, res) => {
                 </h4>
               </div>
               <button
-                onClick={() => copyCode(sunpaysNodeWebhookCode, 'sunpays-express')}
+                onClick={() => copyCode(sunpaysExpressWebhookCode, 'sunpays-express')}
                 className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 cursor-pointer"
               >
                 {copiedCode === 'sunpays-express' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -818,7 +909,7 @@ app.post('/api/sunpays/webhook', (req, res) => {
             </div>
 
             <pre className="p-3 bg-slate-950 rounded-2xl border border-slate-800 font-mono text-xs text-slate-300 overflow-x-auto max-h-48">
-              {sunpaysNodeWebhookCode}
+              {sunpaysExpressWebhookCode}
             </pre>
           </div>
         </div>
@@ -954,7 +1045,7 @@ app.post('/api/sunpays/webhook', (req, res) => {
                 </h4>
               </div>
               <button
-                onClick={() => copyCode(sunpaysNodeWebhookCode, 'express-webhook')}
+                onClick={() => copyCode(sunpaysExpressWebhookCode, 'express-webhook')}
                 className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 cursor-pointer"
               >
                 {copiedCode === 'express-webhook' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -967,7 +1058,7 @@ app.post('/api/sunpays/webhook', (req, res) => {
             </p>
 
             <pre className="p-3 bg-slate-950 rounded-2xl border border-slate-800 font-mono text-xs text-slate-300 overflow-x-auto max-h-56">
-              {sunpaysNodeWebhookCode}
+              {sunpaysExpressWebhookCode}
             </pre>
           </div>
         </div>

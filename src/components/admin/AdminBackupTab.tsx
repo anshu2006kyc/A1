@@ -61,7 +61,7 @@ export const AdminBackupTab: React.FC = () => {
           <div>
             <h3 className="text-sm font-bold text-white">Disaster Recovery & State Backup</h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              Export and restore all databases, ledger transactions, user machines & security flags
+              Export and restore all databases, wallet transactions, user machines & security flags
             </p>
           </div>
         </div>
@@ -153,7 +153,7 @@ export const AdminBackupTab: React.FC = () => {
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed">
-              This will erase all custom transactions, created plans, user ledger modifications, and restore default demo seed data.
+              This will erase all custom transactions, created plans, user balance modifications, and restore default demo seed data.
             </p>
 
             <div className="flex justify-end space-x-2 pt-2 text-xs">

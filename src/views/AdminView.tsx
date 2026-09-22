@@ -18,6 +18,7 @@ import {
   LogOut,
   Megaphone,
   Menu,
+  Palette,
   RefreshCw,
   Search,
   Shield,
@@ -39,29 +40,45 @@ import { AdminDepositsTab } from '../components/admin/AdminDepositsTab';
 import { AdminWithdrawalsTab } from '../components/admin/AdminWithdrawalsTab';
 import { AdminPlansTab } from '../components/admin/AdminPlansTab';
 import { AdminEngineTab } from '../components/admin/AdminEngineTab';
+import { AdminThemeTab } from '../components/admin/AdminThemeTab';
 import { AdminRiskTab } from '../components/admin/AdminRiskTab';
 import { AdminBroadcastTab } from '../components/admin/AdminBroadcastTab';
 import { AdminGatewayTab } from '../components/admin/AdminGatewayTab';
 import { AdminBackupTab } from '../components/admin/AdminBackupTab';
 import { AdminLogsTab } from '../components/admin/AdminLogsTab';
 import { formatINR } from '../utils/currency';
+import { sfx } from '../utils/sound';
+import { AVAILABLE_THEMES, getThemeById } from '../utils/theme';
 
 export const AdminView: React.FC = () => {
   const {
     setIsAdminOpen,
     lockAdminSession,
     adminSettings,
+    updateAdminSettings,
     transactions,
     securityAlerts,
     registeredUsers,
     user,
     plans,
     dbConnectionStatus,
-    isDbConnected
+    isDbConnected,
+    showToast
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<AdminTabId>('overview');
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleManualRefresh = () => {
+    sfx.playTap();
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setIsRefreshing(false);
+      showToast('Admin data & balances synced in real-time.', 'success');
+    }, 450);
+  };
 
   const pendingDepositsCount = transactions.filter(
     (t) => t.type === 'recharge' && t.status === 'pending'
@@ -97,7 +114,7 @@ export const AdminView: React.FC = () => {
         },
         {
           id: 'withdrawals',
-          label: 'Payout Ledger',
+          label: 'Payout Orders',
           icon: ArrowDownToLine,
           badge: pendingWithdrawalsCount,
           badgeColor: 'bg-amber-400 text-slate-950'
@@ -109,7 +126,13 @@ export const AdminView: React.FC = () => {
       items: [
         { id: 'plans', label: 'Products Portfolio', icon: Layers },
         { id: 'engine', label: 'Turbo Engine', icon: Zap },
-        { id: 'gateway', label: 'Sunpays Gateway', icon: CreditCard }
+        { id: 'gateway', label: 'Payment Gateways', icon: CreditCard }
+      ]
+    },
+    {
+      category: 'Appearance & Theme',
+      items: [
+        { id: 'theme', label: 'Theme Studio (Colours)', icon: Palette }
       ]
     },
     {
@@ -153,16 +176,25 @@ export const AdminView: React.FC = () => {
             </div>
             <div>
               <h1 className="text-sm font-black text-white tracking-wider flex items-center space-x-1.5">
-                <span>AKM FINTECH</span>
+                <span>AKM ENTERPRISES</span>
               </h1>
               <div className="flex items-center space-x-1.5 mt-0.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
-                  MASTER SYSTEM V3.2
+                  EXECUTIVE CONSOLE
                 </span>
               </div>
             </div>
           </div>
+          <button
+            onClick={handleManualRefresh}
+            className={`p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 cursor-pointer transition-all ${
+              isRefreshing ? 'animate-spin text-emerald-400' : ''
+            }`}
+            title="Refresh Real-Time Data"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         {/* Executive Real-time Quick Metric Badge */}
@@ -193,46 +225,79 @@ export const AdminView: React.FC = () => {
           </div>
         </div>
 
+        {/* Quick Search Tab Filter */}
+        <div className="px-3 mb-2">
+          <div className="relative flex items-center bg-slate-950 border border-slate-800 focus-within:border-emerald-500/70 rounded-xl px-2.5 py-1.5 transition-all">
+            <Search className="w-3.5 h-3.5 text-slate-500 shrink-0 mr-2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search tabs..."
+              className="w-full bg-transparent text-xs text-slate-200 placeholder-slate-500 focus:outline-none"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-slate-500 hover:text-white ml-1 cursor-pointer"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Categorized Navigation Menu */}
         <nav className="flex-1 px-3 space-y-6 pb-6 text-xs">
-          {tabGroups.map((group) => (
-            <div key={group.category} className="space-y-1">
-              <div className="px-3 py-1 text-[10px] font-black uppercase text-slate-400 tracking-wider">
-                {group.category}
+          {tabGroups
+            .map((group) => ({
+              ...group,
+              items: group.items.filter(
+                (item) =>
+                  !searchQuery ||
+                  item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  group.category.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+            }))
+            .filter((group) => group.items.length > 0)
+            .map((group) => (
+              <div key={group.category} className="space-y-1">
+                <div className="px-3 py-1 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                  {group.category}
+                </div>
+                <div className="space-y-0.5">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleSelectTab(item.id)}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl font-bold transition-all cursor-pointer text-left ${
+                          isActive
+                            ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/25 ring-1 ring-emerald-400/40'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2.5">
+                          <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                          <span>{item.label}</span>
+                        </div>
+                        {item.badge !== undefined && item.badge > 0 && (
+                          <span
+                            className={`px-1.5 py-0.2 rounded-full text-[10px] font-black shrink-0 ${
+                              isActive ? 'bg-slate-950 text-emerald-400' : item.badgeColor || 'bg-amber-400 text-slate-950'
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="space-y-0.5">
-                {group.items.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleSelectTab(item.id)}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl font-bold transition-all cursor-pointer text-left ${
-                        isActive
-                          ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/25 ring-1 ring-emerald-400/40'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-2.5">
-                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                        <span>{item.label}</span>
-                      </div>
-                      {item.badge !== undefined && item.badge > 0 && (
-                        <span
-                          className={`px-1.5 py-0.2 rounded-full text-[10px] font-black shrink-0 ${
-                            isActive ? 'bg-slate-950 text-emerald-400' : item.badgeColor || 'bg-amber-400 text-slate-950'
-                          }`}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+            ))}
         </nav>
 
         {/* Bottom Sidebar Return Button */}
@@ -260,8 +325,8 @@ export const AdminView: React.FC = () => {
       {/* ============================================================ */}
       {/* MOBILE HEADER (Visible on screens < lg)                     */}
       {/* ============================================================ */}
-      <header className="lg:hidden sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-md">
-        <div className="flex items-center space-x-3">
+      <header className="lg:hidden sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-3.5 py-2.5 flex items-center justify-between shadow-md">
+        <div className="flex items-center space-x-2.5">
           <button
             onClick={() => setMobileDrawerOpen(true)}
             className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 cursor-pointer active:scale-95 transition-all"
@@ -275,27 +340,37 @@ export const AdminView: React.FC = () => {
               <ShieldCheck className="w-4 h-4 text-slate-950" />
             </div>
             <div>
-              <div className="text-xs font-black text-white leading-tight">AKM Console</div>
+              <div className="text-xs font-black text-white leading-tight">AKM ENTERPRISES</div>
               <div className="text-[10px] text-emerald-400 font-bold">{currentTabMeta?.label || 'Overview'}</div>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-[9.5px] font-bold text-emerald-300">
+        <div className="flex items-center space-x-1.5">
+          <button
+            onClick={handleManualRefresh}
+            className={`p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white border border-slate-700 cursor-pointer active:scale-95 ${
+              isRefreshing ? 'animate-spin text-emerald-400' : ''
+            }`}
+            title="Refresh Data"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+
+          <div className="flex items-center space-x-1 px-1.5 py-1 rounded-lg bg-emerald-950/70 border border-emerald-500/40 text-[9px] font-bold text-emerald-300">
             <span className={`w-1.5 h-1.5 rounded-full ${isDbConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-            <span>{isDbConnected ? 'DB Live' : 'DB Sync'}</span>
+            <span>{isDbConnected ? 'Live' : 'Sync'}</span>
           </div>
 
           {pendingDepositsCount + pendingWithdrawalsCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-black">
-              {pendingDepositsCount + pendingWithdrawalsCount} Pending
+            <span className="px-1.5 py-0.5 rounded-md bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[9.5px] font-black">
+              {pendingDepositsCount + pendingWithdrawalsCount}
             </span>
           )}
 
           <button
             onClick={() => setIsAdminOpen(false)}
-            className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center space-x-1 shadow-xs active:scale-95 transition-all cursor-pointer"
+            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs flex items-center space-x-1 shadow-xs active:scale-95 transition-all cursor-pointer"
             title="Return to User App"
           >
             <span>Exit</span>
@@ -304,7 +379,7 @@ export const AdminView: React.FC = () => {
 
           <button
             onClick={lockAdminSession}
-            className="p-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 rounded-xl cursor-pointer active:scale-95 transition-all"
+            className="p-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 rounded-lg cursor-pointer active:scale-95 transition-all"
             title="Lock Admin Session"
           >
             <Lock className="w-3.5 h-3.5" />
@@ -349,8 +424,52 @@ export const AdminView: React.FC = () => {
             </div>
 
             <button
+              onClick={handleManualRefresh}
+              className={`px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-xl font-bold flex items-center space-x-1.5 border border-slate-700 transition-all cursor-pointer active:scale-95 ${
+                isRefreshing ? 'border-emerald-500 text-emerald-400' : ''
+              }`}
+              title="Refresh Real-Time Data"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
+              <span>{isRefreshing ? 'Syncing...' : 'Sync Live'}</span>
+            </button>
+
+            {/* Quick 1-Click Theme Switcher in Header */}
+            <div className="flex items-center space-x-1.5 bg-slate-900/90 px-2.5 py-1.5 rounded-xl border border-slate-800">
+              <Palette className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <div className="flex items-center space-x-1">
+                {AVAILABLE_THEMES.map((t) => {
+                  const isActive = (adminSettings.activeThemeId || 'emerald') === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        updateAdminSettings({ activeThemeId: t.id });
+                        showToast(`Theme switched to ${t.name}!`, 'success');
+                      }}
+                      title={`${t.name} (${t.hindiName})`}
+                      className={`w-3.5 h-3.5 rounded-full transition-transform cursor-pointer ${
+                        isActive
+                          ? 'scale-125 ring-2 ring-white ring-offset-1 ring-offset-slate-900'
+                          : 'opacity-70 hover:opacity-100 hover:scale-110'
+                      }`}
+                      style={{ backgroundColor: t.previewColor }}
+                    />
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => setActiveTab('theme')}
+                className="text-[10px] font-bold text-slate-400 hover:text-white px-1 font-mono cursor-pointer ml-1"
+                title="Open Theme Studio"
+              >
+                Studio
+              </button>
+            </div>
+
+            <button
               onClick={() => setIsAdminOpen(false)}
-              className="px-3.5 py-1.5 bg-slate-800 hover:bg-emerald-600 text-slate-200 hover:text-white rounded-xl font-bold flex items-center space-x-1.5 border border-slate-700 transition-all cursor-pointer active:scale-95"
+              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center space-x-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
             >
               <span>Switch to User View</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -369,6 +488,7 @@ export const AdminView: React.FC = () => {
           {activeTab === 'withdrawals' && <AdminWithdrawalsTab />}
           {activeTab === 'plans' && <AdminPlansTab />}
           {activeTab === 'engine' && <AdminEngineTab />}
+          {activeTab === 'theme' && <AdminThemeTab />}
           {activeTab === 'risk' && <AdminRiskTab />}
           {activeTab === 'broadcast' && <AdminBroadcastTab />}
           {activeTab === 'gateway' && <AdminGatewayTab />}
@@ -454,8 +574,8 @@ export const AdminView: React.FC = () => {
                   <ShieldCheck className="w-5 h-5 text-slate-950" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-black text-white">AKM Admin</h2>
-                  <p className="text-[10px] text-emerald-400 font-bold">Executive Suite</p>
+                  <h2 className="text-sm font-black text-white">AKM ENTERPRISES</h2>
+                  <p className="text-[10px] text-emerald-400 font-bold">Executive Console</p>
                 </div>
               </div>
               <button
@@ -466,8 +586,41 @@ export const AdminView: React.FC = () => {
               </button>
             </div>
 
+            {/* Quick Search Tab in Drawer */}
+            <div className="p-3 border-b border-slate-800/80 bg-slate-950/50">
+              <div className="relative flex items-center bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-1.5">
+                <Search className="w-3.5 h-3.5 text-slate-400 shrink-0 mr-2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Filter admin sections..."
+                  className="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="text-slate-400 hover:text-white ml-1 cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div className="flex-1 p-3 space-y-5 text-xs">
-              {tabGroups.map((group) => (
+              {tabGroups
+                .map((group) => ({
+                  ...group,
+                  items: group.items.filter(
+                    (item) =>
+                      !searchQuery ||
+                      item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      group.category.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                }))
+                .filter((group) => group.items.length > 0)
+                .map((group) => (
                 <div key={group.category} className="space-y-1">
                   <div className="px-2 py-0.5 text-[10px] font-black uppercase text-slate-400 tracking-wider">
                     {group.category}

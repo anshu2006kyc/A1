@@ -252,56 +252,56 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </button>
 
         {/* Branding & Header */}
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#008a44] via-[#00ba58] to-[#1cdb77] text-white flex items-center justify-center font-black text-xl shadow-md shadow-emerald-600/30 shrink-0">
-            <ShieldCheck className="w-6 h-6" />
+        <div className="flex items-center space-x-2.5 mb-3.5">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#008a44] via-[#00ba58] to-[#1cdb77] text-white flex items-center justify-center font-bold text-lg shadow-md shadow-emerald-600/30 shrink-0">
+            <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center space-x-1.5">
-              <span className="text-base font-black text-gray-900 tracking-tight">AKM CAPITAL</span>
-              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="text-sm font-bold text-gray-900 tracking-tight">AKM ENTERPRISES</span>
+              <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                 1-Step Mobile Portal
               </span>
             </div>
-            <p className="text-xs text-gray-500 font-medium">
-              Automated high-yield investment & instant payouts
+            <p className="text-[10px] text-gray-500 font-medium">
+              Automated digital investment & instant payouts
             </p>
           </div>
         </div>
 
         {/* Instant ₹28 Welcome Bonus Banner */}
-        <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between shadow-sm mb-4">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-              <Gift className="w-4 h-4 text-amber-200" />
+        <div className="p-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between shadow-xs mb-3.5">
+          <div className="flex items-center space-x-2">
+            <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+              <Gift className="w-3.5 h-3.5 text-amber-200" />
             </div>
             <div>
-              <div className="text-xs font-black leading-tight">Instant ₹28 Joining Bonus</div>
-              <div className="text-[10px] text-emerald-100">
+              <div className="text-[11px] font-bold leading-tight">Instant ₹28 Joining Bonus</div>
+              <div className="text-[9px] text-emerald-100">
                 Auto-credited on Mobile Sign Up / Login
               </div>
             </div>
           </div>
-          <span className="text-[10px] font-black bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full shadow-xs">
+          <span className="text-[9px] font-bold bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full shadow-2xs">
             100% Free
           </span>
         </div>
 
         {/* Auth Method Selector */}
-        <div className="flex bg-gray-100 p-1 rounded-2xl mb-4 text-xs font-bold">
+        <div className="flex bg-gray-100 p-1 rounded-2xl mb-3.5 text-[10px] font-bold">
           <button
             type="button"
             onClick={() => {
               sfx.playTap();
               setAuthMethod('quick');
             }}
-            className={`flex-1 py-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
+            className={`flex-1 py-1.5 rounded-xl transition-all flex items-center justify-center space-x-1 cursor-pointer ${
               authMethod === 'quick'
-                ? 'bg-white text-emerald-700 shadow-sm font-black'
+                ? 'bg-white text-emerald-700 shadow-xs font-bold'
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
-            <Smartphone className="w-3.5 h-3.5" />
+            <Smartphone className="w-3 h-3" />
             <span>⚡ 1-Tap Mobile</span>
           </button>
 
@@ -311,13 +311,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               sfx.playTap();
               setAuthMethod('otp');
             }}
-            className={`flex-1 py-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
+            className={`flex-1 py-1.5 rounded-xl transition-all flex items-center justify-center space-x-1 cursor-pointer ${
               authMethod === 'otp'
-                ? 'bg-white text-emerald-700 shadow-sm font-black'
+                ? 'bg-white text-emerald-700 shadow-xs font-bold'
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
-            <KeyRound className="w-3.5 h-3.5" />
+            <KeyRound className="w-3 h-3" />
             <span>SMS OTP</span>
           </button>
 
@@ -327,43 +327,43 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               sfx.playTap();
               setAuthMethod('password');
             }}
-            className={`flex-1 py-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
+            className={`flex-1 py-1.5 rounded-xl transition-all flex items-center justify-center space-x-1 cursor-pointer ${
               authMethod === 'password'
-                ? 'bg-white text-gray-900 shadow-sm font-black'
+                ? 'bg-white text-gray-900 shadow-xs font-bold'
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
-            <Lock className="w-3.5 h-3.5" />
+            <Lock className="w-3 h-3" />
             <span>Password</span>
           </button>
         </div>
 
         {/* FORGOT PASSWORD VIEW */}
         {mode === 'forgot' ? (
-          <form onSubmit={handleForgotSubmit} className="space-y-3.5">
-            <div className="text-center pb-1">
-              <h3 className="text-sm font-black text-gray-900">Reset Account Password</h3>
-              <p className="text-xs text-gray-500">Enter your registered mobile number and OTP</p>
+          <form onSubmit={handleForgotSubmit} className="space-y-3">
+            <div className="text-center pb-0.5">
+              <h3 className="text-xs font-bold text-gray-900">Reset Account Password</h3>
+              <p className="text-[10px] text-gray-500">Enter your registered mobile number and OTP</p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">Mobile Number</label>
+              <label className="block text-[10px] font-bold text-gray-700 mb-1">Mobile Number</label>
               <div className="relative flex items-center">
-                <span className="absolute left-3 font-bold text-xs text-gray-500">+91</span>
+                <span className="absolute left-3 font-bold text-[10px] text-gray-500">+91</span>
                 <input
                   type="tel"
                   maxLength={10}
                   placeholder="Enter 10-digit mobile number"
                   value={forgotPhone}
                   onChange={(e) => setForgotPhone(e.target.value.replace(/\D/g, ''))}
-                  className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all font-mono"
+                  className="w-full pl-10 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] font-semibold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all font-mono"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">Verification Code</label>
+              <label className="block text-[10px] font-bold text-gray-700 mb-1">Verification Code</label>
               <div className="flex space-x-2">
                 <input
                   type="text"
@@ -371,14 +371,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   placeholder="Enter 6-digit OTP"
                   value={forgotOtp}
                   onChange={(e) => setForgotOtp(e.target.value)}
-                  className="flex-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 tracking-wider font-mono placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                  className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] font-bold text-gray-900 tracking-wider font-mono placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
                   required
                 />
                 <button
                   type="button"
                   disabled={otpTimer > 0 || isSendingOtp}
                   onClick={() => handleSendOtp(forgotPhone)}
-                  className="px-3.5 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs hover:bg-emerald-100 disabled:opacity-50 cursor-pointer transition-all shrink-0"
+                  className="px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px] hover:bg-emerald-100 disabled:opacity-50 cursor-pointer transition-all shrink-0"
                 >
                   {otpTimer > 0 ? `${otpTimer}s` : isSendingOtp ? 'Sending...' : 'Get OTP'}
                 </button>
@@ -386,28 +386,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">New Password</label>
+              <label className="block text-[10px] font-bold text-gray-700 mb-1">New Password</label>
               <input
                 type="password"
                 placeholder="Enter minimum 6 characters"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] font-semibold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
                 required
               />
             </div>
 
-            <div className="pt-2 flex items-center space-x-2">
+            <div className="pt-1.5 flex items-center space-x-2">
               <button
                 type="button"
                 onClick={() => setMode('login')}
-                className="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-xs hover:bg-gray-200 transition-all cursor-pointer"
+                className="flex-1 py-2 rounded-xl bg-gray-100 text-gray-700 font-bold text-[10px] hover:bg-gray-200 transition-all cursor-pointer"
               >
                 Back to Sign In
               </button>
               <button
                 type="submit"
-                className="flex-1 py-2.5 rounded-xl btn-chamkila text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+                className="flex-1 py-2 rounded-xl btn-chamkila text-white font-bold text-[10px] shadow-xs transition-all cursor-pointer"
               >
                 Save Password
               </button>
@@ -415,21 +415,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </form>
         ) : (
           /* PRIMARY FORM: 1-STEP MOBILE LOGIN & REGISTRATION */
-          <form onSubmit={handleQuickMobileSubmit} className="space-y-3.5">
+          <form onSubmit={handleQuickMobileSubmit} className="space-y-3">
             {/* Mobile Number Input */}
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="block text-xs font-bold text-gray-800">
+                <label className="block text-[10px] font-bold text-gray-800">
                   Mobile Number
                 </label>
                 {carrier && (
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${carrier.color}`}>
+                  <span className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded-md border ${carrier.color}`}>
                     {carrier.name}
                   </span>
                 )}
               </div>
               <div className="relative flex items-center">
-                <span className="absolute left-3.5 font-bold text-xs text-gray-600 flex items-center space-x-1">
+                <span className="absolute left-3 font-bold text-[11px] text-gray-600 flex items-center space-x-1">
                   <span>🇮🇳</span>
                   <span>+91</span>
                 </span>
@@ -440,20 +440,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   placeholder="Enter 10-digit mobile number"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                  className="w-full pl-16 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all font-mono tracking-wider shadow-inner"
+                  className="w-full pl-14 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs sm:text-sm font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all font-mono tracking-wider shadow-inner"
                   required
                 />
               </div>
-              <div className="text-[10.5px] text-gray-500 mt-1 flex items-center justify-between">
+              <div className="text-[10px] text-gray-500 mt-1 flex items-center justify-between">
                 <span>Enter your mobile number to sign in or auto-register.</span>
-                <span className="font-mono text-[10px] text-gray-400">{phone.length}/10</span>
+                <span className="font-mono text-[9px] text-gray-400">{phone.length}/10</span>
               </div>
             </div>
 
             {/* OTP field if OTP method selected */}
             {authMethod === 'otp' && (
               <div className="animate-fade-in">
-                <label className="block text-xs font-bold text-gray-700 mb-1">
+                <label className="block text-[10px] font-bold text-gray-700 mb-1">
                   SMS Verification Code (OTP)
                 </label>
                 <div className="flex space-x-2">
@@ -463,20 +463,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     placeholder="Enter 6-digit OTP"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    className="flex-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 tracking-wider placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all font-mono"
+                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] font-bold text-gray-900 tracking-wider placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all font-mono"
                     required
                   />
                   <button
                     type="button"
                     disabled={otpTimer > 0 || isSendingOtp}
                     onClick={() => handleSendOtp(phone)}
-                    className="px-3.5 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all shrink-0"
+                    className="px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px] hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all shrink-0"
                   >
                     {otpTimer > 0 ? `${otpTimer}s` : isSendingOtp ? 'Sending...' : 'Get OTP'}
                   </button>
                 </div>
                 {otpSentHint && (
-                  <div className="flex justify-between items-center mt-1.5 text-[11px] text-gray-500">
+                  <div className="flex justify-between items-center mt-1 text-[10px] text-gray-500">
                     <span className="text-emerald-700 font-medium">Test OTP: <strong>123456</strong></span>
                     <button
                       type="button"
@@ -494,56 +494,57 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {authMethod === 'password' && (
               <div className="animate-fade-in">
                 <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-bold text-gray-700">
+                  <label className="block text-[10px] font-bold text-gray-700">
                     Account Password
                   </label>
                   <button
                     type="button"
                     onClick={() => setMode('forgot')}
-                    className="text-[11px] text-emerald-600 font-bold hover:underline cursor-pointer"
+                    className="text-[10px] text-emerald-600 font-bold hover:underline cursor-pointer"
                   >
                     Forgot Password?
                   </button>
                 </div>
                 <div className="relative flex items-center">
-                  <Lock className="w-4 h-4 text-gray-400 absolute left-3" />
+                  <Lock className="w-3.5 h-3.5 text-gray-400 absolute left-3" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter password (default: password123)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-9 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                    className="w-full pl-8 pr-9 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] font-semibold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 text-gray-400 hover:text-gray-600 cursor-pointer"
+                    className="px-2.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                    title={showPassword ? 'Hide password' : 'Show password'}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
                 </div>
               </div>
             )}
 
             {/* Collapsible Advanced Settings (Trade PIN / Invite Code) */}
-            <div className="border border-gray-100 rounded-2xl p-2.5 bg-gray-50/70">
+            <div className="border border-gray-100 rounded-2xl p-2 bg-gray-50/70">
               <button
                 type="button"
                 onClick={() => setShowAdvancedReg(!showAdvancedReg)}
-                className="w-full flex items-center justify-between text-xs font-bold text-gray-600 hover:text-gray-900 cursor-pointer transition-colors"
+                className="w-full flex items-center justify-between text-[10px] font-bold text-gray-600 hover:text-gray-900 cursor-pointer transition-colors"
               >
                 <div className="flex items-center space-x-1.5">
-                  <UserPlus className="w-3.5 h-3.5 text-emerald-600" />
+                  <UserPlus className="w-3 h-3 text-emerald-600" />
                   <span>Optional: Referral / Invite Code</span>
                 </div>
-                {showAdvancedReg ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {showAdvancedReg ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               </button>
 
               {showAdvancedReg && (
-                <div className="mt-3 space-y-2.5 pt-2 border-t border-gray-200 animate-fade-in">
+                <div className="mt-2 space-y-2 pt-1.5 border-t border-gray-200 animate-fade-in">
                   <div>
-                    <label className="block text-[11px] font-bold text-gray-600 mb-1">
+                    <label className="block text-[10px] font-bold text-gray-600 mb-1">
                       Invite / Referral Code
                     </label>
                     <input
@@ -551,11 +552,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       placeholder="AKM888"
                       value={regInviteCode}
                       onChange={(e) => setRegInviteCode(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-emerald-800 placeholder-gray-400 focus:outline-none focus:border-emerald-500 uppercase"
+                      className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-xl text-[11px] font-bold text-emerald-800 placeholder-gray-400 focus:outline-none focus:border-emerald-500 uppercase"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-gray-600 mb-1">
+                    <label className="block text-[10px] font-bold text-gray-600 mb-1">
                       Custom Trade Security PIN (6 digits)
                     </label>
                     <input
@@ -564,7 +565,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       placeholder="Default: 123456"
                       value={regTradePin}
                       onChange={(e) => setRegTradePin(e.target.value.replace(/\D/g, ''))}
-                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-mono font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500 tracking-wider"
+                      className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-xl text-[11px] font-mono font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500 tracking-wider"
                     />
                   </div>
                 </div>
@@ -572,15 +573,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
 
             {/* Remember device toggle */}
-            <div className="flex items-center justify-between text-xs pt-0.5">
-              <label className="flex items-center space-x-2 text-gray-600 cursor-pointer">
+            <div className="flex items-center justify-between text-[10px] pt-0.5">
+              <label className="flex items-center space-x-1.5 text-gray-600 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+                  className="rounded text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5 cursor-pointer"
                 />
-                <span className="text-[11px]">Keep me signed in on this mobile device</span>
+                <span className="text-[10px]">Keep me signed in on this mobile device</span>
               </label>
             </div>
 
@@ -588,9 +589,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 rounded-2xl btn-chamkila text-white font-black text-sm shadow-lg active:scale-98 transition-all cursor-pointer flex items-center justify-center space-x-2 tracking-wide disabled:opacity-75"
+              className="w-full py-2 px-3 rounded-2xl btn-chamkila text-white font-bold text-[11px] shadow-xs active:scale-98 transition-all cursor-pointer flex items-center justify-center space-x-1.5 tracking-wide disabled:opacity-75"
             >
-              <Zap className="w-4 h-4 text-amber-300" />
+              <Zap className="w-3 h-3 text-amber-300" />
               <span>
                 {authMethod === 'quick'
                   ? '⚡ Continue with Mobile Number'
@@ -598,18 +599,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   ? 'Verify OTP & Continue'
                   : 'Sign In with Password'}
               </span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-3 h-3" />
             </button>
           </form>
         )}
 
-        {/* Security & Compliance Footer (Zero "node" words, zero star icons) */}
-        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
-          <div className="flex items-center space-x-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span>256-Bit Financial Encryption</span>
+        {/* Security & Compliance Footer */}
+        <div className="mt-3.5 pt-2.5 border-t border-gray-100 flex items-center justify-between text-[8.5px] text-gray-400 font-mono">
+          <div className="flex items-center space-x-1">
+            <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
+            <span>SSL 256-Bit • Enterprise Vault</span>
           </div>
-          <span>ISO 27001 Certified Infrastructure</span>
+          <span>ISO 27001 Protocol</span>
         </div>
       </div>
     </div>,

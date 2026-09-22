@@ -22,6 +22,7 @@ import { Toast } from './components/Toast';
 import { AnnouncementModal } from './components/AnnouncementModal';
 import { AuthModal } from './components/AuthModal';
 import { AdminAuthModal } from './components/AdminAuthModal';
+import { MobileAuthGate } from './components/MobileAuthGate';
 import { Lock, ShieldAlert, Wrench } from 'lucide-react';
 
 const MainAppContent: React.FC = () => {
@@ -31,6 +32,7 @@ const MainAppContent: React.FC = () => {
     setIsAdminOpen,
     isAdminUser,
     adminSettings,
+    isLoggedIn,
     isAuthModalOpen,
     setIsAuthModalOpen,
     authModalInitialMode,
@@ -50,7 +52,7 @@ const MainAppContent: React.FC = () => {
       if (pathname.includes('/pay') || orderId) {
         const finalOrderId = orderId || `ORD${Date.now()}`;
         const finalAmount = parsedAmount > 0 ? parsedAmount : 500;
-        const channel = pathname.includes('sunpay') ? 'Sunpays UPI' : 'WatchPay UPI';
+        const channel = pathname.includes('sunpay') ? 'UPI Express Channel' : 'UPI Fast Channel';
         openPaymentPage(finalAmount, channel, finalOrderId);
 
         // Normalize URL to root without page reload
@@ -106,6 +108,18 @@ const MainAppContent: React.FC = () => {
     );
   }
 
+  // 100% Gated: Without Mobile Registration / Login, nobody can access or use any view
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex justify-center selection:bg-emerald-500 selection:text-white">
+        <div className="w-full max-w-md bg-white min-h-screen shadow-2xl relative flex flex-col">
+          <MobileAuthGate />
+          <Toast />
+        </div>
+      </div>
+    );
+  }
+
   const renderView = () => {
     switch (currentView) {
       case 'home':
@@ -146,19 +160,6 @@ const MainAppContent: React.FC = () => {
     <div className="min-h-screen bg-neutral-900 flex justify-center selection:bg-emerald-500 selection:text-white">
       {/* Mobile-sized container with high-end app layout */}
       <div className="w-full max-w-md bg-white min-h-screen shadow-2xl relative flex flex-col">
-        {/* Floating Quick Admin Access Button - ONLY visible to verified Admins */}
-        {isAdminUser && (
-          <button
-            id="floating-admin-toggle"
-            onClick={() => setIsAdminOpen(true)}
-            className="fixed bottom-20 right-4 z-30 bg-slate-900/90 hover:bg-slate-950 text-amber-400 p-2.5 rounded-full shadow-xl border border-amber-400/40 backdrop-blur-md flex items-center space-x-1.5 active:scale-95 transition-all cursor-pointer group"
-            title="Open Admin Control Panel"
-          >
-            <ShieldAlert className="w-5 h-5 text-amber-400 group-hover:rotate-12 transition-transform" />
-            <span className="text-[10px] font-bold text-white pr-1">Admin</span>
-          </button>
-        )}
-
         {/* Dynamic View Component with smooth view transitions */}
         <main className="flex-1 overflow-x-hidden flex flex-col">
           <AnimatePresence mode="wait">
