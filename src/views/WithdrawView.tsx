@@ -30,7 +30,9 @@ export const WithdrawView: React.FC = () => {
     requestWithdrawal,
     cancelWithdrawal,
     transactions,
-    showToast
+    showToast,
+    isLoggedIn,
+    openAuthModal
   } = useApp();
 
   const [withdrawSpeed, setWithdrawSpeed] = useState<'express' | 'standard'>('express');
@@ -64,6 +66,12 @@ export const WithdrawView: React.FC = () => {
   };
 
   const handleWithdraw = () => {
+    if (!isLoggedIn || !user.id || user.id <= 0) {
+      showToast('Kripya withdrawal ke liye pehle Login karein', 'info');
+      openAuthModal('login');
+      return;
+    }
+
     if (!user.bankAccount || !user.bankAccount.accountNumber) {
       showToast('Please bind your receiving Bank Card first', 'error');
       setCurrentView('bank');

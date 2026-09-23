@@ -13,7 +13,7 @@ import {
 import { useApp } from '../context/AppContext';
 
 export const BankView: React.FC = () => {
-  const { user, goBack, updateBankAccount, showToast } = useApp();
+  const { user, goBack, updateBankAccount, showToast, isLoggedIn, openAuthModal } = useApp();
 
   const [holderName, setHolderName] = useState<string>(
     user.bankAccount?.holderName || ''
@@ -34,6 +34,11 @@ export const BankView: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isLoggedIn || !user.id || user.id <= 0) {
+      showToast('Kripya bank details bind karne ke liye pehle Login karein', 'info');
+      openAuthModal('login');
+      return;
+    }
     if (!holderName.trim()) {
       showToast('Please enter Account Holder Name', 'error');
       return;

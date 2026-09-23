@@ -25,7 +25,9 @@ export const RechargeView: React.FC = () => {
     adminSettings,
     showToast,
     rechargePrefillAmount,
-    openPaymentPage
+    openPaymentPage,
+    isLoggedIn,
+    openAuthModal
   } = useApp();
 
   const quickAmounts = [285, 520, 720, 1000, 2000, 5000];
@@ -89,6 +91,12 @@ export const RechargeView: React.FC = () => {
 
   // Direct 1-Tap Launch to Automated Payment Gateway
   const handleLaunchPayment = async () => {
+    if (!isLoggedIn || !user.id || user.id <= 0) {
+      showToast('Kripya recharge karne ke liye pehle Login karein', 'info');
+      openAuthModal('login');
+      return;
+    }
+
     if (amount < adminSettings.minRecharge) {
       showToast(`Minimum deposit is ₹${adminSettings.minRecharge}`, 'error');
       return;

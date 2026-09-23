@@ -901,12 +901,27 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
   // Sync to LocalStorage & Firestore Database with Echo Prevention
   useEffect(() => {
     localStorage.setItem('akm_user', JSON.stringify(user));
+    if (user.id && user.id > 0) {
+      setRegisteredUsers((prev) => {
+        const idx = prev.findIndex((u) => u.id === user.id);
+        if (idx >= 0) {
+          const updated = [...prev];
+          updated[idx] = { ...updated[idx], ...user };
+          return updated;
+        }
+        return prev;
+      });
+    }
     if (isRemoteUserSyncRef.current) {
       isRemoteUserSyncRef.current = false;
       return;
     }
     syncUserToFirestore(user).catch(() => {});
   }, [user]);
+
+  useEffect(() => {
+    localStorage.setItem('akm_registered_users', JSON.stringify(registeredUsers));
+  }, [registeredUsers]);
 
   useEffect(() => {
     localStorage.setItem('akm_plans', JSON.stringify(plans));
@@ -1007,6 +1022,11 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Update Bank Account
   const updateBankAccount = (bank: BankAccount) => {
+    if (!user.id || user.id <= 0) {
+      showToast('Kripya bank details bind karne ke liye pehle Login karein', 'info');
+      openAuthModal('login');
+      return false;
+    }
     setUser((prev) => ({
       ...prev,
       bankAccount: {
@@ -1326,6 +1346,11 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Daily Check-In
   const claimDailyCheckIn = () => {
+    if (!user.id || user.id <= 0) {
+      openAuthModal('login');
+      return { success: false, amount: 0, message: 'Kripya check-in ke liye pehle Login karein.' };
+    }
+
     if (hasCheckedInToday) {
       return { success: false, amount: 0, message: 'Already Claimed Today' };
     }
@@ -1389,6 +1414,11 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Claim Streak Milestone
   const claimStreakMilestone = (days: number, reward: number) => {
+    if (!user.id || user.id <= 0) {
+      openAuthModal('login');
+      return { success: false, amount: 0, message: 'Kripya login karein.' };
+    }
+
     if (claimedStreakMilestones.includes(days)) {
       showToast('Milestone bonus already claimed!', 'info');
       return { success: false, amount: 0, message: 'Already claimed' };
@@ -1431,12 +1461,17 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Claim Team Milestone Quest
   const claimTeamMilestone = (questId: string, requiredActive: number, reward: number) => {
+    if (!user.id || user.id <= 0) {
+      openAuthModal('login');
+      return { success: false, message: 'Kripya login karein.' };
+    }
+
     if (claimedTeamMilestones.includes(questId)) {
       showToast('Team quest reward already claimed!', 'info');
       return { success: false, message: 'Already claimed' };
     }
 
-    const activeCount = teamMembers.filter((m) => m.rechargeAmount > 0).length;
+    const activeCount = teamMembers.filter((m) => m.sponsorId === user.id && m.rechargeAmount > 0).length;
     if (activeCount < requiredActive) {
       showToast(`Requires ${requiredActive} active members (Current: ${activeCount})`, 'error');
       return { success: false, message: 'Requirement not met' };
@@ -1474,6 +1509,14 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Buy Plan
   const buyPlan = (plan: Plan) => {
+    if (!user.id || user.id <= 0) {
+      openAuthModal('login');
+      return {
+        success: false,
+        message: 'Kripya plan purchase karne ke liye pehle Login karein.'
+      };
+    }
+
     // 1. Strict Deposit Enforcement: Bina deposit ke koi plan purchase nahi kar sake
     const userSuccessfulRechargeCount = transactions.filter(
       (t) => t.userId === user.id && t.type === 'recharge' && t.status === 'success'
@@ -1774,6 +1817,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       const now = Date.now();
       const matureTurboPlan = userPlans.find(
         (up) =>
+          up.userId === user.id &&
           up.status === 'active' &&
           Boolean(up.durationMinutes) &&
           Boolean(up.nextClaimTime) &&
@@ -1786,10 +1830,16 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     }, 2000);
 
     return () => clearInterval(checkInterval);
-  }, [adminSettings.turboAutoSettlement, userPlans]);
+  }, [adminSettings.turboAutoSettlement, userPlans, user.id]);
 
   // Initiate Recharge
   const initiateRecharge = (amount: number, channel: string, openModal: boolean = false, customOrderId?: string) => {
+    if (!user.id || user.id <= 0) {
+      showToast('Kripya recharge karne ke liye pehle Login karein.', 'info');
+      openAuthModal('login');
+      return { orderId: '' };
+    }
+
     if (adminSettings.freezeDeposits) {
       showToast('Deposit gateway is temporarily locked for maintenance by Admin.', 'error');
       return { orderId: '' };
@@ -2052,6 +2102,15 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Request Withdrawal (Supports Bank IMPS / NEFT and Instant UPI)
   const requestWithdrawal = (amount: number, payoutMethod: 'bank' | 'upi' = 'bank', customAccount?: string) => {
+    if (!user.id || user.id <= 0) {
+      showToast('Kripya withdrawal ke liye pehle Login karein.', 'info');
+      openAuthModal('login');
+      return {
+        success: false,
+        message: 'Kripya withdrawal ke liye pehle Login karein.'
+      };
+    }
+
     if (adminSettings.freezeWithdrawals) {
       return {
         success: false,

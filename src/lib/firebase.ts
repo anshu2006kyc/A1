@@ -128,6 +128,7 @@ export function sanitizeFirestoreData<T>(data: T): T {
 // --- FIRESTORE PERSISTENCE SYNC HELPERS ---
 
 export async function syncUserToFirestore(user: User): Promise<void> {
+  if (!user || !user.id || Number(user.id) <= 0) return;
   const path = `users/${user.id}`;
   try {
     const userData = sanitizeFirestoreData({
