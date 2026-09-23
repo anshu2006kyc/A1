@@ -1,11 +1,11 @@
 import { AdminSettings, CheckInRecord, Plan, SecurityAlert, TeamMember, Transaction, User } from '../types';
 
 export const INITIAL_USER: User = {
-  id: 101,
-  phone: "+91 9876543210",
-  password: "password123",
-  tradePassword: "123456",
-  name: "New Member",
+  id: 0,
+  phone: "",
+  password: "",
+  tradePassword: "",
+  name: "Guest",
   role: "user",
   isAdmin: false,
   balance: 0.0,
@@ -14,7 +14,7 @@ export const INITIAL_USER: User = {
   totalRevenue: 0.0,
   memberLevel: "Member",
   vipLevel: 0,
-  inviteCode: "AKM888",
+  inviteCode: "",
   status: "active",
   createdAt: "2026-09-23 00:00:00",
   lastLogin: "2026-09-23 00:00:00",
@@ -22,7 +22,6 @@ export const INITIAL_USER: User = {
 };
 
 export const INITIAL_USERS: User[] = [
-  INITIAL_USER,
   {
     id: 60,
     phone: "+91 6203369638",

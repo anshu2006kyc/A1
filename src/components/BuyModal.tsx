@@ -9,6 +9,8 @@ import { sfx } from '../utils/sound';
 interface BuyModalProps {
   plan: Plan | null;
   userBalance: number;
+  userTotalRecharge?: number;
+  hasDeposited?: boolean;
   activeCount?: number;
   onClose: () => void;
   onConfirm: () => { success: boolean; message: string } | Promise<{ success: boolean; message: string }>;
@@ -19,6 +21,8 @@ interface BuyModalProps {
 export const BuyModal: React.FC<BuyModalProps> = ({
   plan,
   userBalance,
+  userTotalRecharge,
+  hasDeposited,
   activeCount = 0,
   onClose,
   onConfirm,
@@ -40,11 +44,19 @@ export const BuyModal: React.FC<BuyModalProps> = ({
 
   if (!plan) return null;
 
+  // Strict check: Bina deposit ke koi plan purchase na kar sake
+  const isZeroDeposit = hasDeposited === false || (typeof userTotalRecharge === 'number' && userTotalRecharge <= 0);
   const isLowBalance = userBalance < plan.depositAmount;
   const isLimitReached = Boolean(plan.limit && activeCount >= plan.limit);
+  const requiresDeposit = isZeroDeposit || isLowBalance;
 
   const handlePurchase = async () => {
-    if (isSubmitting || isLowBalance || isLimitReached) return;
+    if (isSubmitting || isZeroDeposit || isLowBalance || isLimitReached) {
+      if (isZeroDeposit) {
+        setErrorMessage('Bina deposit ke koi plan purchase nahi kar sakte. Kripya pehle deposit karein.');
+      }
+      return;
+    }
     setIsSubmitting(true);
     setErrorMessage(null);
 
@@ -147,7 +159,7 @@ export const BuyModal: React.FC<BuyModalProps> = ({
           /* Confirmation Screen */
           <>
             <h3 className="text-base font-bold text-gray-900 leading-snug px-2">
-              {isLowBalance ? 'Deposit Required to Subscribe' : 'Confirm Plan Purchase'}
+              {isZeroDeposit || isLowBalance ? 'Deposit Required to Subscribe' : 'Confirm Plan Purchase'}
             </h3>
 
             <div className="my-3 p-3 bg-emerald-50 rounded-2xl border border-emerald-100 text-left flex items-start space-x-3">
@@ -197,8 +209,22 @@ export const BuyModal: React.FC<BuyModalProps> = ({
               </div>
             )}
 
-            {/* Limit reached warning */}
-            {isLimitReached ? (
+            {/* Zero deposit enforcement or limit/balance warnings */}
+            {isZeroDeposit ? (
+              <div className="mb-3 p-3 bg-gradient-to-br from-amber-50 to-orange-50/80 rounded-2xl border border-amber-300 text-left space-y-1.5 shadow-2xs">
+                <div className="flex items-center space-x-1.5 text-amber-950 font-black text-xs">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Pehle Deposit Karna Anivarya Hai!</span>
+                </div>
+                <p className="text-[11px] text-amber-900 leading-snug font-medium">
+                  Bina deposit/recharge ke koi bhi plan purchase nahi kiya ja sakta. Kripya continue karne ke liye pehle deposit karein.
+                </p>
+                <div className="flex justify-between items-center text-[10.5px] text-gray-700 pt-1.5 border-t border-amber-200/80 font-bold">
+                  <span>Required Deposit:</span>
+                  <span className="text-emerald-700 font-black font-mono text-xs">{formatINR(plan.depositAmount, { decimals: 0 })}</span>
+                </div>
+              </div>
+            ) : isLimitReached ? (
               <div className="mb-3 p-2.5 bg-amber-50 rounded-xl border border-amber-200 text-left">
                 <div className="flex items-center space-x-1.5 text-amber-900 font-bold text-[11px]">
                   <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
@@ -240,7 +266,7 @@ export const BuyModal: React.FC<BuyModalProps> = ({
                 Cancel
               </button>
 
-              {isLowBalance ? (
+              {requiresDeposit ? (
                 <button
                   id="buy-deposit-redirect-btn"
                   onClick={() => onGoToRecharge(plan.depositAmount)}

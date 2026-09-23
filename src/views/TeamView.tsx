@@ -83,7 +83,7 @@ export const TeamView: React.FC = () => {
 
   // Team metrics scoped strictly to current user's invite network
   const myTeamMembers = useMemo(() => {
-    return teamMembers.filter((m) => !m.sponsorId || m.sponsorId === user.id);
+    return teamMembers.filter((m) => m.sponsorId === user.id);
   }, [teamMembers, user.id]);
 
   const l1Members = useMemo(() => myTeamMembers.filter((m) => m.level === 1), [myTeamMembers]);

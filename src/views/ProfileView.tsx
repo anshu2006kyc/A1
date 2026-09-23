@@ -91,7 +91,7 @@ export const ProfileView: React.FC = () => {
   };
 
   // Effective recorded withdrawal amount from user stats and user-scoped transactions
-  const userTransactions = transactions.filter((t) => !t.userId || t.userId === user.id);
+  const userTransactions = transactions.filter((t) => t.userId === user.id);
 
   const recordedWithdrawals = userTransactions
     .filter((t) => t.type === 'withdraw' && t.status !== 'failed')
@@ -180,6 +180,26 @@ export const ProfileView: React.FC = () => {
       </div>
 
       <div className="p-3.5 space-y-3.5">
+        {!isLoggedIn && (
+          <div className="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-3 flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                <LogIn className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-gray-900">Guest Mode (Logged Out)</div>
+                <div className="text-[10px] text-gray-500">Sign in to access your wallet, plans & withdrawal records.</div>
+              </div>
+            </div>
+            <button
+              onClick={() => openAuthModal('login')}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs active:scale-95 transition-all"
+            >
+              Sign In
+            </button>
+          </div>
+        )}
+
         {/* ADVANCE TITANIUM VIP PROFILE CARD (COMPACT & SLEEK) */}
         <div className="bg-gradient-to-br from-[#0a1f16] via-[#072a1b] to-[#04150d] text-white p-3.5 rounded-2xl shadow-lg border border-emerald-500/25 relative overflow-hidden backdrop-blur-md">
           {/* Subtle Cyber Grid Accent Overlay */}
@@ -259,7 +279,7 @@ export const ProfileView: React.FC = () => {
             <div className="text-right">
               <span className="text-[9px] text-emerald-200/70 block uppercase font-medium">Active Plans</span>
               <span className="text-xs font-bold font-mono text-white">
-                {userPlans.filter((p) => p.status === 'active').length} Running
+                {userPlans.filter((p) => p.userId === user.id && p.status === 'active').length} Running
               </span>
             </div>
           </div>

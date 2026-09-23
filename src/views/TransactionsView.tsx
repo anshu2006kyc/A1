@@ -14,6 +14,7 @@ import {
   FileCheck,
   FileText,
   HelpCircle,
+  LogIn,
   Package,
   Search,
   Share2,
@@ -35,7 +36,9 @@ export const TransactionsView: React.FC = () => {
     goBack,
     showToast,
     transactionFilter,
-    setTransactionFilter
+    setTransactionFilter,
+    isLoggedIn,
+    openAuthModal
   } = useApp();
 
   const [expandedTxId, setExpandedTxId] = useState<string | null>(null);
@@ -44,7 +47,7 @@ export const TransactionsView: React.FC = () => {
 
   // Scoped strictly to current user so new users see a clean empty records state
   const userTransactions = useMemo(() => {
-    return transactions.filter((t) => !t.userId || t.userId === user.id);
+    return transactions.filter((t) => t.userId === user.id);
   }, [transactions, user.id]);
 
   // Financial statistics calculations for the Chamkila Overview
@@ -123,6 +126,26 @@ export const TransactionsView: React.FC = () => {
       </div>
 
       <div className="p-3.5 space-y-3.5">
+        {!isLoggedIn && (
+          <div className="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-3 flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                <LogIn className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-gray-900">Signed Out (Guest)</div>
+                <div className="text-[10px] text-gray-500">Sign in to view your real-time deposit, withdrawal & income records.</div>
+              </div>
+            </div>
+            <button
+              onClick={() => openAuthModal('login')}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs active:scale-95 transition-all"
+            >
+              Sign In
+            </button>
+          </div>
+        )}
+
         {/* Chamkila Financial Overview Ribbon (3 Glowing Stat Cards) */}
         <div className="grid grid-cols-3 gap-2">
           {/* Deposits Card */}
@@ -402,22 +425,18 @@ export const TransactionsView: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="pt-2 flex items-center justify-between border-t border-emerald-200/50">
+                      <div className="pt-2 flex items-center justify-between border-t border-emerald-200/40">
                         <button
                           onClick={() => setReceiptTx(tx)}
-                          className="group inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-700 via-emerald-600 to-[#008a44] text-white text-[9.5px] font-black tracking-wide shadow-xs shadow-emerald-700/20 hover:shadow-md hover:shadow-emerald-700/30 hover:brightness-105 active:scale-95 transition-all cursor-pointer border border-emerald-400/40"
+                          className="group inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-gradient-to-r from-emerald-800 to-emerald-900 hover:from-emerald-700 hover:to-emerald-800 text-emerald-100 hover:text-white text-[9px] font-black tracking-wider uppercase shadow-2xs border border-emerald-600/40 active:scale-95 transition-all cursor-pointer"
                         >
-                          <span className="relative flex h-1.5 w-1.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
-                          </span>
-                          <FileCheck className="w-3 h-3 text-emerald-100 group-hover:scale-110 transition-transform" />
-                          <span className="uppercase tracking-wider">Official Slip</span>
-                          <ChevronRight className="w-2.5 h-2.5 text-emerald-200 group-hover:translate-x-0.5 transition-transform" />
+                          <FileCheck className="w-3 h-3 text-emerald-400 group-hover:scale-110 transition-transform" />
+                          <span>Official Slip</span>
+                          <ChevronRight className="w-2.5 h-2.5 text-emerald-400/80 group-hover:translate-x-0.5 transition-transform" />
                         </button>
 
-                        <div className="flex items-center space-x-1 text-[9px] text-emerald-800 font-mono font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
-                          <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                        <div className="flex items-center space-x-1 text-[8.5px] text-emerald-800 font-mono font-bold bg-emerald-100/70 px-2 py-0.5 rounded border border-emerald-300/60">
+                          <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
                           <span>E-Voucher</span>
                         </div>
                       </div>

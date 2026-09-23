@@ -954,7 +954,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Today's Date String (YYYY-MM-DD)
   const todayStr = new Date().toISOString().split('T')[0];
-  const userCheckIns = checkIns.filter((c) => !c.userId || c.userId === user.id);
+  const userCheckIns = checkIns.filter((c) => c.userId === user.id);
   const hasCheckedInToday = userCheckIns.some((c) => c.dateStr === todayStr);
 
   // Calculate real consecutive streak for the current user
@@ -1156,11 +1156,8 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
         adminRemark: 'System automated ₹28 registration reward'
       };
-      // Clear all state for new user so they get a completely clean start
-      setUserPlans([]);
-      setCheckIns([]);
-      setTeamMembers([]);
-      setTransactions([welcomeTx]);
+      // Add welcome bonus transaction to system transactions without clearing existing users' data
+      setTransactions((prev) => sanitizeTransactions([welcomeTx, ...prev]));
       syncUserToFirestore(newUser).catch(() => {});
       syncTransactionToFirestore(welcomeTx).catch(() => {});
 
@@ -1236,11 +1233,8 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
       adminRemark: 'System automated ₹28 registration reward'
     };
-    // Clear all state for new user so they get a completely clean start
-    setUserPlans([]);
-    setCheckIns([]);
-    setTeamMembers([]);
-    setTransactions([welcomeTx]);
+    // Add welcome bonus transaction to global transactions without deleting existing records
+    setTransactions((prev) => sanitizeTransactions([welcomeTx, ...prev]));
     syncUserToFirestore(newUser).catch(() => {});
     syncTransactionToFirestore(welcomeTx).catch(() => {});
 
@@ -1252,10 +1246,8 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     localStorage.setItem('akm_is_logged_in', JSON.stringify(false));
     lockAdminSession();
     setUser(INITIAL_USER);
-    setTransactions([]);
-    setUserPlans([]);
-    setCheckIns([]);
-    setTeamMembers([]);
+    // CRITICAL: NEVER delete transactions, userPlans, checkIns, teamMembers, or registeredUsers!
+    // All users' historical records and balances remain permanently safe and preserved in storage and Firestore.
     sfx.playTap();
     showToast('Logged out of session', 'info');
   };
@@ -1482,6 +1474,19 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Buy Plan
   const buyPlan = (plan: Plan) => {
+    // 1. Strict Deposit Enforcement: Bina deposit ke koi plan purchase nahi kar sake
+    const userSuccessfulRechargeCount = transactions.filter(
+      (t) => t.userId === user.id && t.type === 'recharge' && t.status === 'success'
+    ).length;
+    const hasDeposited = (user.totalRecharge || 0) > 0 || userSuccessfulRechargeCount > 0;
+
+    if (!hasDeposited) {
+      return {
+        success: false,
+        message: 'Bina deposit ke koi plan purchase nahi kar sakte. Kripya pehle recharge/deposit karein.'
+      };
+    }
+
     if (user.balance < plan.depositAmount) {
       return {
         success: false,
@@ -1490,7 +1495,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     }
 
     // Check user plan limit (count active investments only, allow repurchase after completion)
-    const activeCount = userPlans.filter((up) => String(up.planId) === String(plan.id) && up.status === 'active').length;
+    const activeCount = userPlans.filter((up) => up.userId === user.id && String(up.planId) === String(plan.id) && up.status === 'active').length;
     if (plan.limit && activeCount >= plan.limit) {
       return {
         success: false,
@@ -1561,7 +1566,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Claim Plan Profit manually
   const claimPlanProfit = (userPlanId: string) => {
-    const up = userPlans.find((p) => p.id === userPlanId);
+    const up = userPlans.find((p) => p.id === userPlanId && p.userId === user.id);
     if (!up || up.status !== 'active') {
       return { success: false, amount: 0 };
     }
@@ -1630,7 +1635,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
   // Claim all active plans profit at once
   const claimAllPlanProfits = () => {
     const claimable = userPlans.filter((p) => {
-      if (p.status !== 'active') return false;
+      if (p.userId !== user.id || p.status !== 'active') return false;
       if (p.durationMinutes) {
         return p.nextClaimTime ? Date.now() >= p.nextClaimTime : true;
       }
@@ -1650,6 +1655,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
     const updatedUserPlans = userPlans.map((up) => {
       const isEligible =
+        up.userId === user.id &&
         up.status === 'active' &&
         (up.durationMinutes
           ? (up.nextClaimTime ? Date.now() >= up.nextClaimTime : true)
@@ -1700,7 +1706,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Return / refund a plan cycle early or on request
   const returnPlanCycle = (userPlanId: string) => {
-    const target = userPlans.find((p) => p.id === userPlanId);
+    const target = userPlans.find((p) => p.id === userPlanId && p.userId === user.id);
     if (!target) {
       showToast('Plan not found!', 'error');
       return { success: false, message: 'Plan not found' };
@@ -2137,7 +2143,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // User Cancel Pending Withdrawal
   const cancelWithdrawal = (txId: string) => {
-    const tx = transactions.find((t) => t.id === txId && t.type === 'withdraw' && t.status === 'pending');
+    const tx = transactions.find((t) => t.id === txId && t.userId === user.id && t.type === 'withdraw' && t.status === 'pending');
     if (!tx) {
       return { success: false, message: 'Withdrawal not found or already processed.' };
     }

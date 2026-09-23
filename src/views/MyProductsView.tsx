@@ -27,7 +27,7 @@ export const MyProductsView: React.FC = () => {
   const [planToReturn, setPlanToReturn] = useState<UserPlan | null>(null);
 
   // Scoped strictly to current user's purchased investments
-  const myPlans = userPlans.filter((p) => !p.userId || p.userId === user.id);
+  const myPlans = userPlans.filter((p) => p.userId === user.id);
   const activePlans = myPlans.filter((p) => p.status === 'active');
   const totalInvested = myPlans.reduce((sum, p) => sum + p.depositAmount, 0);
   const dailyIncomeTotal = activePlans.reduce((sum, p) => sum + p.dailyIncome, 0);

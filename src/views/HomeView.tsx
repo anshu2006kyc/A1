@@ -12,9 +12,13 @@ import { sfx } from '../utils/sound';
 import { formatINR } from '../utils/currency';
 
 export const HomeView: React.FC = () => {
-  const { user, plans, userPlans, selectedCategory, setSelectedCategory, buyPlan, navigateToRecharge, setCurrentView, showToast } = useApp();
+  const { user, plans, userPlans, transactions, selectedCategory, setSelectedCategory, buyPlan, navigateToRecharge, setCurrentView, showToast } = useApp();
   const [selectedPlanToBuy, setSelectedPlanToBuy] = useState<Plan | null>(null);
   const [turboDurationFilter, setTurboDurationFilter] = useState<'all' | '1m' | '1h'>('all');
+
+  const hasDeposited = (user.totalRecharge || 0) > 0 || transactions.some(
+    (t) => t.userId === user.id && t.type === 'recharge' && t.status === 'success'
+  );
 
   const filteredPlans = plans.filter((p) => {
     if (p.category !== selectedCategory || !p.isActive) return false;
@@ -26,7 +30,7 @@ export const HomeView: React.FC = () => {
   });
 
   const getActiveCount = (planId: string | number) => {
-    return userPlans.filter((up) => String(up.planId) === String(planId) && up.status === 'active').length;
+    return userPlans.filter((up) => up.userId === user.id && String(up.planId) === String(planId) && up.status === 'active').length;
   };
 
   return (
@@ -188,6 +192,8 @@ export const HomeView: React.FC = () => {
         <BuyModal
           plan={selectedPlanToBuy}
           userBalance={user.balance}
+          userTotalRecharge={user.totalRecharge || 0}
+          hasDeposited={hasDeposited}
           activeCount={getActiveCount(selectedPlanToBuy.id)}
           onClose={() => setSelectedPlanToBuy(null)}
           onConfirm={() => buyPlan(selectedPlanToBuy)}

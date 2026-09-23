@@ -470,13 +470,13 @@ export const CheckInView: React.FC = () => {
             </div>
           </div>
 
-          {checkIns.length === 0 ? (
+          {checkIns.filter((ci) => ci.userId === user.id).length === 0 ? (
             <div className="text-center py-6 text-gray-400 text-xs">
               No check-ins yet. Claim your first bonus above!
             </div>
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-              {checkIns.map((ci, idx) => (
+              {checkIns.filter((ci) => ci.userId === user.id).map((ci, idx) => (
                 <div
                   key={`${ci.id || 'chk'}-${idx}`}
                   className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/80 border border-gray-100 hover:bg-gray-50 transition-colors"

@@ -47,9 +47,9 @@ export const WithdrawView: React.FC = () => {
   const taxAmount = Math.round(((numAmount * taxPercent) / 100) * 100) / 100;
   const netReceived = Math.max(0, numAmount - taxAmount);
 
-  // Active pending withdrawal if any
+  // Active pending withdrawal if any (strictly scoped to current user)
   const pendingWithdrawals = transactions.filter(
-    (t) => t.type === 'withdraw' && t.status === 'pending'
+    (t) => t.userId === user.id && t.type === 'withdraw' && t.status === 'pending'
   );
 
   const handleSelectPercentage = (pct: number) => {
