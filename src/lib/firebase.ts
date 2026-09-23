@@ -6,9 +6,15 @@ import {
   getDoc,
   getDocFromServer,
   setDoc,
+  updateDoc,
   getDocs,
   collection,
-  onSnapshot
+  query,
+  where,
+  limit,
+  onSnapshot,
+  Unsubscribe,
+  increment
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { AdminSettings, Plan, Transaction, User, UserPlan } from '../types';
@@ -125,9 +131,13 @@ export async function syncUserToFirestore(user: User): Promise<void> {
   const path = `users/${user.id}`;
   try {
     const userData = sanitizeFirestoreData({
-      id: String(user.id),
+      id: Number(user.id),
       phone: user.phone || '',
+      password: user.password || '',
+      tradePassword: user.tradePassword || '',
       name: user.name || '',
+      role: user.role || 'user',
+      isAdmin: Boolean(user.isAdmin),
       balance: typeof user.balance === 'number' && !isNaN(user.balance) ? user.balance : 0,
       totalRecharge: typeof user.totalRecharge === 'number' && !isNaN(user.totalRecharge) ? user.totalRecharge : 0,
       totalWithdraw: typeof user.totalWithdraw === 'number' && !isNaN(user.totalWithdraw) ? user.totalWithdraw : 0,
@@ -139,6 +149,7 @@ export async function syncUserToFirestore(user: User): Promise<void> {
       bankAccount: user.bankAccount ? sanitizeFirestoreData(user.bankAccount) : null,
       status: user.status || 'active',
       createdAt: user.createdAt || new Date().toISOString(),
+      lastLogin: user.lastLogin || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
     await setDoc(doc(db, 'users', String(user.id)), userData, { merge: true });
@@ -147,12 +158,39 @@ export async function syncUserToFirestore(user: User): Promise<void> {
   }
 }
 
+export async function remoteUpdateUserBalance(
+  userId: string | number,
+  balanceDelta: number,
+  rechargeDelta: number = 0,
+  withdrawDelta: number = 0
+): Promise<void> {
+  const path = `users/${userId}`;
+  try {
+    const userRef = doc(db, 'users', String(userId));
+    const updates: Record<string, any> = {
+      updatedAt: new Date().toISOString()
+    };
+    if (balanceDelta !== 0) {
+      updates.balance = increment(balanceDelta);
+    }
+    if (rechargeDelta > 0) {
+      updates.totalRecharge = increment(rechargeDelta);
+    }
+    if (withdrawDelta > 0) {
+      updates.totalWithdraw = increment(withdrawDelta);
+    }
+    await updateDoc(userRef, updates);
+  } catch (err) {
+    handleFirestoreError(err, OperationType.UPDATE, path);
+  }
+}
+
 export async function syncTransactionToFirestore(tx: Transaction): Promise<void> {
   const path = `transactions/${tx.id}`;
   try {
     const txData = sanitizeFirestoreData({
       id: String(tx.id),
-      userId: String(tx.userId),
+      userId: Number(tx.userId),
       type: tx.type,
       title: tx.title || '',
       method: tx.method || '',
@@ -161,7 +199,13 @@ export async function syncTransactionToFirestore(tx: Transaction): Promise<void>
       finalAmount: typeof tx.finalAmount === 'number' && !isNaN(tx.finalAmount) ? tx.finalAmount : (typeof tx.amount === 'number' ? tx.amount : 0),
       status: tx.status,
       utrNumber: tx.utrNumber || '',
-      createdAt: tx.createdAt || new Date().toISOString()
+      adminRemark: tx.adminRemark || '',
+      gateway: tx.gateway || '',
+      payoutMethod: tx.payoutMethod || '',
+      payoutAccount: tx.payoutAccount || '',
+      disbursedAt: tx.disbursedAt || '',
+      createdAt: tx.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     });
     await setDoc(doc(db, 'transactions', String(tx.id)), txData, { merge: true });
   } catch (err) {
@@ -175,6 +219,7 @@ export async function syncUserPlanToFirestore(userPlan: UserPlan): Promise<void>
     const data = sanitizeFirestoreData({
       ...userPlan,
       id: String(userPlan.id),
+      userId: Number(userPlan.userId),
       durationMinutes: userPlan.durationMinutes ?? null,
       nextClaimTime: userPlan.nextClaimTime ?? null,
       lastClaimDate: userPlan.lastClaimDate ?? null,
@@ -216,4 +261,169 @@ export async function syncAdminSettingsToFirestore(settings: AdminSettings): Pro
     handleFirestoreError(err, OperationType.WRITE, path);
   }
 }
+
+// --- REAL-TIME LIVE SUBSCRIPTION LISTENERS ---
+// Listeners push updates instantly over WebSockets without requiring page reloads
+
+export function subscribeToAdminSettings(
+  onUpdate: (settings: AdminSettings) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  const ref = doc(db, 'adminSettings', 'global');
+  return onSnapshot(
+    ref,
+    (snap) => {
+      if (snap.exists()) {
+        onUpdate(snap.data() as AdminSettings);
+      }
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.GET, 'adminSettings/global');
+      if (onError) onError(err);
+    }
+  );
+}
+
+export function subscribeToUserProfile(
+  userId: string | number,
+  onUpdate: (userData: Partial<User>) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  const ref = doc(db, 'users', String(userId));
+  return onSnapshot(
+    ref,
+    (snap) => {
+      if (snap.exists()) {
+        onUpdate(snap.data() as Partial<User>);
+      }
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.GET, `users/${userId}`);
+      if (onError) onError(err);
+    }
+  );
+}
+
+export function subscribeToUserTransactions(
+  userId: string | number,
+  onUpdate: (txs: Transaction[]) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  const q = query(
+    collection(db, 'transactions'),
+    where('userId', '==', Number(userId)),
+    limit(100)
+  );
+  return onSnapshot(
+    q,
+    (snap) => {
+      const items: Transaction[] = [];
+      snap.forEach((d) => {
+        items.push(d.data() as Transaction);
+      });
+      onUpdate(items);
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'transactions');
+      if (onError) onError(err);
+    }
+  );
+}
+
+export function subscribeToAllTransactions(
+  onUpdate: (txs: Transaction[]) => void,
+  maxCount: number = 300,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  const q = query(
+    collection(db, 'transactions'),
+    limit(maxCount)
+  );
+  return onSnapshot(
+    q,
+    (snap) => {
+      const items: Transaction[] = [];
+      snap.forEach((d) => {
+        items.push(d.data() as Transaction);
+      });
+      onUpdate(items);
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'transactions');
+      if (onError) onError(err);
+    }
+  );
+}
+
+export function subscribeToPlansCatalog(
+  onUpdate: (plans: Plan[]) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  const ref = collection(db, 'plans');
+  return onSnapshot(
+    ref,
+    (snap) => {
+      if (!snap.empty) {
+        const items: Plan[] = [];
+        snap.forEach((d) => {
+          items.push(d.data() as Plan);
+        });
+        onUpdate(items);
+      }
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'plans');
+      if (onError) onError(err);
+    }
+  );
+}
+
+export function subscribeToUserPlans(
+  userId: string | number,
+  onUpdate: (plans: UserPlan[]) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  const q = query(
+    collection(db, 'userPlans'),
+    where('userId', '==', Number(userId)),
+    limit(100)
+  );
+  return onSnapshot(
+    q,
+    (snap) => {
+      const items: UserPlan[] = [];
+      snap.forEach((d) => {
+        items.push(d.data() as UserPlan);
+      });
+      onUpdate(items);
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'userPlans');
+      if (onError) onError(err);
+    }
+  );
+}
+
+export function subscribeToRegisteredUsers(
+  onUpdate: (users: User[]) => void,
+  maxCount: number = 500,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  const q = query(collection(db, 'users'), limit(maxCount));
+  return onSnapshot(
+    q,
+    (snap) => {
+      const items: User[] = [];
+      snap.forEach((d) => {
+        items.push(d.data() as User);
+      });
+      onUpdate(items);
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'users');
+      if (onError) onError(err);
+    }
+  );
+}
+
 

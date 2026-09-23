@@ -5,11 +5,19 @@ import {
   db,
   isDatabaseOnline,
   syncUserToFirestore,
+  remoteUpdateUserBalance,
   syncTransactionToFirestore,
   syncUserPlanToFirestore,
   syncPlanToFirestore,
   syncAdminSettingsToFirestore,
-  testFirestoreConnection
+  testFirestoreConnection,
+  subscribeToAdminSettings,
+  subscribeToUserProfile,
+  subscribeToUserTransactions,
+  subscribeToAllTransactions,
+  subscribeToPlansCatalog,
+  subscribeToUserPlans,
+  subscribeToRegisteredUsers
 } from '../lib/firebase';
 import {
   INITIAL_ADMIN_SETTINGS,
@@ -685,9 +693,15 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
   const [dbConnectionStatus, setDbConnectionStatus] = useState<'connected' | 'connecting' | 'offline'>('connecting');
   const isDbConnected = dbConnectionStatus === 'connected';
 
-  // Real-time Firestore Connection and Remote Hydration
+  // Remote sync tracker refs to eliminate write-back echoes
+  const isRemoteUserSyncRef = useRef(false);
+  const isRemoteAdminSyncRef = useRef(false);
+
+  // 1. Core Real-time Firestore Connection and Global Listeners (Admin Settings, Catalog)
   useEffect(() => {
     let isMounted = true;
+    let unsubAdmin: (() => void) | null = null;
+    let unsubPlans: (() => void) | null = null;
 
     async function initDatabaseSync() {
       try {
@@ -696,70 +710,41 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
         if (isOnline) {
           setDbConnectionStatus('connected');
-          console.log('[Firestore] Database connected successfully.');
+          console.log('[Firestore] Real-time engine connected successfully.');
 
-          // 1. Hydrate User profile from Firestore if document exists
-          try {
-            const userSnap = await getDoc(doc(db, 'users', String(user.id)));
-            if (userSnap.exists()) {
-              const uData = userSnap.data();
-              setUser((prev) => ({
-                ...prev,
-                balance: typeof uData.balance === 'number' ? uData.balance : prev.balance,
-                totalRecharge: typeof uData.totalRecharge === 'number' ? uData.totalRecharge : prev.totalRecharge,
-                totalWithdraw: typeof uData.totalWithdraw === 'number' ? uData.totalWithdraw : (prev.totalWithdraw ?? 0),
-                totalRevenue: typeof uData.totalRevenue === 'number' ? uData.totalRevenue : prev.totalRevenue,
-                vipLevel: typeof uData.vipLevel === 'number' ? uData.vipLevel : (prev.vipLevel ?? 0),
-                bankAccount: uData.bankAccount || prev.bankAccount,
-              }));
-            } else {
-              syncUserToFirestore(user).catch(() => {});
-            }
-          } catch (e) {
-            console.warn('[Firestore] Initial user hydration note:', e);
-          }
-
-          // 2. Hydrate Plans catalog from Firestore
-          try {
-            const plansSnap = await getDocs(collection(db, 'plans'));
-            if (!plansSnap.empty) {
-              const remotePlans: Plan[] = [];
-              plansSnap.forEach((docSnap) => {
-                remotePlans.push(docSnap.data() as Plan);
+          // Real-time listener for Admin Settings (Themes, Gateway, Minimums, Announcements)
+          // Every user device receives instant live updates without page refresh
+          unsubAdmin = subscribeToAdminSettings(
+            (remoteAdmin) => {
+              if (!isMounted || !remoteAdmin) return;
+              isRemoteAdminSyncRef.current = true;
+              setAdminSettings((prev) => {
+                const merged = { ...prev, ...remoteAdmin };
+                return merged;
               });
-              if (remotePlans.length > 0) {
-                setPlans((prev) => {
-                  const combined = [...remotePlans];
-                  INITIAL_PLANS.forEach((ip) => {
-                    if (!combined.some((cp) => cp.id === ip.id)) {
-                      combined.push(ip);
-                    }
-                  });
-                  return combined;
-                });
+              if (remoteAdmin.activeThemeId) {
+                applyTheme(remoteAdmin.activeThemeId);
               }
-            } else {
-              // Seed catalog in Firestore
-              INITIAL_PLANS.forEach((p) => {
-                syncPlanToFirestore(p).catch(() => {});
-              });
-            }
-          } catch (e) {
-            console.warn('[Firestore] Initial plans catalog hydration note:', e);
-          }
+            },
+            (err) => console.warn('[Firestore] AdminSettings live listener notice:', err)
+          );
 
-          // 3. Hydrate Admin Settings from Firestore
-          try {
-            const adminSnap = await getDoc(doc(db, 'adminSettings', 'global'));
-            if (adminSnap.exists()) {
-              const remoteAdmin = adminSnap.data() as AdminSettings;
-              setAdminSettings((prev) => ({ ...prev, ...remoteAdmin }));
-            } else {
-              syncAdminSettingsToFirestore(adminSettings).catch(() => {});
-            }
-          } catch (e) {
-            console.warn('[Firestore] Initial adminSettings hydration note:', e);
-          }
+          // Real-time listener for Plans catalog
+          unsubPlans = subscribeToPlansCatalog(
+            (remotePlans) => {
+              if (!isMounted || !remotePlans || remotePlans.length === 0) return;
+              setPlans((prev) => {
+                const combined = [...remotePlans];
+                INITIAL_PLANS.forEach((ip) => {
+                  if (!combined.some((cp) => cp.id === ip.id)) {
+                    combined.push(ip);
+                  }
+                });
+                return combined;
+              });
+            },
+            (err) => console.warn('[Firestore] Plans catalog live listener notice:', err)
+          );
         } else {
           setDbConnectionStatus('offline');
         }
@@ -772,12 +757,137 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
     return () => {
       isMounted = false;
+      if (unsubAdmin) unsubAdmin();
+      if (unsubPlans) unsubPlans();
     };
   }, []);
 
-  // Sync to LocalStorage & Firestore Database
+  // 2. User-Specific Real-time Listeners (Balance, Transactions, Active Plans)
+  // Ensures any deposit approval, withdrawal refund, or balance credit reflects in ~50ms
+  useEffect(() => {
+    if (!user || !user.id) return;
+    let isMounted = true;
+
+    // A. Listen to user profile document changes in real time
+    const unsubUser = subscribeToUserProfile(
+      user.id,
+      (uData) => {
+        if (!isMounted || !uData) return;
+        isRemoteUserSyncRef.current = true;
+        setUser((prev) => {
+          // If remote balance increased, celebrate with sound & notification
+          if (typeof uData.balance === 'number' && uData.balance > prev.balance) {
+            sfx.playSuccess();
+            const diff = Math.round((uData.balance - prev.balance) * 100) / 100;
+            showToast(`+${formatINR(diff, { decimals: 0 })} credited live to your balance!`, 'success');
+          }
+          return {
+            ...prev,
+            ...uData,
+            balance: typeof uData.balance === 'number' ? uData.balance : prev.balance,
+            totalRecharge: typeof uData.totalRecharge === 'number' ? uData.totalRecharge : prev.totalRecharge,
+            totalWithdraw: typeof uData.totalWithdraw === 'number' ? uData.totalWithdraw : (prev.totalWithdraw ?? 0),
+            totalRevenue: typeof uData.totalRevenue === 'number' ? uData.totalRevenue : prev.totalRevenue,
+            vipLevel: typeof uData.vipLevel === 'number' ? uData.vipLevel : (prev.vipLevel ?? 0),
+            bankAccount: uData.bankAccount || prev.bankAccount
+          };
+        });
+      },
+      (err) => console.warn('[Firestore] User doc subscription notice:', err)
+    );
+
+    // B. Listen to user's transactions in real time
+    const unsubUserTxs = subscribeToUserTransactions(
+      user.id,
+      (remoteTxs) => {
+        if (!isMounted || !remoteTxs) return;
+        setTransactions((prev) => {
+          const map = new Map<string, Transaction>();
+          prev.forEach((t) => map.set(t.id, t));
+          remoteTxs.forEach((rt) => {
+            const existing = map.get(rt.id);
+            if (existing && existing.status === 'pending' && rt.status === 'success') {
+              sfx.playSuccess();
+              showToast(`Your ${rt.type === 'recharge' ? 'Recharge' : 'Withdrawal'} of ${formatINR(rt.amount, { decimals: 0 })} was Approved!`, 'success');
+            } else if (existing && existing.status === 'pending' && rt.status === 'failed') {
+              showToast(`Your ${rt.type === 'recharge' ? 'Recharge' : 'Withdrawal'} of ${formatINR(rt.amount, { decimals: 0 })} was Rejected.`, 'error');
+            }
+            map.set(rt.id, { ...(existing || {}), ...rt });
+          });
+          return Array.from(map.values()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        });
+      },
+      (err) => console.warn('[Firestore] User transactions subscription notice:', err)
+    );
+
+    // C. Listen to user's plans in real time
+    const unsubUserPlans = subscribeToUserPlans(
+      user.id,
+      (remoteUserPlans) => {
+        if (!isMounted || !remoteUserPlans) return;
+        setUserPlans((prev) => {
+          const map = new Map<string, UserPlan>();
+          prev.forEach((p) => map.set(p.id, p));
+          remoteUserPlans.forEach((rp) => map.set(rp.id, { ...(map.get(rp.id) || {}), ...rp }));
+          return Array.from(map.values());
+        });
+      },
+      (err) => console.warn('[Firestore] User plans subscription notice:', err)
+    );
+
+    return () => {
+      isMounted = false;
+      unsubUser();
+      unsubUserTxs();
+      unsubUserPlans();
+    };
+  }, [user.id]);
+
+  // 3. Admin-Specific Real-time Listeners (Incoming Transactions Queue & Live Users Directory)
+  useEffect(() => {
+    const isTargetAdmin = isAdminOpen || user.isAdmin === true || user.role === 'admin';
+    if (!isTargetAdmin) return;
+
+    let isMounted = true;
+
+    // Real-time subscription for all incoming transactions across all users
+    const unsubAllTxs = subscribeToAllTransactions((remoteTxs) => {
+      if (!isMounted || !remoteTxs) return;
+      setTransactions((prev) => {
+        const map = new Map<string, Transaction>();
+        prev.forEach((t) => map.set(t.id, t));
+        remoteTxs.forEach((rt) => {
+          map.set(rt.id, { ...(map.get(rt.id) || {}), ...rt });
+        });
+        return Array.from(map.values()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      });
+    }, 300);
+
+    // Real-time subscription for registered users list
+    const unsubAllUsers = subscribeToRegisteredUsers((remoteUsers) => {
+      if (!isMounted || !remoteUsers || remoteUsers.length === 0) return;
+      setRegisteredUsers((prev) => {
+        const map = new Map<number, User>();
+        prev.forEach((u) => map.set(u.id, u));
+        remoteUsers.forEach((ru) => map.set(ru.id, { ...(map.get(ru.id) || {}), ...ru }));
+        return Array.from(map.values());
+      });
+    }, 300);
+
+    return () => {
+      isMounted = false;
+      unsubAllTxs();
+      unsubAllUsers();
+    };
+  }, [isAdminOpen, user.isAdmin, user.role]);
+
+  // Sync to LocalStorage & Firestore Database with Echo Prevention
   useEffect(() => {
     localStorage.setItem('akm_user', JSON.stringify(user));
+    if (isRemoteUserSyncRef.current) {
+      isRemoteUserSyncRef.current = false;
+      return;
+    }
     syncUserToFirestore(user).catch(() => {});
   }, [user]);
 
@@ -803,6 +913,10 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   useEffect(() => {
     localStorage.setItem('akm_admin_settings', JSON.stringify(adminSettings));
+    if (isRemoteAdminSyncRef.current) {
+      isRemoteAdminSyncRef.current = false;
+      return;
+    }
     syncAdminSettingsToFirestore(adminSettings).catch(() => {});
   }, [adminSettings]);
 
@@ -1025,6 +1139,8 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         adminRemark: 'System automated ₹28 registration reward'
       };
       setTransactions((prev) => [welcomeTx, ...prev]);
+      syncUserToFirestore(newUser).catch(() => {});
+      syncTransactionToFirestore(welcomeTx).catch(() => {});
 
       return {
         success: true,
@@ -1099,6 +1215,8 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       adminRemark: 'System automated ₹28 registration reward'
     };
     setTransactions((prev) => [welcomeTx, ...prev]);
+    syncUserToFirestore(newUser).catch(() => {});
+    syncTransactionToFirestore(welcomeTx).catch(() => {});
 
     return { success: true, message: 'Account create ho gaya! ₹28 Welcome Bonus wallet me credit ho gaya.', user: newUser };
   };
@@ -1663,6 +1781,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     };
 
     setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
+    syncTransactionToFirestore(newTx).catch(() => {});
 
     // Open checkout modal only if explicitly requested
     if (openModal) {
@@ -1765,19 +1884,18 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         createdAt: formatted
       };
       setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
+      syncTransactionToFirestore(newTx).catch(() => {});
     } else {
+      const updatedTx: Transaction = {
+        ...tx,
+        status: 'pending',
+        utrNumber: cleanUtr,
+        adminRemark: 'UTR Submitted - Awaiting Admin Approval'
+      };
       setTransactions((prev) =>
-        prev.map((t) =>
-          t.orderId === orderId
-            ? {
-                ...t,
-                status: 'pending',
-                utrNumber: cleanUtr,
-                adminRemark: 'UTR Submitted - Awaiting Admin Approval'
-              }
-            : t
-        )
+        prev.map((t) => (t.orderId === orderId ? updatedTx : t))
       );
+      syncTransactionToFirestore(updatedTx).catch(() => {});
     }
 
     // Call server to record UTR without auto-crediting
@@ -1981,6 +2099,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     };
 
     setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
+    syncTransactionToFirestore(newTx).catch(() => {});
     showToast(`Withdrawal request for ${formatINR(amount)} submitted! Processing within window.`, 'success');
     return { success: true, message: 'Withdrawal request submitted successfully.' };
   };
@@ -2004,17 +2123,17 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       return updated;
     });
 
+    const updatedTx: Transaction = {
+      ...tx,
+      status: 'failed',
+      adminRemark: 'Cancelled by User - Funds Restored'
+    };
+
     setTransactions((prev) =>
-      prev.map((t) =>
-        t.id === txId
-          ? {
-              ...t,
-              status: 'failed',
-              adminRemark: 'Cancelled by User - Funds Restored'
-            }
-          : t
-      )
+      prev.map((t) => (t.id === txId ? updatedTx : t))
     );
+    syncTransactionToFirestore(updatedTx).catch(() => {});
+    remoteUpdateUserBalance(user.id, tx.amount, 0, -tx.amount).catch(() => {});
 
     showToast(`Withdrawal cancelled! ${formatINR(tx.amount)} refunded to balance.`, 'success');
     return { success: true, message: 'Withdrawal cancelled and refunded.' };
@@ -2076,17 +2195,19 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       return updated;
     });
 
+    const updatedTx: Transaction = {
+      ...tx,
+      status: 'success',
+      adminRemark: `Approved & Credited by Admin${bonus > 0 ? ` (+₹${bonus} Bonus)` : ''}`
+    };
+
     setTransactions((prev) =>
-      prev.map((t) =>
-        t.id === txId
-          ? {
-              ...t,
-              status: 'success',
-              adminRemark: `Approved & Credited by Admin${bonus > 0 ? ` (+₹${bonus} Bonus)` : ''}`
-            }
-          : t
-      )
+      prev.map((t) => (t.id === txId ? updatedTx : t))
     );
+
+    // Multi-device real-time sync via Firestore
+    syncTransactionToFirestore(updatedTx).catch(() => {});
+    remoteUpdateUserBalance(targetUserId, netCredit, creditAmount, 0).catch(() => {});
 
     // Multi-tier commission calculation for upline
     const l1Amt = Math.round((creditAmount * adminSettings.commissionLevel1) / 100);
@@ -2108,18 +2229,17 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   const rejectDeposit = (txId: string, reason?: string) => {
     const tx = transactions.find((t) => t.id === txId);
+    if (!tx) return;
+    const updatedTx: Transaction = {
+      ...tx,
+      status: 'failed',
+      adminRemark: reason || 'Rejected by Admin'
+    };
     setTransactions((prev) =>
-      prev.map((t) =>
-        t.id === txId
-          ? {
-              ...t,
-              status: 'failed',
-              adminRemark: reason || 'Rejected by Admin'
-            }
-          : t
-      )
+      prev.map((t) => (t.id === txId ? updatedTx : t))
     );
-    addAuditLog('deposit', 'Deposit Rejected', `Rejected recharge for ${tx?.orderId || txId}: ${reason || 'Admin rejection'}`, tx?.amount, 'warning');
+    syncTransactionToFirestore(updatedTx).catch(() => {});
+    addAuditLog('deposit', 'Deposit Rejected', `Rejected recharge for ${tx.orderId || txId}: ${reason || 'Admin rejection'}`, tx.amount, 'warning');
     showToast('Deposit rejected', 'info');
   };
 
@@ -2127,9 +2247,15 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     const tx = transactions.find((t) => t.id === txId);
     if (!tx || tx.status === 'success') return;
 
+    const updatedTx: Transaction = {
+      ...tx,
+      status: 'success',
+      adminRemark: 'Approved and Disbursed by Admin'
+    };
     setTransactions((prev) =>
-      prev.map((t) => (t.id === txId ? { ...t, status: 'success' } : t))
+      prev.map((t) => (t.id === txId ? updatedTx : t))
     );
+    syncTransactionToFirestore(updatedTx).catch(() => {});
     addAuditLog('withdrawal', 'Withdrawal Approved', `Approved payout for Order ${tx.orderId}`, tx.amount, 'success');
     showToast(`Approved withdrawal of ${formatINR(tx.amount, { decimals: 0 })}!`, 'success');
   };
@@ -2140,27 +2266,30 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
     // Refund back to user and revert totalWithdraw
     setUser((prev) => {
-      const updatedTotalWithdraw = Math.max(0, Math.round(((prev.totalWithdraw ?? 0) - tx.amount) * 100) / 100);
-      const updated = {
-        ...prev,
-        balance: Math.round((prev.balance + tx.amount) * 100) / 100,
-        totalWithdraw: updatedTotalWithdraw
-      };
-      saveUserToStorage(updated);
-      return updated;
+      if (prev.id === tx.userId) {
+        const updatedTotalWithdraw = Math.max(0, Math.round(((prev.totalWithdraw ?? 0) - tx.amount) * 100) / 100);
+        const updated = {
+          ...prev,
+          balance: Math.round((prev.balance + tx.amount) * 100) / 100,
+          totalWithdraw: updatedTotalWithdraw
+        };
+        saveUserToStorage(updated);
+        return updated;
+      }
+      return prev;
     });
 
+    const updatedTx: Transaction = {
+      ...tx,
+      status: 'failed',
+      adminRemark: reason || 'Rejected & Refunded by Admin'
+    };
     setTransactions((prev) =>
-      prev.map((t) =>
-        t.id === txId
-          ? {
-              ...t,
-              status: 'failed',
-              adminRemark: reason || 'Rejected & Refunded by Admin'
-            }
-          : t
-      )
+      prev.map((t) => (t.id === txId ? updatedTx : t))
     );
+    syncTransactionToFirestore(updatedTx).catch(() => {});
+    remoteUpdateUserBalance(tx.userId, tx.amount, 0, -tx.amount).catch(() => {});
+
     addAuditLog('withdrawal', 'Withdrawal Rejected & Refunded', `Refunded ${tx.amount} to user: ${reason || 'Admin reject'}`, tx.amount, 'warning');
     showToast(`Withdrawal rejected. ${formatINR(tx.amount, { decimals: 0 })} refunded to user!`, 'info');
   };
@@ -2181,6 +2310,11 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         return t;
       })
     );
+    pending.forEach((pTx) => {
+      const updated: Transaction = { ...pTx, status: 'success', adminRemark: 'Batch Approved by Admin' };
+      syncTransactionToFirestore(updated).catch(() => {});
+      remoteUpdateUserBalance(pTx.userId, pTx.amount, pTx.amount, 0).catch(() => {});
+    });
     updateUserBalance(totalAmt);
     setUser((prev) => ({
       ...prev,
@@ -2207,6 +2341,10 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         return t;
       })
     );
+    pending.forEach((pTx) => {
+      const updated: Transaction = { ...pTx, status: 'success', adminRemark: 'Batch Approved by Admin' };
+      syncTransactionToFirestore(updated).catch(() => {});
+    });
     addAuditLog('withdrawal', 'Batch Approved All Withdrawals', `Approved ${pending.length} pending payouts totalling ₹${totalAmt}`, totalAmt, 'success');
     showToast(`Batch approved ${pending.length} withdrawals (${formatINR(totalAmt, { decimals: 0 })})!`, 'success');
     return pending.length;
