@@ -18,7 +18,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
     <div className="relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between group">
       {/* Product Image Section */}
       <div className="relative h-32 bg-zinc-950 overflow-hidden flex items-center justify-center">
-        {/* Tyre Image */}
+        {/* Machine / Equipment Image */}
         {plan.imageUrl && !imageError && (
           <img
             src={plan.imageUrl}

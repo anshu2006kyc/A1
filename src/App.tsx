@@ -1,20 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { AppProvider, useApp } from './context/AppContext';
 import { HomeView } from './views/HomeView';
-import { RechargeView } from './views/RechargeView';
-import { WithdrawView } from './views/WithdrawView';
-import { CheckInView } from './views/CheckInView';
-import { ShareView } from './views/ShareView';
-import { TeamView } from './views/TeamView';
-import { ProfileView } from './views/ProfileView';
-import { AboutView } from './views/AboutView';
-import { BankView } from './views/BankView';
-import { MyProductsView } from './views/MyProductsView';
-import { TransactionsView } from './views/TransactionsView';
-import { PaymentCashierView } from './views/PaymentCashierView';
-import { PasswordView } from './views/PasswordView';
-import { AdminView } from './views/AdminView';
+
+// Code-split / Lazy load secondary views for fast initial load & reduced bundle size
+const RechargeView = lazy(() => import('./views/RechargeView').then((m) => ({ default: m.RechargeView })));
+const WithdrawView = lazy(() => import('./views/WithdrawView').then((m) => ({ default: m.WithdrawView })));
+const CheckInView = lazy(() => import('./views/CheckInView').then((m) => ({ default: m.CheckInView })));
+const ShareView = lazy(() => import('./views/ShareView').then((m) => ({ default: m.ShareView })));
+const TeamView = lazy(() => import('./views/TeamView').then((m) => ({ default: m.TeamView })));
+const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
+const AboutView = lazy(() => import('./views/AboutView').then((m) => ({ default: m.AboutView })));
+const BankView = lazy(() => import('./views/BankView').then((m) => ({ default: m.BankView })));
+const MyProductsView = lazy(() => import('./views/MyProductsView').then((m) => ({ default: m.MyProductsView })));
+const TransactionsView = lazy(() => import('./views/TransactionsView').then((m) => ({ default: m.TransactionsView })));
+const PaymentCashierView = lazy(() => import('./views/PaymentCashierView').then((m) => ({ default: m.PaymentCashierView })));
+const PasswordView = lazy(() => import('./views/PasswordView').then((m) => ({ default: m.PasswordView })));
+const AdminView = lazy(() => import('./views/AdminView').then((m) => ({ default: m.AdminView })));
 
 import { BottomNav } from './components/BottomNav';
 import { GatewaySimulatorModal } from './components/GatewaySimulatorModal';
@@ -24,6 +26,15 @@ import { AuthModal } from './components/AuthModal';
 import { AdminAuthModal } from './components/AdminAuthModal';
 import { MobileAuthGate } from './components/MobileAuthGate';
 import { Lock, ShieldAlert, Wrench } from 'lucide-react';
+
+const ViewLoadingFallback = () => (
+  <div className="flex-1 flex flex-col items-center justify-center p-8 min-h-[50vh]">
+    <div className="w-10 h-10 border-3 border-emerald-500/20 border-t-emerald-600 rounded-full animate-spin" />
+    <span className="mt-3 text-xs font-semibold text-gray-500 animate-pulse tracking-wide">
+      Loading...
+    </span>
+  </div>
+);
 
 const MainAppContent: React.FC = () => {
   const {
@@ -78,7 +89,9 @@ const MainAppContent: React.FC = () => {
     }
     return (
       <div className="min-h-screen bg-slate-900 text-slate-100">
-        <AdminView />
+        <Suspense fallback={<ViewLoadingFallback />}>
+          <AdminView />
+        </Suspense>
         <Toast />
       </div>
     );
@@ -171,7 +184,9 @@ const MainAppContent: React.FC = () => {
               transition={{ duration: 0.22, ease: 'easeOut' }}
               className="flex-1 flex flex-col"
             >
-              {renderView()}
+              <Suspense fallback={<ViewLoadingFallback />}>
+                {renderView()}
+              </Suspense>
             </motion.div>
           </AnimatePresence>
         </main>

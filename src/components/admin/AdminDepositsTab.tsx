@@ -22,6 +22,7 @@ export const AdminDepositsTab: React.FC = () => {
     registeredUsers,
     user,
     approveDeposit,
+    adminCreditDeposit,
     rejectDeposit,
     approveAllPendingDeposits,
     showToast
@@ -108,8 +109,14 @@ export const AdminDepositsTab: React.FC = () => {
     const utr = manualUtr.trim() || `OFF${Date.now().toString().slice(-10)}`;
     const targetUser = registeredUsers.find((u) => u.id === manualTargetUserId) || user;
 
-    // Simulate instant approved deposit
-    approveDeposit(`TX-${Date.now()}`);
+    // Credit real deposit transaction to target user & sync to Firestore
+    adminCreditDeposit(
+      targetUser.id,
+      amt,
+      manualChannel,
+      utr,
+      'Manual deposit credited by Admin'
+    );
     showToast(`Credited ${formatINR(amt)} manual deposit to ${targetUser.name || targetUser.phone}!`, 'success');
     setShowManualDepositModal(false);
     setManualUtr('');

@@ -1,39 +1,97 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Connection test document
-    match /test/{docId} {
-      allow read, write: if true;
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-\\.]+$');
     }
 
-    // User profiles
+    function isValidUser(data) {
+      return data.keys().hasAll(['phone'])
+        && data.phone is string
+        && data.phone.size() >= 10
+        && data.phone.size() <= 15
+        && (!('balance' in data) || (data.balance is number && data.balance >= 0))
+        && (!('totalRecharge' in data) || (data.totalRecharge is number && data.totalRecharge >= 0))
+        && (!('totalWithdraw' in data) || (data.totalWithdraw is number && data.totalWithdraw >= 0));
+    }
+
+    function isValidTransaction(data) {
+      return data.keys().hasAll(['userId', 'amount', 'type', 'status'])
+        && (data.userId is string || data.userId is number)
+        && data.amount is number
+        && data.type is string
+        && data.type in ['recharge', 'withdraw', 'daily_income', 'plan_purchase', 'referral_commission', 'checkin', 'bonus']
+        && data.status is string
+        && data.status in ['success', 'pending', 'failed', 'rejected', 'processing'];
+    }
+
+    function isValidUserPlan(data) {
+      return data.keys().hasAll(['userId', 'planId'])
+        && (data.userId is string || data.userId is number)
+        && (data.planId is string || data.planId is number)
+        && (!('status' in data) || data.status in ['active', 'completed', 'expired']);
+    }
+
+    function isValidAdminSettings(data) {
+      return data is map
+        && (!('maintenanceMode' in data) || data.maintenanceMode is bool)
+        && (!('minRecharge' in data) || (data.minRecharge is number && data.minRecharge >= 0))
+        && (!('minWithdraw' in data) || (data.minWithdraw is number && data.minWithdraw >= 0))
+        && (!('withdrawFeePercent' in data) || (data.withdrawFeePercent is number && data.withdrawFeePercent >= 0 && data.withdrawFeePercent <= 100));
+    }
+
+    function isValidPlan(data) {
+      return data is map
+        && (!('title' in data) || data.title is string)
+        && (!('depositAmount' in data) || (data.depositAmount is number && data.depositAmount >= 0));
+    }
+
+    // Connection test document for health checks
+    match /test/{docId} {
+      allow get: if isValidId(docId);
+      allow list: if true;
+      allow write: if false;
+    }
+
+    // User profiles & wallets
     match /users/{userId} {
-      allow read: if true;
-      allow write: if true;
+      allow get: if isValidId(userId);
+      allow list: if true;
+      allow create, update: if isValidId(userId) && isValidUser(request.resource.data);
+      allow delete: if false;
     }
 
     // Plans Catalog
     match /plans/{planId} {
-      allow read: if true;
-      allow write: if true;
+      allow get: if isValidId(planId);
+      allow list: if true;
+      allow create, update: if isValidId(planId) && isValidPlan(request.resource.data);
+      allow delete: if false;
     }
 
     // User Investment Plans
     match /userPlans/{userPlanId} {
-      allow read: if true;
-      allow write: if true;
+      allow get: if isValidId(userPlanId);
+      allow list: if true;
+      allow create, update: if isValidId(userPlanId) && isValidUserPlan(request.resource.data);
+      allow delete: if false;
     }
 
-    // Transactions
+    // Immutable Financial Transactions Audit Ledger
     match /transactions/{transactionId} {
-      allow read: if true;
-      allow write: if true;
+      allow get: if isValidId(transactionId);
+      allow list: if true;
+      allow create: if isValidId(transactionId) && isValidTransaction(request.resource.data);
+      allow update, delete: if false;
     }
 
-    // Admin Settings
+    // Global Admin Settings
     match /adminSettings/{settingId} {
-      allow read: if true;
-      allow write: if true;
+      allow get: if isValidId(settingId);
+      allow list: if true;
+      allow create, update: if isValidId(settingId) && isValidAdminSettings(request.resource.data);
+      allow delete: if false;
     }
   }
 }

@@ -33,14 +33,15 @@ export const ShareView: React.FC = () => {
 
   const handleShare = (platform: string) => {
     const text = `Join AKM ENTERPRISES & earn daily profits! Use my invite code: ${inviteCode}`;
+    let targetUrl = '';
     if (platform === 'whatsapp') {
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + shareUrl)}`);
+      targetUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + shareUrl)}`;
     } else if (platform === 'telegram') {
-      window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`);
+      targetUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`;
     } else if (platform === 'facebook') {
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`);
+      targetUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
     } else if (platform === 'twitter') {
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`);
+      targetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
     } else {
       if (navigator.share) {
         navigator.share({
@@ -49,6 +50,21 @@ export const ShareView: React.FC = () => {
           url: shareUrl
         }).catch(() => handleCopyLink());
       } else {
+        handleCopyLink();
+      }
+      return;
+    }
+
+    if (targetUrl) {
+      try {
+        const a = document.createElement('a');
+        a.href = targetUrl;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch {
         handleCopyLink();
       }
     }
@@ -68,20 +84,21 @@ export const ShareView: React.FC = () => {
           <span className="text-emerald-300">up to 30%</span>
         </div>
 
-        {/* Tyres Illustration */}
+        {/* Enterprise Growth Illustration */}
         <div className="relative h-20 mt-2 flex items-center justify-center">
-          <div className="flex items-center space-x-2">
-            <div className="w-12 h-16 rounded-xl bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center shadow-lg -rotate-6">
-              <div className="w-6 h-10 border border-dashed border-zinc-500 rounded bg-zinc-800"></div>
+          <div className="flex items-center space-x-3">
+            <div className="w-14 h-16 rounded-2xl bg-emerald-900/60 border border-emerald-400/30 flex flex-col items-center justify-center shadow-lg -rotate-3 backdrop-blur-xs">
+              <span className="text-[10px] font-black text-emerald-300">L1</span>
+              <span className="text-xs font-black text-white mt-0.5">25%</span>
             </div>
-            <div className="w-16 h-20 rounded-2xl bg-zinc-950 border-2 border-emerald-400 flex flex-col items-center justify-center shadow-2xl z-10">
-              <span className="text-[9px] font-black text-emerald-400">AKM</span>
-              <div className="w-8 h-10 border border-zinc-600 rounded-lg bg-zinc-900 mt-1 flex items-center justify-center">
-                <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
-              </div>
+            <div className="w-18 h-20 rounded-2xl bg-gradient-to-b from-emerald-500 to-[#008f4c] border-2 border-emerald-300 flex flex-col items-center justify-center shadow-2xl z-10">
+              <span className="text-[9px] font-black tracking-wider text-emerald-100">AKM VIP</span>
+              <span className="text-sm font-black text-white mt-0.5">30%</span>
+              <span className="text-[8px] font-semibold text-emerald-100">BONUS</span>
             </div>
-            <div className="w-12 h-16 rounded-xl bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center shadow-lg rotate-6">
-              <div className="w-6 h-10 border border-dashed border-zinc-500 rounded bg-zinc-800"></div>
+            <div className="w-14 h-16 rounded-2xl bg-emerald-900/60 border border-emerald-400/30 flex flex-col items-center justify-center shadow-lg rotate-3 backdrop-blur-xs">
+              <span className="text-[10px] font-black text-emerald-300">L2/L3</span>
+              <span className="text-xs font-black text-white mt-0.5">5%</span>
             </div>
           </div>
         </div>

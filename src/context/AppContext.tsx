@@ -139,8 +139,9 @@ interface AppContextType {
   adminSettings: AdminSettings;
   updateAdminSettings: (settings: Partial<AdminSettings>) => void;
   approveDeposit: (txId: string) => void;
+  adminCreditDeposit: (targetUserId: number, amount: number, channel?: string, utr?: string, remark?: string) => void;
   rejectDeposit: (txId: string, reason?: string) => void;
-  approveWithdrawal: (txId: string) => void;
+  approveWithdrawal: (txId: string, utr?: string) => void;
   rejectWithdrawal: (txId: string, reason?: string) => void;
   runDailySettlement: () => { processed: number; totalCredited: number };
   addNewPlan: (plan: Omit<Plan, 'id'>) => void;
@@ -713,6 +714,24 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
   // Remote sync tracker refs to eliminate write-back echoes
   const isRemoteUserSyncRef = useRef(false);
   const isRemoteAdminSyncRef = useRef(false);
+
+  // High-Concurrency Mutex Locks: Prevents race conditions, double clicks, and duplicate transactions
+  const inFlightLocksRef = useRef<Set<string>>(new Set());
+
+  const acquireLock = useCallback((key: string, ttlMs = 2500): boolean => {
+    if (inFlightLocksRef.current.has(key)) {
+      return false; // Concurrency conflict: duplicate in-flight action blocked
+    }
+    inFlightLocksRef.current.add(key);
+    setTimeout(() => {
+      inFlightLocksRef.current.delete(key);
+    }, ttlMs);
+    return true;
+  }, []);
+
+  const releaseLock = useCallback((key: string) => {
+    inFlightLocksRef.current.delete(key);
+  }, []);
 
   // 1. Core Real-time Firestore Connection and Global Listeners (Admin Settings, Catalog)
   useEffect(() => {
@@ -1311,13 +1330,16 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     const updated = [created, ...registeredUsers];
     setRegisteredUsers(updated);
     localStorage.setItem('akm_registered_users', JSON.stringify(updated));
+    syncUserToFirestore(created).catch(() => {});
     showToast(`Created user ${created.name} (${created.phone})!`, 'success');
   };
 
   const adminUpdateUser = (userId: number, updates: Partial<User>) => {
+    let targetMerged: User | null = null;
     const updated = registeredUsers.map((u) => {
       if (u.id === userId) {
         const merged = { ...u, ...updates };
+        targetMerged = merged;
         if (user.id === userId) {
           setUser(merged);
         }
@@ -1327,6 +1349,9 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     });
     setRegisteredUsers(updated);
     localStorage.setItem('akm_registered_users', JSON.stringify(updated));
+    if (targetMerged) {
+      syncUserToFirestore(targetMerged).catch(() => {});
+    }
     showToast('User profile updated successfully!', 'success');
   };
 
@@ -1353,6 +1378,11 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
     if (hasCheckedInToday) {
       return { success: false, amount: 0, message: 'Already Claimed Today' };
+    }
+
+    const lockKey = `checkin_${user.id}_${todayStr}`;
+    if (!acquireLock(lockKey)) {
+      return { success: false, amount: 0, message: 'Check-in request processing...' };
     }
 
     const currentStreak = calculateStreak();
@@ -1400,6 +1430,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
     setCheckIns((prev) => [newRecord, ...prev]);
     setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
+    syncTransactionToFirestore(newTx).catch(() => {});
     updateUserBalance(reward, 'Daily Check-in');
 
     confetti({
@@ -1423,8 +1454,15 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       showToast('Milestone bonus already claimed!', 'info');
       return { success: false, amount: 0, message: 'Already claimed' };
     }
+
+    const lockKey = `streak_${user.id}_${days}`;
+    if (!acquireLock(lockKey)) {
+      return { success: false, amount: 0, message: 'Processing streak claim...' };
+    }
+
     const currentStreak = calculateStreak();
     if (currentStreak < days) {
+      releaseLock(lockKey);
       showToast(`Reach ${days} days streak to unlock this reward!`, 'error');
       return { success: false, amount: 0, message: `Reach ${days} days streak` };
     }
@@ -1447,6 +1485,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
     setClaimedStreakMilestones((prev) => [...prev, days]);
     setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
+    syncTransactionToFirestore(newTx).catch(() => {});
     updateUserBalance(reward, `${days}-Day Streak Bonus`);
 
     confetti({
@@ -1471,8 +1510,14 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       return { success: false, message: 'Already claimed' };
     }
 
+    const lockKey = `team_${user.id}_${questId}`;
+    if (!acquireLock(lockKey)) {
+      return { success: false, message: 'Processing team quest...' };
+    }
+
     const activeCount = teamMembers.filter((m) => m.sponsorId === user.id && m.rechargeAmount > 0).length;
     if (activeCount < requiredActive) {
+      releaseLock(lockKey);
       showToast(`Requires ${requiredActive} active members (Current: ${activeCount})`, 'error');
       return { success: false, message: 'Requirement not met' };
     }
@@ -1495,6 +1540,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
     setClaimedTeamMilestones((prev) => [...prev, questId]);
     setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
+    syncTransactionToFirestore(newTx).catch(() => {});
     updateUserBalance(reward, 'Team Quest Bonus');
 
     confetti({
@@ -1517,6 +1563,14 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       };
     }
 
+    const lockKey = `buy_${user.id}`;
+    if (!acquireLock(lockKey, 3000)) {
+      return {
+        success: false,
+        message: 'A purchase transaction is already in progress. Please wait.'
+      };
+    }
+
     // 1. Strict Deposit Enforcement: Bina deposit ke koi plan purchase nahi kar sake
     const userSuccessfulRechargeCount = transactions.filter(
       (t) => t.userId === user.id && t.type === 'recharge' && t.status === 'success'
@@ -1524,6 +1578,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     const hasDeposited = (user.totalRecharge || 0) > 0 || userSuccessfulRechargeCount > 0;
 
     if (!hasDeposited) {
+      releaseLock(lockKey);
       return {
         success: false,
         message: 'Bina deposit ke koi plan purchase nahi kar sakte. Kripya pehle recharge/deposit karein.'
@@ -1531,6 +1586,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     }
 
     if (user.balance < plan.depositAmount) {
+      releaseLock(lockKey);
       return {
         success: false,
         message: `Insufficient balance (₹${user.balance.toFixed(0)} available). Please recharge to purchase.`
@@ -1540,6 +1596,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     // Check user plan limit (count active investments only, allow repurchase after completion)
     const activeCount = userPlans.filter((up) => up.userId === user.id && String(up.planId) === String(plan.id) && up.status === 'active').length;
     if (plan.limit && activeCount >= plan.limit) {
+      releaseLock(lockKey);
       return {
         success: false,
         message: `Plan purchase limit reached (${activeCount}/${plan.limit} active). Please wait for active plan to finish.`
@@ -1609,13 +1666,25 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Claim Plan Profit manually
   const claimPlanProfit = (userPlanId: string) => {
+    if (!user.id || user.id <= 0) {
+      openAuthModal('login');
+      return { success: false, amount: 0 };
+    }
+
+    const lockKey = `profit_${user.id}_${userPlanId}`;
+    if (!acquireLock(lockKey)) {
+      return { success: false, amount: 0 };
+    }
+
     const up = userPlans.find((p) => p.id === userPlanId && p.userId === user.id);
     if (!up || up.status !== 'active') {
+      releaseLock(lockKey);
       return { success: false, amount: 0 };
     }
 
     if (up.durationMinutes) {
       if (up.nextClaimTime && Date.now() < up.nextClaimTime) {
+        releaseLock(lockKey);
         const remainingSec = Math.ceil((up.nextClaimTime - Date.now()) / 1000);
         const m = Math.floor(remainingSec / 60);
         const s = remainingSec % 60;
@@ -1624,6 +1693,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       }
     } else {
       if (up.lastClaimDate === todayStr) {
+        releaseLock(lockKey);
         showToast("Today's profit has already been credited!", 'info');
         return { success: false, amount: 0 };
       }
@@ -1633,18 +1703,17 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     const nextDaysClaimed = up.daysClaimed + 1;
     const isCompleted = up.durationMinutes ? true : nextDaysClaimed >= up.returnDays;
 
+    const updatedPlan: UserPlan = {
+      ...up,
+      daysClaimed: up.durationMinutes ? up.returnDays : nextDaysClaimed,
+      lastClaimDate: todayStr,
+      status: isCompleted ? 'completed' : 'active'
+    };
+
     setUserPlans((prev) =>
-      prev.map((p) =>
-        p.id === userPlanId
-          ? {
-              ...p,
-              daysClaimed: up.durationMinutes ? p.returnDays : nextDaysClaimed,
-              lastClaimDate: todayStr,
-              status: isCompleted ? 'completed' : 'active'
-            }
-          : p
-      )
+      prev.map((p) => (p.id === userPlanId ? updatedPlan : p))
     );
+    syncUserPlanToFirestore(updatedPlan).catch(() => {});
 
     const now = new Date();
     const formatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
@@ -1663,6 +1732,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     };
 
     setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
+    syncTransactionToFirestore(newTx).catch(() => {});
     updateUserBalance(profit, `${up.durationMinutes ? 'Turbo return' : 'Daily profit'} for ${up.title}`);
 
     confetti({
@@ -1677,6 +1747,16 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Claim all active plans profit at once
   const claimAllPlanProfits = () => {
+    if (!user.id || user.id <= 0) {
+      openAuthModal('login');
+      return { count: 0, total: 0 };
+    }
+
+    const lockKey = `profit_all_${user.id}`;
+    if (!acquireLock(lockKey, 3000)) {
+      return { count: 0, total: 0 };
+    }
+
     const claimable = userPlans.filter((p) => {
       if (p.userId !== user.id || p.status !== 'active') return false;
       if (p.durationMinutes) {
@@ -1710,7 +1790,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         const isCompleted = up.durationMinutes ? true : nextDaysClaimed >= up.returnDays;
         totalAmount += profit;
 
-        newTxs.push({
+        const newTx: Transaction = {
           id: generateUniqueId(`tx-prof-${up.id}`),
           userId: user.id,
           type: 'daily_income',
@@ -1721,14 +1801,19 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
           finalAmount: profit,
           status: 'success',
           createdAt: formatted
-        });
+        };
+        newTxs.push(newTx);
+        syncTransactionToFirestore(newTx).catch(() => {});
 
-        return {
+        const updatedUp: UserPlan = {
           ...up,
           daysClaimed: up.durationMinutes ? up.returnDays : nextDaysClaimed,
           lastClaimDate: todayStr,
           status: isCompleted ? ('completed' as const) : ('active' as const)
         };
+        syncUserPlanToFirestore(updatedUp).catch(() => {});
+
+        return updatedUp;
       }
       return up;
     });
@@ -1749,6 +1834,11 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Return / refund a plan cycle early or on request
   const returnPlanCycle = (userPlanId: string) => {
+    if (!user.id || user.id <= 0) {
+      openAuthModal('login');
+      return { success: false, message: 'Kripya login karein' };
+    }
+
     const target = userPlans.find((p) => p.id === userPlanId && p.userId === user.id);
     if (!target) {
       showToast('Plan not found!', 'error');
@@ -1761,16 +1851,15 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
     const refundAmount = target.depositAmount;
 
+    const updatedTarget: UserPlan = {
+      ...target,
+      status: 'returned' as const
+    };
+
     setUserPlans((prev) =>
-      prev.map((p) =>
-        p.id === userPlanId
-          ? {
-              ...p,
-              status: 'returned' as const
-            }
-          : p
-      )
+      prev.map((p) => (p.id === userPlanId ? updatedTarget : p))
     );
+    syncUserPlanToFirestore(updatedTarget).catch(() => {});
 
     const now = new Date();
     const formatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
@@ -1789,6 +1878,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     };
 
     setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
+    syncTransactionToFirestore(newTx).catch(() => {});
     updateUserBalance(refundAmount, `Plan Returned & Deposit Refunded: ${target.title}`);
 
     addAuditLog(
@@ -2137,7 +2227,16 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       };
     }
 
+    const lockKey = `withdraw_${user.id}`;
+    if (!acquireLock(lockKey, 3000)) {
+      return {
+        success: false,
+        message: 'A withdrawal request is already processing. Please wait.'
+      };
+    }
+
     if (amount < adminSettings.minWithdraw) {
+      releaseLock(lockKey);
       return {
         success: false,
         message: `Minimum withdrawal is ${formatINR(adminSettings.minWithdraw, { decimals: 0 })}.`
@@ -2145,6 +2244,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     }
 
     if (amount > adminSettings.maxWithdraw) {
+      releaseLock(lockKey);
       return {
         success: false,
         message: `Maximum withdrawal per transaction is ${formatINR(adminSettings.maxWithdraw, { decimals: 0 })}.`
@@ -2152,6 +2252,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     }
 
     if (user.balance < amount) {
+      releaseLock(lockKey);
       return {
         success: false,
         message: 'Insufficient balance for withdrawal.'
@@ -2167,6 +2268,22 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         totalWithdraw: updatedTotalWithdraw
       };
       saveUserToStorage(updated);
+      return updated;
+    });
+
+    setRegisteredUsers((prev) => {
+      const updated = prev.map((u) => {
+        if (u.id === user.id) {
+          const updatedTotalWithdraw = Math.round(((u.totalWithdraw ?? 0) + amount) * 100) / 100;
+          return {
+            ...u,
+            balance: Math.max(0, Math.round((u.balance - amount) * 100) / 100),
+            totalWithdraw: updatedTotalWithdraw
+          };
+        }
+        return u;
+      });
+      localStorage.setItem('akm_registered_users', JSON.stringify(updated));
       return updated;
     });
 
@@ -2216,6 +2333,22 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         totalWithdraw: updatedTotalWithdraw
       };
       saveUserToStorage(updated);
+      return updated;
+    });
+
+    setRegisteredUsers((prev) => {
+      const updated = prev.map((u) => {
+        if (u.id === user.id) {
+          const updatedTotalWithdraw = Math.max(0, Math.round(((u.totalWithdraw ?? 0) - tx.amount) * 100) / 100);
+          return {
+            ...u,
+            balance: Math.round((u.balance + tx.amount) * 100) / 100,
+            totalWithdraw: updatedTotalWithdraw
+          };
+        }
+        return u;
+      });
+      localStorage.setItem('akm_registered_users', JSON.stringify(updated));
       return updated;
     });
 
@@ -2323,6 +2456,76 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     showToast(`Approved deposit of ${formatINR(creditAmount, { decimals: 0 })}! Balance credited.`, 'success');
   };
 
+  const adminCreditDeposit = (targetUserId: number, amount: number, channel: string = 'Manual Admin Credit', utr?: string, remark?: string) => {
+    const cleanUtr = utr?.trim() || `ADM${Date.now().toString().slice(-8)}`;
+    const now = new Date();
+    const formatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
+
+    const calcBonus = (val: number) => {
+      if (val >= 5000) return Math.floor(val * 0.08);
+      if (val >= 1000) return Math.floor(val * 0.05);
+      if (val >= 500) return Math.floor(val * 0.03);
+      return 0;
+    };
+    const bonus = calcBonus(amount);
+    const netCredit = amount + bonus;
+
+    const newTx: Transaction = {
+      id: generateUniqueId('tx-dep-manual'),
+      userId: targetUserId,
+      type: 'recharge',
+      title: `Recharge - ${channel}`,
+      method: channel,
+      orderId: `MAN${Date.now()}`,
+      amount: amount,
+      finalAmount: amount,
+      status: 'success',
+      utrNumber: cleanUtr,
+      adminRemark: remark || `Manual deposit credited by Admin${bonus > 0 ? ` (+₹${bonus} Bonus)` : ''}`,
+      createdAt: formatted
+    };
+
+    setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
+    syncTransactionToFirestore(newTx).catch(() => {});
+
+    if (user.id === targetUserId) {
+      updateUserBalance(netCredit, `Manual Recharge of ₹${amount}${bonus > 0 ? ` + bonus ₹${bonus}` : ''}`);
+      setUser((prev) => {
+        const updated = {
+          ...prev,
+          totalRecharge: Math.round((prev.totalRecharge + amount) * 100) / 100
+        };
+        localStorage.setItem('akm_user', JSON.stringify(updated));
+        return updated;
+      });
+    }
+
+    setRegisteredUsers((prev) => {
+      const updated = prev.map((u) => {
+        if (u.id === targetUserId) {
+          return {
+            ...u,
+            balance: Math.round((u.balance + netCredit) * 100) / 100,
+            totalRecharge: Math.round((u.totalRecharge + amount) * 100) / 100
+          };
+        }
+        return u;
+      });
+      localStorage.setItem('akm_registered_users', JSON.stringify(updated));
+      return updated;
+    });
+
+    remoteUpdateUserBalance(targetUserId, netCredit, amount, 0).catch(() => {});
+
+    addAuditLog(
+      'deposit',
+      'Manual Deposit Credited',
+      `Credited ₹${netCredit} to User #${targetUserId} via ${channel} (UTR: ${cleanUtr})`,
+      amount,
+      'success'
+    );
+  };
+
   const rejectDeposit = (txId: string, reason?: string) => {
     const tx = transactions.find((t) => t.id === txId);
     if (!tx) return;
@@ -2339,20 +2542,22 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     showToast('Deposit rejected', 'info');
   };
 
-  const approveWithdrawal = (txId: string) => {
+  const approveWithdrawal = (txId: string, utr?: string) => {
     const tx = transactions.find((t) => t.id === txId);
     if (!tx || tx.status === 'success') return;
 
     const updatedTx: Transaction = {
       ...tx,
       status: 'success',
-      adminRemark: 'Approved and Disbursed by Admin'
+      utr: utr || tx.utr || `IMPS${Date.now().toString().slice(-10)}`,
+      utrNumber: utr || tx.utrNumber || `IMPS${Date.now().toString().slice(-10)}`,
+      adminRemark: `Approved and Disbursed by Admin${utr ? ` (RRN: ${utr})` : ''}`
     };
     setTransactions((prev) =>
       prev.map((t) => (t.id === txId ? updatedTx : t))
     );
     syncTransactionToFirestore(updatedTx).catch(() => {});
-    addAuditLog('withdrawal', 'Withdrawal Approved', `Approved payout for Order ${tx.orderId}`, tx.amount, 'success');
+    addAuditLog('withdrawal', 'Withdrawal Approved', `Approved payout for Order ${tx.orderId}${utr ? ` (RRN: ${utr})` : ''}`, tx.amount, 'success');
     showToast(`Approved withdrawal of ${formatINR(tx.amount, { decimals: 0 })}!`, 'success');
   };
 
@@ -2373,6 +2578,22 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         return updated;
       }
       return prev;
+    });
+
+    setRegisteredUsers((prev) => {
+      const updated = prev.map((u) => {
+        if (u.id === tx.userId) {
+          const updatedTotalWithdraw = Math.max(0, Math.round(((u.totalWithdraw ?? 0) - tx.amount) * 100) / 100);
+          return {
+            ...u,
+            balance: Math.round((u.balance + tx.amount) * 100) / 100,
+            totalWithdraw: updatedTotalWithdraw
+          };
+        }
+        return u;
+      });
+      localStorage.setItem('akm_registered_users', JSON.stringify(updated));
+      return updated;
     });
 
     const updatedTx: Transaction = {
@@ -2397,25 +2618,66 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       return 0;
     }
     let totalAmt = 0;
+    const userCredits: Record<number, { credit: number; recharge: number }> = {};
+
+    const calcBonus = (val: number) => {
+      if (val >= 5000) return Math.floor(val * 0.08);
+      if (val >= 1000) return Math.floor(val * 0.05);
+      if (val >= 500) return Math.floor(val * 0.03);
+      return 0;
+    };
+
     setTransactions((prev) =>
       prev.map((t) => {
         if (t.type === 'recharge' && t.status === 'pending') {
           totalAmt += t.amount;
-          return { ...t, status: 'success' };
+          const bonus = calcBonus(t.amount);
+          const net = t.amount + bonus;
+          if (!userCredits[t.userId]) {
+            userCredits[t.userId] = { credit: 0, recharge: 0 };
+          }
+          userCredits[t.userId].credit += net;
+          userCredits[t.userId].recharge += t.amount;
+          return { ...t, status: 'success', adminRemark: 'Batch Approved by Admin' };
         }
         return t;
       })
     );
+
     pending.forEach((pTx) => {
       const updated: Transaction = { ...pTx, status: 'success', adminRemark: 'Batch Approved by Admin' };
       syncTransactionToFirestore(updated).catch(() => {});
-      remoteUpdateUserBalance(pTx.userId, pTx.amount, pTx.amount, 0).catch(() => {});
+      const bonus = calcBonus(pTx.amount);
+      remoteUpdateUserBalance(pTx.userId, pTx.amount + bonus, pTx.amount, 0).catch(() => {});
     });
-    updateUserBalance(totalAmt);
-    setUser((prev) => ({
-      ...prev,
-      totalRecharge: Math.round((prev.totalRecharge + totalAmt) * 100) / 100
-    }));
+
+    setRegisteredUsers((prev) => {
+      const updated = prev.map((u) => {
+        if (userCredits[u.id]) {
+          return {
+            ...u,
+            balance: Math.round((u.balance + userCredits[u.id].credit) * 100) / 100,
+            totalRecharge: Math.round((u.totalRecharge + userCredits[u.id].recharge) * 100) / 100
+          };
+        }
+        return u;
+      });
+      localStorage.setItem('akm_registered_users', JSON.stringify(updated));
+      return updated;
+    });
+
+    if (userCredits[user.id]) {
+      setUser((prev) => {
+        const updated = {
+          ...prev,
+          balance: Math.round((prev.balance + userCredits[user.id].credit) * 100) / 100,
+          totalRecharge: Math.round((prev.totalRecharge + userCredits[user.id].recharge) * 100) / 100
+        };
+        localStorage.setItem('akm_user', JSON.stringify(updated));
+        return updated;
+      });
+    }
+
     addAuditLog('deposit', 'Batch Approved All Deposits', `Approved ${pending.length} pending deposits totalling ₹${totalAmt}`, totalAmt, 'success');
     showToast(`Batch approved ${pending.length} deposits (${formatINR(totalAmt, { decimals: 0 })})!`, 'success');
     return pending.length;
@@ -2771,6 +3033,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         adminSettings,
         updateAdminSettings,
         approveDeposit,
+        adminCreditDeposit,
         rejectDeposit,
         approveWithdrawal,
         rejectWithdrawal,

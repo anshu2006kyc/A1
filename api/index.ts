@@ -1,6 +1,7 @@
 import express from "express";
 import crypto from "crypto";
 import dotenv from "dotenv";
+import zlib from "zlib";
 
 dotenv.config();
 
@@ -25,18 +26,227 @@ const LGPAY_KEY = WATCHPAY_KEY;
 const LGPAY_GATEWAY_URL = WATCHPAY_GATEWAY_URL;
 
 const app = express();
-const pendingPayinOrders = new Map<string, any>();
 
-// Memory safety for high concurrency: prune orders older than 6 hours
-const pruneOldOrders = () => {
-  const sixHoursAgo = Date.now() - 6 * 60 * 60 * 1000;
-  for (const [key, val] of pendingPayinOrders.entries()) {
-    if (val.createdAt && val.createdAt < sixHoursAgo) {
-      pendingPayinOrders.delete(key);
+// ============================================================================
+// HIGH-SCALE MEMORY & CONCURRENCY CONTROLS (BOUNDED LRU ORDER STORE)
+// ============================================================================
+class BoundedOrderStore {
+  private map = new Map<string, any>();
+  private readonly maxSize: number;
+
+  constructor(maxSize = 50000) {
+    this.maxSize = maxSize;
+  }
+
+  get(key: string): any {
+    return this.map.get(key);
+  }
+
+  set(key: string, value: any): this {
+    if (this.map.size >= this.maxSize && !this.map.has(key)) {
+      // LRU eviction: remove oldest key
+      const oldestKey = this.map.keys().next().value;
+      if (oldestKey) this.map.delete(oldestKey);
+    }
+    this.map.set(key, value);
+    return this;
+  }
+
+  delete(key: string): boolean {
+    return this.map.delete(key);
+  }
+
+  has(key: string): boolean {
+    return this.map.has(key);
+  }
+
+  entries() {
+    return this.map.entries();
+  }
+
+  get size(): number {
+    return this.map.size;
+  }
+
+  pruneOld(maxAgeMs = 6 * 60 * 60 * 1000) {
+    const cutoff = Date.now() - maxAgeMs;
+    for (const [key, val] of this.map.entries()) {
+      if (val.createdAt && val.createdAt < cutoff) {
+        this.map.delete(key);
+      }
     }
   }
-};
-setInterval(pruneOldOrders, 30 * 60 * 1000);
+}
+
+export const pendingPayinOrders = new BoundedOrderStore(50000);
+
+// Auto-prune orders older than 6 hours every 20 minutes to prevent memory leaks
+setInterval(() => {
+  pendingPayinOrders.pruneOld();
+}, 20 * 60 * 1000).unref();
+
+// ============================================================================
+// TOKEN-BUCKET RATE LIMITER (SLIDING WINDOW & DDOS PROTECTION)
+// ============================================================================
+interface RateBucket {
+  tokens: number;
+  lastRefill: number;
+}
+
+class TokenBucketLimiter {
+  private buckets = new Map<string, RateBucket>();
+  private readonly capacity: number;
+  private readonly refillPerSec: number;
+
+  constructor(capacity = 300, refillPerSec = 5) {
+    this.capacity = capacity;
+    this.refillPerSec = refillPerSec;
+    // Auto prune idle IPs
+    setInterval(() => {
+      const tenMinAgo = Date.now() - 10 * 60 * 1000;
+      for (const [ip, bucket] of this.buckets.entries()) {
+        if (bucket.lastRefill < tenMinAgo) this.buckets.delete(ip);
+      }
+    }, 5 * 60 * 1000).unref();
+  }
+
+  consume(ip: string, tokens = 1): { allowed: boolean; remaining: number; resetSec: number } {
+    const now = Date.now();
+    let bucket = this.buckets.get(ip);
+    if (!bucket) {
+      bucket = { tokens: this.capacity, lastRefill: now };
+      this.buckets.set(ip, bucket);
+    } else {
+      const elapsedSec = (now - bucket.lastRefill) / 1000;
+      bucket.tokens = Math.min(this.capacity, bucket.tokens + elapsedSec * this.refillPerSec);
+      bucket.lastRefill = now;
+    }
+
+    if (bucket.tokens >= tokens) {
+      bucket.tokens -= tokens;
+      const resetSec = Math.ceil((this.capacity - bucket.tokens) / this.refillPerSec);
+      return { allowed: true, remaining: Math.floor(bucket.tokens), resetSec };
+    } else {
+      const resetSec = Math.ceil((tokens - bucket.tokens) / this.refillPerSec);
+      return { allowed: false, remaining: 0, resetSec };
+    }
+  }
+
+  get activeIps(): number {
+    return this.buckets.size;
+  }
+}
+
+const globalLimiter = new TokenBucketLimiter(360, 6); // 360 burst, 6 req/s
+const sensitiveLimiter = new TokenBucketLimiter(45, 0.75); // 45 burst, ~45/min for payment creations
+
+// ============================================================================
+// RESILIENT CIRCUIT BREAKER FOR UPSTREAM PAYMENT GATEWAYS
+// ============================================================================
+interface CircuitState {
+  failures: number;
+  lastFailure: number;
+  isOpen: boolean;
+  openedAt: number;
+}
+export const circuitBreakers = new Map<string, CircuitState>();
+
+export function checkCircuit(service: string): boolean {
+  const state = circuitBreakers.get(service);
+  if (!state || !state.isOpen) return true;
+  if (Date.now() - state.openedAt > 20000) {
+    // Half-open retry after 20 seconds
+    state.isOpen = false;
+    return true;
+  }
+  return false;
+}
+
+export function recordCircuitSuccess(service: string) {
+  const state = circuitBreakers.get(service);
+  if (state) {
+    state.failures = 0;
+    state.isOpen = false;
+  }
+}
+
+export function recordCircuitFailure(service: string) {
+  let state = circuitBreakers.get(service);
+  if (!state) {
+    state = { failures: 0, lastFailure: 0, isOpen: false, openedAt: 0 };
+    circuitBreakers.set(service, state);
+  }
+  state.failures += 1;
+  state.lastFailure = Date.now();
+  if (state.failures >= 5) {
+    state.isOpen = true;
+    state.openedAt = Date.now();
+    console.warn(`[CircuitBreaker] Upstream service "${service}" tripped OPEN due to repeated errors. Fast-failing for 20s.`);
+  }
+}
+
+export async function safeUpstreamFetch(
+  url: string,
+  options: any = {},
+  timeoutMs = 8000,
+  serviceName = 'upstream'
+): Promise<Response> {
+  if (!checkCircuit(serviceName)) {
+    throw new Error(`Upstream ${serviceName} circuit is currently OPEN (service degraded).`);
+  }
+  try {
+    const signal = options.signal || AbortSignal.timeout(timeoutMs);
+    const res = await fetch(url, { ...options, signal });
+    if (res.ok) {
+      recordCircuitSuccess(serviceName);
+    } else if (res.status >= 500) {
+      recordCircuitFailure(serviceName);
+    }
+    return res;
+  } catch (err: any) {
+    recordCircuitFailure(serviceName);
+    throw err;
+  }
+}
+
+// ============================================================================
+// RESPONSE COMPRESSION MIDDLEWARE (GZIP FOR PAYLOADS > 1KB)
+// ============================================================================
+app.use((req, res, next) => {
+  const acceptEncoding = (req.headers['accept-encoding'] || '') as string;
+  if (!acceptEncoding.includes('gzip')) return next();
+
+  const originalSend = res.send;
+  res.send = function (body: any): any {
+    if (res.headersSent) return originalSend.call(this, body);
+
+    const contentType = (res.getHeader('Content-Type') || '') as string;
+    const isCompressible = !contentType || contentType.includes('json') || contentType.includes('text') || contentType.includes('javascript') || contentType.includes('html');
+
+    if (isCompressible && body) {
+      let buffer: Buffer | null = null;
+      if (typeof body === 'string') {
+        buffer = Buffer.from(body, 'utf8');
+      } else if (Buffer.isBuffer(body)) {
+        buffer = body;
+      }
+
+      if (buffer && buffer.length > 1024) {
+        try {
+          const gzipped = zlib.gzipSync(buffer, { level: 6 });
+          res.setHeader('Content-Encoding', 'gzip');
+          res.setHeader('Vary', 'Accept-Encoding');
+          res.setHeader('Content-Length', gzipped.length);
+          return originalSend.call(this, gzipped);
+        } catch {
+          // Fallback to uncompressed
+        }
+      }
+    }
+    return originalSend.call(this, body);
+  };
+  next();
+});
 
 // Global CORS Middleware for seamless Vercel & cross-origin deployment
 app.use((_req, res, next) => {
@@ -46,6 +256,41 @@ app.use((_req, res, next) => {
   if (_req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
+  next();
+});
+
+// Global Rate Limiting Middleware
+app.use((req, res, next) => {
+  if (req.path === '/api/health') return next();
+
+  const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || '127.0.0.1';
+  const { allowed, remaining, resetSec } = globalLimiter.consume(clientIp, 1);
+
+  res.setHeader('X-RateLimit-Limit', '360');
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  res.setHeader('X-RateLimit-Reset', String(resetSec));
+
+  if (!allowed) {
+    res.setHeader('Retry-After', String(resetSec));
+    return res.status(429).json({
+      error: 'too_many_requests',
+      message: 'Rate limit exceeded. Please retry in a few seconds.'
+    });
+  }
+
+  // Stricter rate limiting for high-value financial endpoints
+  const isSensitive = req.path.includes('/payin') || req.path.includes('/payout') || req.path.includes('/submit-utr');
+  if (isSensitive && req.method === 'POST') {
+    const sensitiveCheck = sensitiveLimiter.consume(clientIp, 1);
+    if (!sensitiveCheck.allowed) {
+      res.setHeader('Retry-After', String(sensitiveCheck.resetSec));
+      return res.status(429).json({
+        error: 'rate_limit_exceeded',
+        message: 'Too many financial requests submitted. Please wait before retrying.'
+      });
+    }
+  }
+
   next();
 });
 
@@ -70,17 +315,33 @@ if (process.env.VERCEL === '1') {
   });
 }
 
-  // --- HEALTH CHECK ---
+  // --- HEALTH & TELEMETRY MONITORING ENDPOINT ---
   app.get('/api/health', (_req, res) => {
+    const mem = process.memoryUsage();
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json({
-      status: 'ok',
+      status: 'healthy',
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
       merchant: SUNPAYS_MERCHANT_ID,
-      timestamp: new Date().toISOString()
+      system: {
+        memoryRssMb: Math.round(mem.rss / 1024 / 1024 * 100) / 100,
+        heapUsedMb: Math.round(mem.heapUsed / 1024 / 1024 * 100) / 100,
+        heapTotalMb: Math.round(mem.heapTotal / 1024 / 1024 * 100) / 100
+      },
+      capacity: {
+        trackedOrders: pendingPayinOrders.size,
+        activeRateLimitIps: globalLimiter.activeIps,
+        circuits: Object.fromEntries(
+          Array.from(circuitBreakers.entries()).map(([k, v]) => [k, { isOpen: v.isOpen, failures: v.failures }])
+        )
+      }
     });
   });
 
-  // --- SUNPAYS PUBLIC CONFIG ---
+  // --- SUNPAYS PUBLIC CONFIG (EDGE-CACHABLE) ---
   app.get('/api/sunpays/config', (_req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     res.json({
       enabled: true,
       merchantId: SUNPAYS_MERCHANT_ID,
@@ -137,7 +398,7 @@ if (process.env.VERCEL === '1') {
 
       console.log(`[Sunpays Pay-in] Sending request for order ${order_id}, amount: ₹${amount}`);
 
-      const sunpaysResponse = await fetch(`${SUNPAYS_API_BASE}/payins`, {
+      const sunpaysResponse = await safeUpstreamFetch(`${SUNPAYS_API_BASE}/payins`, {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
@@ -145,7 +406,7 @@ if (process.env.VERCEL === '1') {
           'x-signature': signature
         },
         body: rawJsonBody
-      });
+      }, 8000, 'sunpays');
 
       const responseData = await sunpaysResponse.json();
 
@@ -261,22 +522,23 @@ if (process.env.VERCEL === '1') {
   app.get(['/pay/success', '/pay/return'], (req, res) => {
     const orderId = (req.query.order_id || req.query.mch_order_no || req.query.orderId || '') as string;
     if (orderId) {
-      const order = pendingPayinOrders.get(orderId) || {
-        order_id: orderId,
-        amount: Number(req.query.amount) || 0,
-        status: 'success',
-        createdAt: Date.now()
-      };
-      order.status = 'success';
-      if (req.query.utr) order.utr = String(req.query.utr);
-      pendingPayinOrders.set(orderId, order);
-      console.log(`[Payment Gateway Return] Order ${orderId} returned to app, auto-marked success.`);
+      const order = pendingPayinOrders.get(orderId);
+      if (order) {
+        order.status = 'success';
+        if (req.query.utr) order.utr = String(req.query.utr);
+        pendingPayinOrders.set(orderId, order);
+        console.log(`[Payment Gateway Return] Verified order ${orderId} marked success.`);
+      } else {
+        console.warn(`[Payment Gateway Return] Unknown or uninitiated order ${orderId} rejected.`);
+        return res.redirect(`/?payment_error=true&order_id=${encodeURIComponent(orderId)}`);
+      }
     }
     return res.redirect(`/?payment_success=true&order_id=${encodeURIComponent(orderId)}`);
   });
 
   // --- WATCHPAY PUBLIC CONFIG ---
   app.get('/api/watchpay/config', (_req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     res.json({
       enabled: true,
       merchantId: WATCHPAY_MCH_ID,
@@ -358,13 +620,13 @@ if (process.env.VERCEL === '1') {
       console.log(`[WATCHPAY Gateway] Initializing pay-in for Order ${order_id}, Amount: ₹${amount}`);
 
       try {
-        const upstreamRes = await fetch(WATCHPAY_GATEWAY_URL, {
+        const upstreamRes = await safeUpstreamFetch(WATCHPAY_GATEWAY_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           },
           body: postBody.toString()
-        });
+        }, 8000, 'watchpay');
 
         const rawText = await upstreamRes.text();
         console.log('[WATCHPAY RAW RESPONSE]:', rawText);
@@ -379,9 +641,9 @@ if (process.env.VERCEL === '1') {
           let directUrl = parsed.payInfo;
           try {
             // WatchGLB payInfo wraps cashier in iframe: extract direct wallet desk link
-            const checkRes = await fetch(parsed.payInfo, {
+            const checkRes = await safeUpstreamFetch(parsed.payInfo, {
               headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mobile)' }
-            });
+            }, 5000, 'watchpay_desk');
             const checkHtml = await checkRes.text();
             const match = checkHtml.match(/src="([^"]+)"/);
             if (match && match[1] && match[1].startsWith('http')) {
@@ -496,19 +758,19 @@ if (process.env.VERCEL === '1') {
         createdAt: Date.now()
       });
 
-      const upstreamRes = await fetch(WATCHPAY_GATEWAY_URL, {
+      const upstreamRes = await safeUpstreamFetch(WATCHPAY_GATEWAY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: postBody.toString()
-      });
+      }, 8000, 'watchpay');
       const parsed: any = await upstreamRes.json();
       if (parsed && parsed.payInfo) {
         let directUrl = parsed.payInfo;
         try {
           if (parsed.payInfo.startsWith('http')) {
-            const checkRes = await fetch(parsed.payInfo, {
+            const checkRes = await safeUpstreamFetch(parsed.payInfo, {
               headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mobile)' }
-            });
+            }, 5000, 'watchpay_desk');
             const checkHtml = await checkRes.text();
             const match = checkHtml.match(/src="([^"]+)"/);
             if (match && match[1] && match[1].startsWith('http')) {
@@ -545,11 +807,11 @@ if (process.env.VERCEL === '1') {
       };
       const rawJsonBody = JSON.stringify(requestPayload);
       const signature = crypto.createHmac('sha256', SUNPAYS_PAYIN_API_SECRET).update(rawJsonBody).digest('hex');
-      const sunpaysResponse = await fetch(`${SUNPAYS_API_BASE}/payins`, {
+      const sunpaysResponse = await safeUpstreamFetch(`${SUNPAYS_API_BASE}/payins`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-api-key': SUNPAYS_PAYIN_API_KEY, 'x-signature': signature },
         body: rawJsonBody
-      });
+      }, 8000, 'sunpays');
       const responseData = await sunpaysResponse.json();
       if (sunpaysResponse.ok && (responseData.checkout_url || responseData.payment_url)) {
         return res.redirect(302, responseData.checkout_url || responseData.payment_url);
@@ -680,12 +942,12 @@ if (process.env.VERCEL === '1') {
 
       if (targetUrl && typeof targetUrl === 'string' && targetUrl.startsWith('http') && !targetUrl.includes('/api/cashier-frame')) {
         try {
-          const upstream = await fetch(targetUrl, {
+          const upstream = await safeUpstreamFetch(targetUrl, {
             headers: {
               'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
             },
             redirect: 'follow'
-          });
+          }, 8000, 'cashier_proxy');
 
           const contentType = upstream.headers.get('content-type') || 'text/html';
           res.setHeader('Content-Type', contentType);
@@ -1019,7 +1281,7 @@ if (process.env.VERCEL === '1') {
         .update(rawJson)
         .digest('hex');
 
-      const response = await fetch(`${SUNPAYS_API_BASE}/payouts`, {
+      const response = await safeUpstreamFetch(`${SUNPAYS_API_BASE}/payouts`, {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
@@ -1027,9 +1289,15 @@ if (process.env.VERCEL === '1') {
           'x-signature': signature
         },
         body: rawJson
-      });
+      }, 8000, 'sunpays');
 
-      const data = await response.json();
+      let data: any = {};
+      try {
+        data = await response.json();
+      } catch {
+        const text = await response.text();
+        data = { error: 'invalid_response', message: text || 'Non-JSON payout response from gateway' };
+      }
       return res.status(response.status).json(data);
     } catch (err: any) {
       return res.status(500).json({ error: 'payout_error', message: err.message });
@@ -1055,5 +1323,5 @@ if (process.env.VERCEL === '1') {
     });
   });
 
-export { app, pendingPayinOrders };
+export { app };
 export default app;

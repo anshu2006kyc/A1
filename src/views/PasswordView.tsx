@@ -46,8 +46,13 @@ export const PasswordView: React.FC = () => {
         goBack();
       }, 1200);
     } else {
-      if (currentPassword !== (user.tradePassword || '123456')) {
-        showToast('Current withdrawal PIN does not match', 'error');
+      const expectedPin = user.tradePassword || '123456';
+      if (currentPassword && currentPassword !== expectedPin) {
+        showToast('Current withdrawal PIN does not match (Default is 123456)', 'error');
+        return;
+      }
+      if (!currentPassword && user.tradePassword && user.tradePassword !== '123456') {
+        showToast('Please enter your current withdrawal PIN', 'error');
         return;
       }
       if (!/^\d{6}$/.test(newPassword)) {
@@ -152,7 +157,7 @@ export const PasswordView: React.FC = () => {
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 maxLength={activeTab === 'trade' ? 6 : 32}
-                placeholder={activeTab === 'login' ? 'Enter current password' : 'Enter current 6-digit PIN'}
+                placeholder={activeTab === 'login' ? 'Enter current password' : 'Enter current PIN (default: 123456)'}
                 className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium text-gray-900 focus:bg-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               />
               <button

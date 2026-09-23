@@ -21,9 +21,10 @@ import { useApp } from '../context/AppContext';
 import { sfx } from '../utils/sound';
 import { formatINR } from '../utils/currency';
 import { UserPlan } from '../types';
+import { LogIn } from 'lucide-react';
 
 export const MyProductsView: React.FC = () => {
-  const { user, userPlans, setCurrentView, goBack, claimPlanProfit, claimAllPlanProfits, returnPlanCycle, showToast } = useApp();
+  const { user, userPlans, setCurrentView, goBack, claimPlanProfit, claimAllPlanProfits, returnPlanCycle, showToast, isLoggedIn, openAuthModal } = useApp();
   const [planToReturn, setPlanToReturn] = useState<UserPlan | null>(null);
 
   // Scoped strictly to current user's purchased investments
@@ -83,6 +84,11 @@ export const MyProductsView: React.FC = () => {
   }, []);
 
   const handleClaimSingle = (id: string, income: number) => {
+    if (!isLoggedIn || !user.id || user.id <= 0) {
+      showToast('Kripya profit collect karne ke liye pehle Login karein', 'info');
+      openAuthModal('login');
+      return;
+    }
     sfx.playSuccess();
     claimPlanProfit(id);
     confetti({
@@ -93,6 +99,11 @@ export const MyProductsView: React.FC = () => {
   };
 
   const handleClaimAll = () => {
+    if (!isLoggedIn || !user.id || user.id <= 0) {
+      showToast('Kripya profit collect karne ke liye pehle Login karein', 'info');
+      openAuthModal('login');
+      return;
+    }
     if (unclaimedPlans.length === 0) return;
     sfx.playSuccess();
     claimAllPlanProfits();
@@ -114,6 +125,26 @@ export const MyProductsView: React.FC = () => {
       </div>
 
       <div className="p-4 space-y-4">
+        {!isLoggedIn && (
+          <div className="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-3 flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                <LogIn className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-gray-900">Guest Mode (Logged Out)</div>
+                <div className="text-[10px] text-gray-500">Sign in to view and collect your purchased machines.</div>
+              </div>
+            </div>
+            <button
+              onClick={() => openAuthModal('login')}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs active:scale-95 transition-all"
+            >
+              Sign In
+            </button>
+          </div>
+        )}
+
         {/* Top Summary Card */}
         <div className="bg-gradient-to-br from-[#00a859] via-[#008f4c] to-[#0a6634] text-white p-5 rounded-3xl shadow-lg relative overflow-hidden">
           <div className="flex justify-between items-start">

@@ -73,12 +73,32 @@ export const TeamView: React.FC = () => {
 💰 Join my VIP team and start earning up to 30% daily returns.
 👉 Use my Invitation Code: ${inviteCode}
 🚀 Register link: ${referralLink}`;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    try {
+      const a = document.createElement('a');
+      a.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch {
+      handleCopyLink();
+    }
   };
 
   const handleShareTelegram = () => {
     const text = `Earn daily guaranteed returns with AKM ENTERPRISES! Register using my code: ${inviteCode}`;
-    window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`, '_blank');
+    try {
+      const a = document.createElement('a');
+      a.href = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch {
+      handleCopyLink();
+    }
   };
 
   // Team metrics scoped strictly to current user's invite network

@@ -132,9 +132,9 @@ export const WithdrawView: React.FC = () => {
   };
 
   return (
-    <div className="h-[100dvh] max-h-screen bg-[#f4f6f8] font-sans max-w-md mx-auto flex flex-col justify-between overflow-hidden select-none">
+    <div className="min-h-[100dvh] bg-[#f4f6f8] font-sans max-w-md mx-auto flex flex-col justify-between select-none">
       {/* 1. Top Bar (Compact, 48px) */}
-      <div className="h-12 px-3.5 bg-white border-b border-gray-100 flex items-center justify-between shrink-0 shadow-2xs">
+      <div className="h-12 px-3.5 bg-white border-b border-gray-100 flex items-center justify-between shrink-0 shadow-2xs sticky top-0 z-20">
         <button
           id="withdraw-back-btn"
           onClick={goBack}
@@ -181,8 +181,8 @@ export const WithdrawView: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Middle Content: Perfectly fitted for single-screen non-scrollable viewport */}
-      <div className="flex-1 p-3 flex flex-col justify-around overflow-hidden">
+      {/* 2. Middle Content: Responsive viewport */}
+      <div className="flex-1 p-3 flex flex-col justify-around gap-2.5 overflow-y-auto">
         {/* A. Receiving Bank Card Bar */}
         {user.bankAccount && user.bankAccount.accountNumber ? (
           <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-3 rounded-2xl text-white border border-slate-700/80 shadow-sm flex items-center justify-between">

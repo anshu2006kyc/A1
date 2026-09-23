@@ -153,11 +153,11 @@ export const RechargeView: React.FC = () => {
     }
   };
 
-  // MAIN SINGLE-PAGE NON-SCROLLABLE AUTOMATED DEPOSIT VIEW
+  // MAIN RESPONSIVE AUTOMATED DEPOSIT VIEW
   return (
-    <div className="h-[100dvh] max-h-screen bg-[#f8fafc] font-sans max-w-md mx-auto flex flex-col justify-between overflow-hidden select-none">
+    <div className="min-h-[100dvh] bg-[#f8fafc] font-sans max-w-md mx-auto flex flex-col justify-between select-none">
       {/* 1. Header (Compact, 48px) */}
-      <div className="h-12 px-3.5 bg-white border-b border-gray-100 flex items-center justify-between shrink-0 shadow-2xs">
+      <div className="h-12 px-3.5 bg-white border-b border-gray-100 flex items-center justify-between shrink-0 shadow-2xs sticky top-0 z-20">
         <button
           id="recharge-back-btn"
           onClick={goBack}
@@ -196,7 +196,7 @@ export const RechargeView: React.FC = () => {
       </div>
 
       {/* 2. Middle Content */}
-      <div className="flex-1 p-3.5 flex flex-col justify-around overflow-hidden">
+      <div className="flex-1 p-3.5 flex flex-col justify-around gap-2.5 overflow-y-auto">
         {/* A. Available Balance Pill */}
         <div className="bg-white px-3.5 py-2.5 rounded-2xl border border-gray-200/80 shadow-xs flex items-center justify-between">
           <div className="flex items-center space-x-2.5">

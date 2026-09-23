@@ -84,7 +84,7 @@ export const AdminWithdrawalsTab: React.FC = () => {
   const handleConfirmDisburse = (e: React.FormEvent) => {
     e.preventDefault();
     if (!disburseTx) return;
-    approveWithdrawal(disburseTx.id);
+    approveWithdrawal(disburseTx.id, impsRrn);
     showToast(`Disbursed ${formatINR(disburseTx.finalAmount || disburseTx.amount)} via IMPS RRN #${impsRrn}!`, 'success');
     setDisburseTx(null);
   };

@@ -250,8 +250,18 @@ export const PaymentCashierView: React.FC = () => {
             <button
               onClick={() => {
                 sfx.playTap();
-                window.open(frameSrc, '_blank');
-                showToast('Opening payment gateway in external browser...', 'info');
+                try {
+                  const a = document.createElement('a');
+                  a.href = frameSrc;
+                  a.target = '_blank';
+                  a.rel = 'noopener noreferrer';
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  showToast('Opening payment gateway in external browser...', 'info');
+                } catch {
+                  window.location.href = frameSrc;
+                }
               }}
               className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition-all cursor-pointer"
               title="Open in External Browser"
