@@ -17,13 +17,12 @@ service cloud.firestore {
     }
 
     function isValidTransaction(data) {
-      return data.keys().hasAll(['userId', 'amount', 'type', 'status'])
+      return data is map
+        && data.keys().hasAll(['userId', 'amount', 'type', 'status'])
         && (data.userId is string || data.userId is number)
         && data.amount is number
         && data.type is string
-        && data.type in ['recharge', 'withdraw', 'daily_income', 'plan_purchase', 'referral_commission', 'checkin', 'bonus']
-        && data.status is string
-        && data.status in ['success', 'pending', 'failed', 'rejected', 'processing'];
+        && data.status is string;
     }
 
     function isValidUserPlan(data) {
@@ -78,12 +77,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Immutable Financial Transactions Audit Ledger
+    // Financial Transactions Ledger
     match /transactions/{transactionId} {
       allow get: if isValidId(transactionId);
       allow list: if true;
-      allow create: if isValidId(transactionId) && isValidTransaction(request.resource.data);
-      allow update, delete: if false;
+      allow create, update: if isValidId(transactionId) && isValidTransaction(request.resource.data);
+      allow delete: if false;
     }
 
     // Global Admin Settings
