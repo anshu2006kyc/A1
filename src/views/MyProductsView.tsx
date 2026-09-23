@@ -23,11 +23,13 @@ import { formatINR } from '../utils/currency';
 import { UserPlan } from '../types';
 
 export const MyProductsView: React.FC = () => {
-  const { userPlans, setCurrentView, goBack, claimPlanProfit, claimAllPlanProfits, returnPlanCycle, showToast } = useApp();
+  const { user, userPlans, setCurrentView, goBack, claimPlanProfit, claimAllPlanProfits, returnPlanCycle, showToast } = useApp();
   const [planToReturn, setPlanToReturn] = useState<UserPlan | null>(null);
 
-  const activePlans = userPlans.filter((p) => p.status === 'active');
-  const totalInvested = userPlans.reduce((sum, p) => sum + p.depositAmount, 0);
+  // Scoped strictly to current user's purchased investments
+  const myPlans = userPlans.filter((p) => !p.userId || p.userId === user.id);
+  const activePlans = myPlans.filter((p) => p.status === 'active');
+  const totalInvested = myPlans.reduce((sum, p) => sum + p.depositAmount, 0);
   const dailyIncomeTotal = activePlans.reduce((sum, p) => sum + p.dailyIncome, 0);
   const remainingReturn = activePlans.reduce(
     (sum, p) => sum + Math.max(0, p.totalReturn - p.daysClaimed * p.dailyIncome),
@@ -152,7 +154,7 @@ export const MyProductsView: React.FC = () => {
             <div>
               <span className="text-[10px] text-emerald-200 block uppercase">ACTIVE</span>
               <span className="text-sm font-black text-white mt-0.5 block">
-                {activePlans.length}/{userPlans.length}
+                {activePlans.length}/{myPlans.length}
               </span>
             </div>
           </div>
@@ -182,7 +184,7 @@ export const MyProductsView: React.FC = () => {
         )}
 
         {/* Empty State vs Active Plans List */}
-        {userPlans.length === 0 ? (
+        {myPlans.length === 0 ? (
           <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center flex flex-col items-center my-6">
             <div className="w-20 h-20 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 shadow-inner">
               <IndianRupee className="w-10 h-10" />
@@ -207,7 +209,7 @@ export const MyProductsView: React.FC = () => {
               Subscribed Packages ({activePlans.length})
             </span>
 
-            {userPlans.map((up, idx) => {
+            {myPlans.map((up, idx) => {
               const isTurbo = Boolean(up.durationMinutes);
               const isReady = isTurbo
                 ? (up.nextClaimTime ? currentTime >= up.nextClaimTime : true)

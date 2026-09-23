@@ -81,13 +81,17 @@ export const TeamView: React.FC = () => {
     window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`, '_blank');
   };
 
-  // Team metrics
-  const l1Members = useMemo(() => teamMembers.filter((m) => m.level === 1), [teamMembers]);
-  const l2Members = useMemo(() => teamMembers.filter((m) => m.level === 2), [teamMembers]);
-  const l3Members = useMemo(() => teamMembers.filter((m) => m.level === 3), [teamMembers]);
+  // Team metrics scoped strictly to current user's invite network
+  const myTeamMembers = useMemo(() => {
+    return teamMembers.filter((m) => !m.sponsorId || m.sponsorId === user.id);
+  }, [teamMembers, user.id]);
 
-  const totalMembers = teamMembers.length;
-  const activeMembersCount = useMemo(() => teamMembers.filter((m) => m.rechargeAmount > 0).length, [teamMembers]);
+  const l1Members = useMemo(() => myTeamMembers.filter((m) => m.level === 1), [myTeamMembers]);
+  const l2Members = useMemo(() => myTeamMembers.filter((m) => m.level === 2), [myTeamMembers]);
+  const l3Members = useMemo(() => myTeamMembers.filter((m) => m.level === 3), [myTeamMembers]);
+
+  const totalMembers = myTeamMembers.length;
+  const activeMembersCount = useMemo(() => myTeamMembers.filter((m) => m.rechargeAmount > 0).length, [myTeamMembers]);
 
   const l1RechargeTotal = useMemo(() => l1Members.reduce((sum, m) => sum + m.rechargeAmount, 0), [l1Members]);
   const l2RechargeTotal = useMemo(() => l2Members.reduce((sum, m) => sum + m.rechargeAmount, 0), [l2Members]);
@@ -101,7 +105,7 @@ export const TeamView: React.FC = () => {
 
   // Filtered members list
   const filteredMembers = useMemo(() => {
-    return teamMembers.filter((m) => {
+    return myTeamMembers.filter((m) => {
       // Level filter
       if (activeLevelTab !== 'all' && m.level !== activeLevelTab) return false;
 
@@ -117,7 +121,7 @@ export const TeamView: React.FC = () => {
 
       return true;
     });
-  }, [teamMembers, activeLevelTab, statusFilter, searchQuery]);
+  }, [myTeamMembers, activeLevelTab, statusFilter, searchQuery]);
 
   // Quests configuration
   const teamQuests = [

@@ -1,80 +1,46 @@
 import { AdminSettings, CheckInRecord, Plan, SecurityAlert, TeamMember, Transaction, User } from '../types';
 
 export const INITIAL_USER: User = {
-  id: 60,
-  phone: "+91 6203369638",
+  id: 101,
+  phone: "+91 9876543210",
   password: "password123",
   tradePassword: "123456",
-  name: "Anshu Kumar",
+  name: "New Member",
   role: "user",
   isAdmin: false,
-  balance: 32.0,
-  totalRecharge: 720.0,
-  totalWithdraw: 280.0,
-  totalRevenue: 32.0,
+  balance: 0.0,
+  totalRecharge: 0.0,
+  totalWithdraw: 0.0,
+  totalRevenue: 0.0,
   memberLevel: "Member",
   vipLevel: 0,
-  inviteCode: "46748",
+  inviteCode: "AKM888",
   status: "active",
-  createdAt: "2026-07-10 10:20:00",
-  lastLogin: "2026-09-17 12:00:00",
-  bankAccount: {
-    holderName: "Anshu Kumar",
-    accountNumber: "620336963812",
-    ifscCode: "SBIN0001234",
-    updatedAt: "2026-09-10 14:30:00"
-  }
+  createdAt: "2026-09-23 00:00:00",
+  lastLogin: "2026-09-23 00:00:00",
+  bankAccount: undefined
 };
 
 export const INITIAL_USERS: User[] = [
   INITIAL_USER,
   {
-    id: 101,
-    phone: "+91 9988776655",
+    id: 60,
+    phone: "+91 6203369638",
     password: "password123",
     tradePassword: "123456",
-    name: "Rajesh Sharma (VIP 3)",
-    balance: 48500.0,
-    totalRecharge: 55000,
+    name: "Admin Executive",
+    balance: 50000.0,
+    totalRecharge: 50000,
     totalWithdraw: 0,
-    totalRevenue: 28400,
-    memberLevel: "VIP 3",
-    vipLevel: 3,
-    inviteCode: "VIP888",
+    totalRevenue: 50000,
+    memberLevel: "Super VIP",
+    vipLevel: 5,
+    inviteCode: "ADMIN888",
     status: "active",
+    role: "admin",
+    isAdmin: true,
     createdAt: "2026-08-01 14:00:00",
-    lastLogin: "2026-09-17 11:30:00",
-    bankAccount: {
-      holderName: "Rajesh Sharma",
-      accountNumber: "998877665501",
-      ifscCode: "HDFC0001890",
-      bankName: "HDFC Bank",
-      updatedAt: "2026-08-15 10:00:00"
-    }
-  },
-  {
-    id: 102,
-    phone: "+91 9876543210",
-    password: "password123",
-    tradePassword: "123456",
-    name: "Priya Verma",
-    balance: 1450.0,
-    totalRecharge: 2500,
-    totalWithdraw: 0,
-    totalRevenue: 680,
-    memberLevel: "VIP 1",
-    vipLevel: 1,
-    inviteCode: "AKM999",
-    status: "active",
-    createdAt: "2026-08-20 09:15:00",
-    lastLogin: "2026-09-16 18:40:00",
-    bankAccount: {
-      holderName: "Priya Verma",
-      accountNumber: "987654321098",
-      ifscCode: "ICIC0000456",
-      bankName: "ICICI Bank",
-      updatedAt: "2026-08-22 16:20:00"
-    }
+    lastLogin: "2026-09-23 11:30:00"
   }
 ];
 
@@ -297,236 +263,11 @@ export const INITIAL_PLANS: Plan[] = [
   }
 ];
 
-export const INITIAL_CHECKINS: CheckInRecord[] = [
-  {
-    id: "chk-5",
-    userId: 60,
-    dateStr: "2026-09-16",
-    timestamp: "16 Sep 2026 - 11:09 AM",
-    amount: 8,
-    status: "success"
-  },
-  {
-    id: "chk-4",
-    userId: 60,
-    dateStr: "2026-09-13",
-    timestamp: "13 Sep 2026 - 09:53 PM",
-    amount: 8,
-    status: "success"
-  },
-  {
-    id: "chk-3",
-    userId: 60,
-    dateStr: "2026-08-16",
-    timestamp: "16 Aug 2026 - 05:19 PM",
-    amount: 8,
-    status: "success"
-  },
-  {
-    id: "chk-2",
-    userId: 60,
-    dateStr: "2026-07-14",
-    timestamp: "14 Jul 2026 - 11:36 AM",
-    amount: 8,
-    status: "success"
-  },
-  {
-    id: "chk-1",
-    userId: 60,
-    dateStr: "2026-07-12",
-    timestamp: "12 Jul 2026 - 10:53 PM",
-    amount: 8,
-    status: "success"
-  }
-];
+export const INITIAL_CHECKINS: CheckInRecord[] = [];
 
-export const INITIAL_TRANSACTIONS: Transaction[] = [
-  {
-    id: "tx-wd-payout-1",
-    userId: 60,
-    type: "withdraw",
-    title: "Withdrawal to Bank (IMPS)",
-    method: "Bank (63812)",
-    payoutMethod: "bank",
-    payoutAccount: "620336963812",
-    orderId: "WD1726055400291",
-    amount: 280.0,
-    finalAmount: 266.0,
-    status: "success",
-    createdAt: "11/09/2026 - 02:15 PM"
-  },
-  {
-    id: "tx-topup-0a",
-    userId: 60,
-    type: "recharge",
-    title: "Topup - FF Pay",
-    method: "FF Pay",
-    orderId: "ORD17265444601192",
-    amount: 720.0,
-    finalAmount: 720.0,
-    status: "pending",
-    createdAt: "17/09/2026 - 03:41 AM"
-  },
-  {
-    id: "tx-topup-0b",
-    userId: 60,
-    type: "recharge",
-    title: "Topup - FF Pay",
-    method: "FF Pay",
-    orderId: "ORD17264653809021",
-    amount: 720.0,
-    finalAmount: 720.0,
-    status: "pending",
-    createdAt: "16/09/2026 - 05:43 AM"
-  },
-  {
-    id: "tx-chk-5",
-    userId: 60,
-    type: "checkin",
-    title: "daily check-in",
-    method: "Bonus",
-    orderId: "CHK-20260916-109",
-    amount: 8.0,
-    finalAmount: 8.0,
-    status: "success",
-    createdAt: "16/09/2026 - 11:09 AM"
-  },
-  {
-    id: "tx-chk-4",
-    userId: 60,
-    type: "checkin",
-    title: "daily check-in",
-    method: "Bonus",
-    orderId: "CHK-20260913-882",
-    amount: 8.0,
-    finalAmount: 8.0,
-    status: "success",
-    createdAt: "13/09/2026 - 09:53 PM"
-  },
-  {
-    id: "tx-chk-3",
-    userId: 60,
-    type: "checkin",
-    title: "daily check-in",
-    method: "Bonus",
-    orderId: "CHK-20260816-419",
-    amount: 8.0,
-    finalAmount: 8.0,
-    status: "success",
-    createdAt: "16/08/2026 - 05:19 PM"
-  },
-  {
-    id: "tx-chk-2",
-    userId: 60,
-    type: "checkin",
-    title: "daily check-in",
-    method: "Bonus",
-    orderId: "CHK-20260714-991",
-    amount: 8.0,
-    finalAmount: 8.0,
-    status: "success",
-    createdAt: "14/07/2026 - 11:36 AM"
-  },
-  {
-    id: "tx-chk-1",
-    userId: 60,
-    type: "checkin",
-    title: "daily check-in",
-    method: "Bonus",
-    orderId: "CHK-20260712-704",
-    amount: 8.0,
-    finalAmount: 8.0,
-    status: "success",
-    createdAt: "12/07/2026 - 10:53 PM"
-  },
-  {
-    id: "tx-topup-1",
-    userId: 60,
-    type: "recharge",
-    title: "Topup - FF Pay",
-    method: "FF Pay",
-    orderId: "ORD17262447008124",
-    amount: 720.0,
-    finalAmount: 720.0,
-    status: "pending",
-    createdAt: "13/09/2026 - 04:25 PM"
-  },
-  {
-    id: "tx-topup-2",
-    userId: 60,
-    type: "recharge",
-    title: "Topup - FF Pay",
-    method: "FF Pay",
-    orderId: "ORD17262445804391",
-    amount: 720.0,
-    finalAmount: 720.0,
-    status: "pending",
-    createdAt: "13/09/2026 - 04:23 PM"
-  },
-  {
-    id: "tx-topup-3",
-    userId: 60,
-    type: "recharge",
-    title: "Topup - FF Pay",
-    method: "FF Pay",
-    orderId: "ORD17238089405521",
-    amount: 720.0,
-    finalAmount: 720.0,
-    status: "pending",
-    createdAt: "16/08/2026 - 11:49 AM"
-  },
-  {
-    id: "tx-topup-4",
-    userId: 60,
-    type: "recharge",
-    title: "Topup - Ydfpay",
-    method: "Ydfpay",
-    orderId: "ORD17220800007892",
-    amount: 720.0,
-    finalAmount: 720.0,
-    status: "pending",
-    createdAt: "27/07/2026 - 06:33 PM"
-  }
-];
+export const INITIAL_TRANSACTIONS: Transaction[] = [];
 
-export const INITIAL_TEAM_MEMBERS: TeamMember[] = [
-  {
-    id: 101,
-    phone: "+91 9876543210",
-    level: 1,
-    rechargeAmount: 720,
-    commissionEarned: 180, // 25% of 720
-    joinedAt: "2026-08-01",
-    status: "active"
-  },
-  {
-    id: 102,
-    phone: "+91 8765432109",
-    level: 1,
-    rechargeAmount: 285,
-    commissionEarned: 71.25,
-    joinedAt: "2026-08-15",
-    status: "active"
-  },
-  {
-    id: 201,
-    phone: "+91 7654321098",
-    level: 2,
-    rechargeAmount: 1000,
-    commissionEarned: 30, // 3% of 1000
-    joinedAt: "2026-08-20",
-    status: "active"
-  },
-  {
-    id: 301,
-    phone: "+91 6543210987",
-    level: 3,
-    rechargeAmount: 2000,
-    commissionEarned: 40, // 2% of 2000
-    joinedAt: "2026-08-28",
-    status: "active"
-  }
-];
+export const INITIAL_TEAM_MEMBERS: TeamMember[] = [];
 
 export const INITIAL_ADMIN_SETTINGS: AdminSettings = {
   adminPassword: "8340",

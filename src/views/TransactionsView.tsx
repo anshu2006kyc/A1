@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ArrowLeft,
@@ -30,6 +30,7 @@ import { Transaction } from '../types';
 
 export const TransactionsView: React.FC = () => {
   const {
+    user,
     transactions,
     goBack,
     showToast,
@@ -41,20 +42,25 @@ export const TransactionsView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [receiptTx, setReceiptTx] = useState<Transaction | null>(null);
 
+  // Scoped strictly to current user so new users see a clean empty records state
+  const userTransactions = useMemo(() => {
+    return transactions.filter((t) => !t.userId || t.userId === user.id);
+  }, [transactions, user.id]);
+
   // Financial statistics calculations for the Chamkila Overview
-  const totalDeposited = transactions
+  const totalDeposited = userTransactions
     .filter((t) => t.type === 'recharge' && t.status === 'success')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const totalWithdrawn = transactions
+  const totalWithdrawn = userTransactions
     .filter((t) => t.type === 'withdraw' && t.status === 'success')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const totalEarnings = transactions
+  const totalEarnings = userTransactions
     .filter((t) => ['checkin', 'daily_income', 'referral_commission'].includes(t.type))
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const filteredTransactions = transactions.filter((t) => {
+  const filteredTransactions = userTransactions.filter((t) => {
     // Type filter
     let typeMatches = true;
     if (transactionFilter === 'deposit' || transactionFilter === 'recharge') {

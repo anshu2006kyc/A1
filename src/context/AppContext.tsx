@@ -340,6 +340,10 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        // If this is old dummy user with Anshu Kumar / 620336963812 dummy bank account or 720 recharge
+        if (parsed.id === 60 && (parsed.bankAccount?.accountNumber === '620336963812' || parsed.totalRecharge === 720)) {
+          return INITIAL_USER;
+        }
         if (typeof parsed.totalWithdraw !== 'number') {
           parsed.totalWithdraw = 0;
         }
@@ -432,34 +436,47 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     }
   });
 
-  // Check-in Records
+  // Check-in Records (Clean for new users)
   const [checkIns, setCheckIns] = useState<CheckInRecord[]>(() => {
     const saved = localStorage.getItem('akm_checkins') || localStorage.getItem('bkt_checkins');
-    return saved ? JSON.parse(saved) : INITIAL_CHECKINS;
+    if (!saved) return INITIAL_CHECKINS;
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((c: CheckInRecord) => !['chk-1', 'chk-2', 'chk-3', 'chk-4', 'chk-5'].includes(c.id));
+      }
+      return INITIAL_CHECKINS;
+    } catch {
+      return INITIAL_CHECKINS;
+    }
   });
 
-  // Transactions (strictly deduplicated and sanitized)
+  // Transactions (strictly deduplicated, sanitized and cleaned of demo records)
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     const saved = localStorage.getItem('akm_transactions') || localStorage.getItem('bkt_transactions');
     try {
       const parsed = saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
       let txList = Array.isArray(parsed) ? parsed : INITIAL_TRANSACTIONS;
-      if (!txList.some((t: Transaction) => t.type === 'withdraw')) {
-        const defaultWd = INITIAL_TRANSACTIONS.find((t) => t.type === 'withdraw');
-        if (defaultWd) {
-          txList = [defaultWd, ...txList];
-        }
-      }
+      txList = txList.filter((t: Transaction) => !['tx-wd-payout-1', 'tx-topup-0a', 'tx-topup-0b', 'tx-topup-1', 'tx-topup-2', 'tx-topup-3', 'tx-topup-4', 'tx-chk-1', 'tx-chk-2', 'tx-chk-3', 'tx-chk-4', 'tx-chk-5'].includes(t.id));
       return sanitizeTransactions(txList);
     } catch {
       return sanitizeTransactions(INITIAL_TRANSACTIONS);
     }
   });
 
-  // Team
+  // Team (Clean for new users)
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(() => {
     const saved = localStorage.getItem('akm_team') || localStorage.getItem('bkt_team');
-    return saved ? JSON.parse(saved) : INITIAL_TEAM_MEMBERS;
+    if (!saved) return INITIAL_TEAM_MEMBERS;
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((m: TeamMember) => ![101, 102, 201, 301].includes(m.id));
+      }
+      return INITIAL_TEAM_MEMBERS;
+    } catch {
+      return INITIAL_TEAM_MEMBERS;
+    }
   });
 
   // Admin Settings
@@ -937,12 +954,13 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Today's Date String (YYYY-MM-DD)
   const todayStr = new Date().toISOString().split('T')[0];
-  const hasCheckedInToday = checkIns.some((c) => c.dateStr === todayStr);
+  const userCheckIns = checkIns.filter((c) => !c.userId || c.userId === user.id);
+  const hasCheckedInToday = userCheckIns.some((c) => c.dateStr === todayStr);
 
-  // Calculate real consecutive streak
+  // Calculate real consecutive streak for the current user
   const calculateStreak = (): number => {
-    if (checkIns.length === 0) return 0;
-    const sortedDates: string[] = Array.from<string>(new Set(checkIns.map((c) => c.dateStr))).sort().reverse();
+    if (userCheckIns.length === 0) return 0;
+    const sortedDates: string[] = Array.from<string>(new Set(userCheckIns.map((c) => c.dateStr))).sort().reverse();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -971,8 +989,8 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
   };
 
   const streakDays = calculateStreak();
-  const totalCheckInDays = checkIns.length;
-  const totalCheckInEarned = checkIns.reduce((sum, c) => sum + c.amount, 0);
+  const totalCheckInDays = userCheckIns.length;
+  const totalCheckInEarned = userCheckIns.reduce((sum, c) => sum + c.amount, 0);
 
   // Update Balance
   const updateUserBalance = (delta: number, reason?: string) => {
@@ -1138,7 +1156,11 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
         adminRemark: 'System automated ₹28 registration reward'
       };
-      setTransactions((prev) => [welcomeTx, ...prev]);
+      // Clear all state for new user so they get a completely clean start
+      setUserPlans([]);
+      setCheckIns([]);
+      setTeamMembers([]);
+      setTransactions([welcomeTx]);
       syncUserToFirestore(newUser).catch(() => {});
       syncTransactionToFirestore(welcomeTx).catch(() => {});
 
@@ -1214,7 +1236,11 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
       adminRemark: 'System automated ₹28 registration reward'
     };
-    setTransactions((prev) => [welcomeTx, ...prev]);
+    // Clear all state for new user so they get a completely clean start
+    setUserPlans([]);
+    setCheckIns([]);
+    setTeamMembers([]);
+    setTransactions([welcomeTx]);
     syncUserToFirestore(newUser).catch(() => {});
     syncTransactionToFirestore(welcomeTx).catch(() => {});
 
@@ -1225,6 +1251,11 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     setIsLoggedIn(false);
     localStorage.setItem('akm_is_logged_in', JSON.stringify(false));
     lockAdminSession();
+    setUser(INITIAL_USER);
+    setTransactions([]);
+    setUserPlans([]);
+    setCheckIns([]);
+    setTeamMembers([]);
     sfx.playTap();
     showToast('Logged out of session', 'info');
   };

@@ -90,8 +90,10 @@ export const ProfileView: React.FC = () => {
     setTimeout(() => setCopiedUid(false), 2000);
   };
 
-  // Effective recorded withdrawal amount from user stats and transactions
-  const recordedWithdrawals = transactions
+  // Effective recorded withdrawal amount from user stats and user-scoped transactions
+  const userTransactions = transactions.filter((t) => !t.userId || t.userId === user.id);
+
+  const recordedWithdrawals = userTransactions
     .filter((t) => t.type === 'withdraw' && t.status !== 'failed')
     .reduce((sum, t) => sum + t.amount, 0);
 
@@ -100,7 +102,7 @@ export const ProfileView: React.FC = () => {
     recordedWithdrawals
   );
 
-  const recordedRecharges = transactions
+  const recordedRecharges = userTransactions
     .filter((t) => t.type === 'recharge' && t.status === 'success')
     .reduce((sum, t) => sum + t.amount, 0);
 
