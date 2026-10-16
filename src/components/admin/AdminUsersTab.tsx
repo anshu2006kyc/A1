@@ -20,7 +20,6 @@ import {
   Search,
   Shield,
   ShieldAlert,
-  Sparkles,
   Trash2,
   Unlock,
   UserCheck,

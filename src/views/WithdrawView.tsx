@@ -225,9 +225,12 @@ export const WithdrawView: React.FC = () => {
         )}
 
         {/* B. Withdrawable Balance Bar */}
-        <div className="bg-gradient-to-r from-[#00ba58] to-[#009b49] text-white px-3.5 py-2.5 rounded-2xl shadow-xs flex items-center justify-between">
+        <div
+          className="text-white px-3.5 py-2.5 rounded-2xl shadow-xs flex items-center justify-between"
+          style={{ background: 'var(--brand-card-gradient, linear-gradient(90deg, #00ba58 0%, #009b49 100%))' }}
+        >
           <div>
-            <span className="text-[10px] text-emerald-100 block font-medium leading-none">
+            <span className="text-[10px] text-white/90 block font-medium leading-none">
               Withdrawable Balance
             </span>
             <div className="text-lg font-black font-mono tracking-tight leading-tight mt-0.5">
@@ -236,7 +239,7 @@ export const WithdrawView: React.FC = () => {
           </div>
 
           <div className="text-right">
-            <span className="text-[10px] bg-black/20 text-emerald-100 font-bold px-2 py-0.5 rounded-full inline-block">
+            <span className="text-[10px] bg-black/20 text-white/90 font-bold px-2 py-0.5 rounded-full inline-block">
               Daily Limit: ₹50,000
             </span>
           </div>
@@ -252,8 +255,8 @@ export const WithdrawView: React.FC = () => {
           </div>
 
           {/* Amount input */}
-          <div className="flex items-center space-x-1.5 py-1 border-b-2 border-emerald-500/30 focus-within:border-[#00ba58] transition-colors">
-            <span className="text-2xl font-black text-[#00ba58]">₹</span>
+          <div className="flex items-center space-x-1.5 py-1 border-b-2 border-gray-200 focus-within:border-[var(--brand-primary)] transition-colors">
+            <span className="text-2xl font-black" style={{ color: 'var(--brand-primary)' }}>₹</span>
             <input
               type="number"
               value={withdrawAmount}
@@ -261,7 +264,8 @@ export const WithdrawView: React.FC = () => {
                 setWithdrawAmount(e.target.value);
                 setSelectedPercentage(null);
               }}
-              className="text-2xl font-black text-[#00ba58] w-full focus:outline-none tabular-nums font-mono bg-transparent"
+              className="text-2xl font-black w-full focus:outline-none tabular-nums font-mono bg-transparent"
+              style={{ color: 'var(--brand-primary)' }}
               placeholder="0"
             />
           </div>
@@ -292,7 +296,7 @@ export const WithdrawView: React.FC = () => {
           <div className="bg-gray-50 p-2 rounded-xl text-[11px] flex items-center justify-between text-gray-600">
             <span>Fee ({taxPercent}%): ₹{taxAmount.toFixed(2)}</span>
             <span className="font-bold text-gray-900">
-              You Receive: <strong className="text-[#00ba58] font-mono font-black">₹{netReceived.toFixed(2)}</strong>
+              You Receive: <strong className="font-mono font-black" style={{ color: 'var(--brand-primary)' }}>₹{netReceived.toFixed(2)}</strong>
             </span>
           </div>
         </div>
@@ -307,17 +311,24 @@ export const WithdrawView: React.FC = () => {
             }}
             className={`p-2 rounded-xl border-2 text-left cursor-pointer transition-all ${
               withdrawSpeed === 'express'
-                ? 'border-[#00ba58] bg-emerald-50/70 shadow-2xs'
+                ? 'shadow-2xs'
                 : 'border-gray-200 bg-white hover:border-gray-300'
             }`}
+            style={withdrawSpeed === 'express' ? {
+              borderColor: 'var(--brand-primary)',
+              backgroundColor: 'var(--theme-color-50, #ecfdf5)'
+            } : undefined}
           >
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-gray-900">⚡ Express IMPS</span>
-              <span className="text-[8px] bg-emerald-100 text-emerald-800 font-extrabold px-1 py-0.5 rounded">
+              <span
+                className="text-[8px] font-extrabold px-1 py-0.5 rounded"
+                style={{ backgroundColor: 'var(--theme-color-100)', color: 'var(--brand-secondary)' }}
+              >
                 5-15m
               </span>
             </div>
-            <div className="text-[9px] text-emerald-700 font-semibold mt-0.5">
+            <div className="text-[9px] font-semibold mt-0.5" style={{ color: 'var(--brand-secondary)' }}>
               Direct Automated Payout
             </div>
           </button>
@@ -330,9 +341,13 @@ export const WithdrawView: React.FC = () => {
             }}
             className={`p-2 rounded-xl border-2 text-left cursor-pointer transition-all ${
               withdrawSpeed === 'standard'
-                ? 'border-[#00ba58] bg-emerald-50/70 shadow-2xs'
+                ? 'shadow-2xs'
                 : 'border-gray-200 bg-white hover:border-gray-300'
             }`}
+            style={withdrawSpeed === 'standard' ? {
+              borderColor: 'var(--brand-primary)',
+              backgroundColor: 'var(--theme-color-50, #ecfdf5)'
+            } : undefined}
           >
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-gray-900">🏦 Standard RTGS</span>
@@ -347,7 +362,7 @@ export const WithdrawView: React.FC = () => {
         </div>
 
         {/* E. Trade Password Input */}
-        <div className="bg-white px-3 py-2 rounded-xl border border-gray-200/80 flex items-center space-x-2 focus-within:border-[#00ba58] transition-all">
+        <div className="bg-white px-3 py-2 rounded-xl border border-gray-200/80 flex items-center space-x-2 focus-within:border-[var(--brand-primary)] transition-all">
           <Lock className="w-4 h-4 text-gray-400 shrink-0" />
           <input
             type="password"

@@ -73,39 +73,51 @@ export const ShareView: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-28 animate-fade-in">
       {/* Top Graphic Header Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-b from-[#0a4a25] via-[#0d6e37] to-[#128a47] text-white p-5 rounded-b-3xl shadow-lg">
-        <div className="flex items-center justify-between text-xs font-bold text-emerald-200 uppercase tracking-widest">
+      <div
+        className="relative overflow-hidden text-white p-5 rounded-b-3xl shadow-lg border-b border-white/20"
+        style={{ background: 'var(--brand-hero-gradient, linear-gradient(135deg, #0a4a25 0%, #0d6e37 50%, #128a47 100%))' }}
+      >
+        <div className="flex items-center justify-between text-xs font-bold text-white/90 uppercase tracking-widest">
           <span>AKM ENTERPRISES</span>
           <span className="bg-white/20 px-2 py-0.5 rounded-full text-white">GROWING TOGETHER</span>
         </div>
 
         <div className="text-2xl font-black mt-2 tracking-tight">
           Refer & Earn <br />
-          <span className="text-emerald-300">up to 30%</span>
+          <span style={{ color: 'var(--brand-primary)' }}>up to 30%</span>
         </div>
 
         {/* Enterprise Growth Illustration */}
         <div className="relative h-20 mt-2 flex items-center justify-center">
           <div className="flex items-center space-x-3">
-            <div className="w-14 h-16 rounded-2xl bg-emerald-900/60 border border-emerald-400/30 flex flex-col items-center justify-center shadow-lg -rotate-3 backdrop-blur-xs">
-              <span className="text-[10px] font-black text-emerald-300">L1</span>
+            <div className="w-14 h-16 rounded-2xl bg-black/40 border border-white/20 flex flex-col items-center justify-center shadow-lg -rotate-3 backdrop-blur-xs">
+              <span className="text-[10px] font-black text-amber-300">L1</span>
               <span className="text-xs font-black text-white mt-0.5">25%</span>
             </div>
-            <div className="w-18 h-20 rounded-2xl bg-gradient-to-b from-emerald-500 to-[#008f4c] border-2 border-emerald-300 flex flex-col items-center justify-center shadow-2xl z-10">
-              <span className="text-[9px] font-black tracking-wider text-emerald-100">AKM VIP</span>
+            <div
+              className="w-18 h-20 rounded-2xl border-2 border-white/40 flex flex-col items-center justify-center shadow-2xl z-10"
+              style={{ background: 'var(--brand-chamkila-gradient)' }}
+            >
+              <span className="text-[9px] font-black tracking-wider text-white">AKM VIP</span>
               <span className="text-sm font-black text-white mt-0.5">30%</span>
-              <span className="text-[8px] font-semibold text-emerald-100">BONUS</span>
+              <span className="text-[8px] font-semibold text-white/90">BONUS</span>
             </div>
-            <div className="w-14 h-16 rounded-2xl bg-emerald-900/60 border border-emerald-400/30 flex flex-col items-center justify-center shadow-lg rotate-3 backdrop-blur-xs">
-              <span className="text-[10px] font-black text-emerald-300">L2/L3</span>
+            <div className="w-14 h-16 rounded-2xl bg-black/40 border border-white/20 flex flex-col items-center justify-center shadow-lg rotate-3 backdrop-blur-xs">
+              <span className="text-[10px] font-black text-amber-300">L2/L3</span>
               <span className="text-xs font-black text-white mt-0.5">5%</span>
             </div>
           </div>
         </div>
 
         {/* Invite Code Card */}
-        <div className="bg-emerald-800/80 backdrop-blur-md rounded-2xl p-4 border border-emerald-400/30 mt-3 text-center shadow-inner">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-200">
+        <div
+          className="backdrop-blur-md rounded-2xl p-4 border mt-3 text-center shadow-inner"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.35)',
+            borderColor: 'var(--brand-primary)',
+          }}
+        >
+          <span className="text-[10px] font-bold uppercase tracking-wider text-white/80">
             YOUR INVITE CODE
           </span>
           <div className="flex items-center justify-center space-x-3 mt-1">
@@ -164,7 +176,7 @@ export const ShareView: React.FC = () => {
               className="flex flex-col items-center cursor-pointer group"
             >
               <div className="w-12 h-12 rounded-2xl bg-[#0088cc] text-white flex items-center justify-center shadow-md shadow-sky-600/20 group-hover:scale-105 transition-transform">
-                <TelegramIcon className="w-6 h-6 fill-white" />
+                <TelegramIcon animated={true} className="w-6 h-6 fill-white" />
               </div>
               <span className="text-[10px] font-semibold text-gray-700 mt-1.5">Telegram</span>
             </button>

@@ -17,6 +17,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { formatINR } from '../../utils/currency';
 import { Transaction } from '../../types';
+import { sortRecordsNewestFirst } from '../../utils/date';
 
 export const AdminWithdrawalsTab: React.FC = () => {
   const {
@@ -50,7 +51,7 @@ export const AdminWithdrawalsTab: React.FC = () => {
     'Daily Withdrawal Frequency Limit Exceeded'
   ];
 
-  const withdrawals = transactions.filter((t) => t.type === 'withdraw');
+  const withdrawals = sortRecordsNewestFirst<Transaction>(transactions.filter((t) => t.type === 'withdraw'));
 
   const filteredWithdrawals = withdrawals.filter((tx) => {
     if (statusFilter !== 'all' && tx.status !== statusFilter) return false;
@@ -149,7 +150,7 @@ export const AdminWithdrawalsTab: React.FC = () => {
 
         <div className="bg-slate-800/90 p-3.5 rounded-3xl border border-slate-700 shadow-md">
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Disbursed Total</span>
+            <span>Paid Total</span>
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="text-xl font-black text-emerald-400 font-mono mt-1">
@@ -270,11 +271,11 @@ export const AdminWithdrawalsTab: React.FC = () => {
                           : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                       }`}
                     >
-                      {tx.status === 'success' ? 'Disbursed' : tx.status}
+                      {tx.status === 'success' ? 'Paid' : tx.status}
                     </span>
                   </div>
 
-                  <div className="text-[11px] text-slate-400 flex items-center space-x-2 flex-wrap">
+                  <div className="text-[9.5px] text-slate-400 flex items-center space-x-2 flex-wrap">
                     <span>{tx.createdAt}</span>
                     <span>•</span>
                     <span>To: {tx.method}</span>

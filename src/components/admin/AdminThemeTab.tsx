@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Palette,
   Check,
-  Sparkles,
   RefreshCw,
   Eye,
   Sliders,
@@ -37,17 +36,34 @@ export const AdminThemeTab: React.FC = () => {
     <div className="space-y-6">
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 rounded-3xl p-6 sm:p-7 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
+        <div
+          className="absolute top-0 right-0 w-80 h-80 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 opacity-20"
+          style={{ backgroundColor: activeThemeObj.previewColor }}
+        />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-1.5">
             <div className="flex items-center space-x-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shadow-lg">
+              <div
+                className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg border"
+                style={{
+                  backgroundColor: `${activeThemeObj.previewColor}25`,
+                  color: activeThemeObj.previewColor,
+                  borderColor: `${activeThemeObj.previewColor}40`,
+                }}
+              >
                 <Palette className="w-5 h-5" />
               </div>
               <div>
                 <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
                   <span>Theme & Branding Studio</span>
-                  <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <span
+                    className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full border"
+                    style={{
+                      backgroundColor: `${activeThemeObj.previewColor}20`,
+                      color: activeThemeObj.previewColor,
+                      borderColor: `${activeThemeObj.previewColor}40`,
+                    }}
+                  >
                     Live 1-Click
                   </span>
                 </h2>
@@ -65,7 +81,9 @@ export const AdminThemeTab: React.FC = () => {
                 <div className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Active Color</div>
                 <div className="text-xs font-bold text-white flex items-center space-x-1.5">
                   <span>{activeThemeObj.name}</span>
-                  <span className="text-[10px] text-emerald-400 font-medium">({activeThemeObj.hindiName})</span>
+                  <span className="text-[10px] font-medium" style={{ color: activeThemeObj.previewColor }}>
+                    ({activeThemeObj.hindiName})
+                  </span>
                 </div>
               </div>
             </div>
@@ -203,7 +221,7 @@ export const AdminThemeTab: React.FC = () => {
       <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center space-x-2">
-            <Eye className="w-4 h-4 text-emerald-400" />
+            <Eye className="w-4 h-4" style={{ color: activeThemeObj.previewColor }} />
             <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider">
               Live Real-Time Component Preview
             </h3>
@@ -222,7 +240,7 @@ export const AdminThemeTab: React.FC = () => {
           <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3">
             <span className="text-[11px] font-mono text-slate-400 uppercase">Primary Chamkila Button</span>
             <button className="w-full py-3 rounded-xl font-black text-xs text-white btn-chamkila cursor-pointer flex items-center justify-center space-x-2">
-              <Sparkles className="w-4 h-4" />
+              <Zap className="w-4 h-4" />
               <span>Invest ₹1,000 Now</span>
             </button>
             <span className="text-[10px] text-slate-500 text-center">Used in Recharge, Plans & Claims</span>
@@ -274,9 +292,9 @@ export const AdminThemeTab: React.FC = () => {
 
       {/* Cloud Synchronization Info Note */}
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex items-start space-x-3 text-xs text-slate-400">
-        <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+        <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5" style={{ color: activeThemeObj.previewColor }} />
         <div>
-          <strong className="text-slate-200">Real-Time Cloud Synchronization:</strong> Jab aap yahan se koi bhi color select karte hain, woh setting automatic aapke Firestore database (<code className="text-emerald-400 font-mono">adminSettings/global</code>) aur local storage me save ho jati hai. Website kholne wale har naye aur purane user ko yeh color scheme instant dikhegi.
+          <strong className="text-slate-200">Real-Time Cloud Synchronization:</strong> Jab aap yahan se koi bhi color select karte hain, woh setting automatic aapke Firestore database (<code className="font-mono" style={{ color: activeThemeObj.previewColor }}>adminSettings/global</code>) aur local storage me save ho jati hai. Website kholne wale har naye aur purane user ko yeh color scheme instant dikhegi.
         </div>
       </div>
     </div>

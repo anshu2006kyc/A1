@@ -233,7 +233,10 @@ export const PaymentCashierView: React.FC = () => {
 
         <div className="flex flex-col items-center">
           <div className="flex items-center space-x-1.5">
-            <div className="w-4 h-4 rounded bg-[#00ba58] text-white flex items-center justify-center">
+            <div
+              className="w-4 h-4 rounded text-white flex items-center justify-center shadow-2xs"
+              style={{ backgroundColor: 'var(--brand-primary)' }}
+            >
               <Zap className="w-2.5 h-2.5 fill-current" />
             </div>
             <span className="text-xs font-black tracking-wider uppercase text-white">
@@ -303,7 +306,10 @@ export const PaymentCashierView: React.FC = () => {
       <div className="flex-1 relative w-full h-full bg-[#ffffff] overflow-hidden">
         {isFrameLoading && (
           <div className="absolute inset-0 z-10 bg-[#0b131e] flex flex-col items-center justify-center p-6 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-[#00ba58] flex items-center justify-center animate-pulse">
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center animate-pulse"
+              style={{ backgroundColor: 'var(--brand-glow)', color: 'var(--brand-primary)' }}
+            >
               <Loader2 className="w-6 h-6 animate-spin" />
             </div>
             <div>
@@ -329,7 +335,7 @@ export const PaymentCashierView: React.FC = () => {
       {/* 4. Bottom Settlement Action Bar */}
       <div className="bg-[#101c2a] p-3 border-t border-slate-800 shrink-0 shadow-2xl space-y-2 z-20">
         <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
-          <div className="flex items-center space-x-1 text-emerald-400">
+          <div className="flex items-center space-x-1" style={{ color: 'var(--brand-primary)' }}>
             <Lock className="w-3 h-3" />
             <span>AKM ENTERPRISES 256-Bit Encrypted Channel</span>
           </div>
@@ -340,7 +346,8 @@ export const PaymentCashierView: React.FC = () => {
           id="verify-payment-btn"
           onClick={handleVerifyStatus}
           disabled={isVerifying}
-          className="w-full py-3 rounded-xl font-black text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-lg active:scale-95 bg-[#00ba58] hover:bg-emerald-600 text-white shadow-emerald-500/25"
+          className="w-full py-3 rounded-xl font-black text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-lg active:scale-95 btn-chamkila text-white"
+          style={{ boxShadow: '0 4px 18px var(--brand-glow)' }}
         >
           {isVerifying ? (
             <>

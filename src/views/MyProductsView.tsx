@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
   AlertTriangle,
@@ -8,9 +8,12 @@ import {
   CheckCircle2,
   Clock,
   Coins,
+  History,
   IndianRupee,
   Layers,
+  LogIn,
   RotateCcw,
+  ShieldCheck,
   Timer,
   TrendingUp,
   Wallet,
@@ -21,25 +24,54 @@ import { useApp } from '../context/AppContext';
 import { sfx } from '../utils/sound';
 import { formatINR } from '../utils/currency';
 import { UserPlan } from '../types';
-import { LogIn } from 'lucide-react';
+import { sortRecordsNewestFirst, formatRecordDateTime, getRelativeTimeLabel } from '../utils/date';
 
 export const MyProductsView: React.FC = () => {
-  const { user, userPlans, setCurrentView, goBack, claimPlanProfit, claimAllPlanProfits, returnPlanCycle, showToast, isLoggedIn, openAuthModal } = useApp();
-  const [planToReturn, setPlanToReturn] = useState<UserPlan | null>(null);
+  const {
+    user,
+    userPlans,
+    setCurrentView,
+    goBack,
+    claimPlanProfit,
+    claimAllPlanProfits,
+    returnPlanCycle,
+    showToast,
+    isLoggedIn,
+    openAuthModal,
+    navigateToTransactions
+  } = useApp();
 
-  // Scoped strictly to current user's purchased investments
-  const myPlans = userPlans.filter((p) => p.userId === user.id);
-  const activePlans = myPlans.filter((p) => p.status === 'active');
-  const totalInvested = myPlans.reduce((sum, p) => sum + p.depositAmount, 0);
-  const dailyIncomeTotal = activePlans.reduce((sum, p) => sum + p.dailyIncome, 0);
-  const remainingReturn = activePlans.reduce(
-    (sum, p) => sum + Math.max(0, p.totalReturn - p.daysClaimed * p.dailyIncome),
-    0
-  );
+  const [planToReturn, setPlanToReturn] = useState<UserPlan | null>(null);
+  const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>('active');
+
+  // STRICT REQUIREMENT: Scoped strictly to current user and sorted with NEWEST on top & OLDEST at bottom
+  const myPlans = useMemo(() => {
+    const userOnly = userPlans.filter((p) => p.userId === user.id);
+    return sortRecordsNewestFirst(userOnly);
+  }, [userPlans, user.id]);
+
+  const activePlans = useMemo(() => myPlans.filter((p) => p.status === 'active'), [myPlans]);
+  const completedPlans = useMemo(() => myPlans.filter((p) => p.status === 'completed' || p.status === 'returned'), [myPlans]);
+
+  const totalInvested = useMemo(() => myPlans.reduce((sum, p) => sum + p.depositAmount, 0), [myPlans]);
+  const dailyIncomeTotal = useMemo(() => activePlans.reduce((sum, p) => sum + p.dailyIncome, 0), [activePlans]);
+  const hourlyRunRate = useMemo(() => dailyIncomeTotal / 24, [dailyIncomeTotal]);
+  const monthlyProjected = useMemo(() => dailyIncomeTotal * 30, [dailyIncomeTotal]);
+
+  const totalCollectedSoFar = useMemo(() => {
+    return myPlans.reduce((sum, p) => sum + (p.daysClaimed * p.dailyIncome), 0);
+  }, [myPlans]);
+
+  const remainingReturn = useMemo(() => {
+    return activePlans.reduce(
+      (sum, p) => sum + Math.max(0, p.totalReturn - p.daysClaimed * p.dailyIncome),
+      0
+    );
+  }, [activePlans]);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
-  // Realtime clock for minute-level accuracy
+  // Realtime clock for live accrual and countdown
   const [currentTime, setCurrentTime] = useState<number>(Date.now());
 
   useEffect(() => {
@@ -49,7 +81,18 @@ export const MyProductsView: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const isPlanClaimable = (up: (typeof userPlans)[0]) => {
+  // Live Continuous Daily Income Accrual calculation (second-by-second fractional accumulator)
+  const [liveAccruedSeed, setLiveAccruedSeed] = useState<number>(0);
+  useEffect(() => {
+    if (dailyIncomeTotal <= 0) return;
+    const now = new Date();
+    // Fraction of the day elapsed
+    const secondsToday = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+    const dayFraction = secondsToday / 86400;
+    setLiveAccruedSeed(dailyIncomeTotal * dayFraction);
+  }, [currentTime, dailyIncomeTotal]);
+
+  const isPlanClaimable = (up: UserPlan) => {
     if (up.status !== 'active') return false;
     if (up.durationMinutes) {
       return up.nextClaimTime ? currentTime >= up.nextClaimTime : true;
@@ -58,11 +101,13 @@ export const MyProductsView: React.FC = () => {
   };
 
   // Eligible to claim now
-  const unclaimedPlans = activePlans.filter(isPlanClaimable);
-  const claimableAmount = unclaimedPlans.reduce(
-    (sum, p) => sum + (p.durationMinutes ? p.totalReturn || p.dailyIncome : p.dailyIncome),
-    0
-  );
+  const unclaimedPlans = useMemo(() => activePlans.filter(isPlanClaimable), [activePlans, currentTime, todayStr]);
+  const claimableAmount = useMemo(() => {
+    return unclaimedPlans.reduce(
+      (sum, p) => sum + (p.durationMinutes ? p.totalReturn || p.dailyIncome : p.dailyIncome),
+      0
+    );
+  }, [unclaimedPlans]);
 
   // Settlement Countdown (Time to next midnight for daily plans)
   const [timeLeft, setTimeLeft] = useState<{ h: number; m: number; s: number }>({ h: 0, m: 0, s: 0 });
@@ -92,8 +137,8 @@ export const MyProductsView: React.FC = () => {
     sfx.playSuccess();
     claimPlanProfit(id);
     confetti({
-      particleCount: 40,
-      spread: 50,
+      particleCount: 50,
+      spread: 60,
       origin: { y: 0.8 }
     });
   };
@@ -107,24 +152,48 @@ export const MyProductsView: React.FC = () => {
     if (unclaimedPlans.length === 0) return;
     sfx.playSuccess();
     claimAllPlanProfits();
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
   };
 
+  const displayedPlans = useMemo(() => {
+    if (activeTab === 'active') return activePlans;
+    if (activeTab === 'completed') return completedPlans;
+    return myPlans;
+  }, [activeTab, activePlans, completedPlans, myPlans]);
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-28 animate-fade-in">
-      {/* Top Navigation */}
-      <div className="bg-white px-4 py-3.5 flex items-center justify-between border-b border-gray-100 sticky top-0 z-20">
+    <div className="min-h-screen bg-[#f8f9fa] pb-28 animate-fade-in font-sans">
+      {/* Top Header */}
+      <div className="bg-white px-4 py-3.5 flex items-center justify-between border-b border-gray-100 sticky top-0 z-20 shadow-2xs">
         <button
           id="products-back-btn"
           onClick={goBack}
-          className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer"
+          className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4" />
         </button>
-        <h1 className="text-base font-bold text-gray-900">My Active Machines</h1>
-        <div className="w-9"></div>
+
+        <div className="flex items-center space-x-1.5">
+          <TrendingUp className="w-4 h-4 text-emerald-600" />
+          <h1 className="text-base font-bold text-gray-900 tracking-tight">
+            Automated Income Engine
+          </h1>
+        </div>
+
+        <button
+          onClick={() => navigateToTransactions('revenue')}
+          title="Income Records"
+          className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 flex items-center justify-center active:scale-95 transition-all cursor-pointer border border-emerald-200/60"
+        >
+          <History className="w-3.5 h-3.5" />
+        </button>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-3.5 space-y-3.5">
         {!isLoggedIn && (
           <div className="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-3 flex items-center justify-between">
             <div className="flex items-center space-x-2.5">
@@ -133,7 +202,7 @@ export const MyProductsView: React.FC = () => {
               </div>
               <div>
                 <div className="text-xs font-bold text-gray-900">Guest Mode (Logged Out)</div>
-                <div className="text-[10px] text-gray-500">Sign in to view and collect your purchased machines.</div>
+                <div className="text-[10px] text-gray-500">Sign in to view your real-time machine income & claim dividends.</div>
               </div>
             </div>
             <button
@@ -145,21 +214,30 @@ export const MyProductsView: React.FC = () => {
           </div>
         )}
 
-        {/* Top Summary Card */}
-        <div className="bg-gradient-to-br from-[#00a859] via-[#008f4c] to-[#0a6634] text-white p-5 rounded-3xl shadow-lg relative overflow-hidden">
-          <div className="flex justify-between items-start">
+        {/* Chamkila Master Income Overview Card */}
+        <div
+          className="text-white p-5 rounded-3xl shadow-lg relative overflow-hidden"
+          style={{
+            background: 'var(--brand-card-gradient, linear-gradient(135deg, #008f4c 0%, #00a859 50%, #0a6634 100%))'
+          }}
+        >
+          {/* Top Row: Total Invested & Next Settlement Countdown */}
+          <div className="flex justify-between items-start relative z-10">
             <div>
-              <span className="text-xs font-semibold text-emerald-100 block">Total Invested</span>
+              <span className="text-[11px] font-bold text-emerald-100 uppercase tracking-wider flex items-center space-x-1">
+                <Wallet className="w-3.5 h-3.5 text-emerald-200" />
+                <span>Active Capital Invested</span>
+              </span>
               <div className="text-3xl font-black mt-1 tracking-tight tabular-nums font-mono">
                 {formatINR(totalInvested, { decimals: 0 })}
               </div>
             </div>
 
-            {/* Next Settlement Countdown */}
+            {/* Next Automated Settlement Countdown */}
             <div className="bg-black/25 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-white/10 text-right">
-              <div className="flex items-center space-x-1 text-[10px] text-emerald-200 justify-end">
+              <div className="flex items-center space-x-1 text-[9.5px] text-emerald-200 justify-end font-bold">
                 <Timer className="w-3 h-3 text-emerald-300" />
-                <span>Next Payout</span>
+                <span>Next Dividend Settlement</span>
               </div>
               <div className="font-mono font-black text-xs text-white tracking-widest mt-0.5">
                 {String(timeLeft.h).padStart(2, '0')}:{String(timeLeft.m).padStart(2, '0')}:{String(timeLeft.s).padStart(2, '0')}
@@ -167,25 +245,49 @@ export const MyProductsView: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-emerald-400/30 text-center">
+          {/* Real-time Continuous Accrual Counter */}
+          <div className="mt-4 bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/15 relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
+                <span className="text-[10.5px] font-black uppercase tracking-wider text-emerald-100 flex items-center gap-1">
+                  <span>Live Income Accrual Today</span>
+                </span>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-emerald-200">
+                Run-Rate: +{formatINR(hourlyRunRate)}/hr
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between mt-1">
+              <div className="text-xl font-black font-mono text-white tracking-tight tabular-nums">
+                +{formatINR(liveAccruedSeed, { decimals: 2 })}
+              </div>
+              <span className="text-[10px] font-medium text-emerald-200">
+                Guaranteed: +{formatINR(dailyIncomeTotal)}/day
+              </span>
+            </div>
+          </div>
+
+          {/* 3 Metrics Bottom Grid */}
+          <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-emerald-400/30 text-center relative z-10">
             <div>
-              <span className="text-[10px] text-emerald-200 block uppercase">DAILY</span>
-              <span className="text-sm font-black text-white mt-0.5 block tabular-nums">
+              <span className="text-[9.5px] text-emerald-200 font-bold block uppercase">DAILY RUN-RATE</span>
+              <span className="text-sm font-black text-white mt-0.5 block tabular-nums font-mono">
                 {formatINR(dailyIncomeTotal, { decimals: 0 })}
               </span>
             </div>
 
             <div>
-              <span className="text-[10px] text-emerald-200 block uppercase">REMAINING</span>
-              <span className="text-sm font-black text-white mt-0.5 block tabular-nums">
-                {formatINR(remainingReturn, { decimals: 0 })}
+              <span className="text-[9.5px] text-emerald-200 font-bold block uppercase">30-DAY FORECAST</span>
+              <span className="text-sm font-black text-white mt-0.5 block tabular-nums font-mono">
+                {formatINR(monthlyProjected, { decimals: 0 })}
               </span>
             </div>
 
             <div>
-              <span className="text-[10px] text-emerald-200 block uppercase">ACTIVE</span>
-              <span className="text-sm font-black text-white mt-0.5 block">
-                {activePlans.length}/{myPlans.length}
+              <span className="text-[9.5px] text-emerald-200 font-bold block uppercase">REMAINING TARGET</span>
+              <span className="text-sm font-black text-white mt-0.5 block tabular-nums font-mono">
+                {formatINR(remainingReturn, { decimals: 0 })}
               </span>
             </div>
           </div>
@@ -193,54 +295,86 @@ export const MyProductsView: React.FC = () => {
 
         {/* Claim All Banner Button if multiple are claimable */}
         {unclaimedPlans.length > 0 && (
-          <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 p-4 rounded-2xl shadow-lg shadow-amber-500/20 flex items-center justify-between animate-scale-up">
-            <div>
-              <div className="text-xs font-black uppercase tracking-wider text-slate-900">
-                ⚡ Unclaimed Dividends
+          <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-slate-950 p-3.5 rounded-2xl shadow-lg shadow-amber-500/20 flex items-center justify-between animate-scale-up border border-amber-300">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-9 h-9 rounded-xl bg-white/30 flex items-center justify-center shrink-0">
+                <Coins className="w-5 h-5 text-slate-950" />
               </div>
-              <div className="text-sm font-black text-slate-950 mt-0.5 tabular-nums font-mono">
-                {formatINR(claimableAmount, { decimals: 0 })} Ready to Collect
+              <div>
+                <div className="text-[11px] font-black uppercase tracking-wider text-slate-950">
+                  ⚡ Unclaimed Dividends Ready
+                </div>
+                <div className="text-sm font-black text-slate-950 mt-0.5 tabular-nums font-mono">
+                  {formatINR(claimableAmount, { decimals: 0 })} Ready to Collect
+                </div>
               </div>
             </div>
 
             <button
               type="button"
               onClick={handleClaimAll}
-              className="py-2 px-3.5 btn-chamkila-gold text-amber-950 font-black text-xs rounded-xl shadow-md active:scale-95 transition-all cursor-pointer flex items-center space-x-1"
+              className="py-2 px-3.5 btn-chamkila-gold text-amber-950 font-black text-xs rounded-xl shadow-md active:scale-95 transition-all cursor-pointer flex items-center space-x-1.5"
             >
-              <Coins className="w-3.5 h-3.5" />
-              <span>Claim All</span>
+              <Zap className="w-3.5 h-3.5" />
+              <span>Collect All</span>
             </button>
           </div>
         )}
 
+        {/* Tab Filters: Active Packages, Completed, All */}
+        <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+          <div className="flex space-x-1.5">
+            {[
+              { id: 'active', label: 'Active Packages', count: activePlans.length },
+              { id: 'completed', label: 'Settled / Matured', count: completedPlans.length },
+              { id: 'all', label: 'All Investments', count: myPlans.length }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  sfx.playTap();
+                  setActiveTab(tab.id as any);
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
+                  activeTab === tab.id
+                    ? 'btn-chamkila text-white shadow-xs'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span className={`text-[9.5px] px-1.5 py-0.2 rounded-full font-mono ml-0.5 ${activeTab === tab.id ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Empty State vs Active Plans List */}
-        {myPlans.length === 0 ? (
-          <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center flex flex-col items-center my-6">
-            <div className="w-20 h-20 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 shadow-inner">
-              <IndianRupee className="w-10 h-10" />
+        {displayedPlans.length === 0 ? (
+          <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center flex flex-col items-center my-4">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 shadow-inner">
+              <IndianRupee className="w-8 h-8" />
             </div>
 
-            <h3 className="text-base font-bold text-gray-900">No Active Plans Yet</h3>
+            <h3 className="text-sm font-bold text-gray-900">No Packages in this Tab</h3>
             <p className="text-xs text-gray-500 mt-1 max-w-[260px]">
-              You haven't subscribed to any income plan. Start investing to earn daily profits!
+              {activeTab === 'active'
+                ? "You don't have active machines right now. Subscribe to a plan to start automated daily earnings!"
+                : 'No matured packages found in this category.'}
             </p>
 
             <button
               id="browse-plans-btn"
               onClick={() => setCurrentView('home')}
-              className="mt-6 py-3 px-6 rounded-2xl btn-chamkila text-white font-bold text-xs shadow-md shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer"
+              className="mt-4 py-2.5 px-5 rounded-2xl btn-chamkila text-white font-bold text-xs shadow-md shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer"
             >
-              Browse Plans
+              Browse Daily Income Plans
             </button>
           </div>
         ) : (
           <div className="space-y-3">
-            <span className="text-xs font-bold text-gray-900 block px-1">
-              Subscribed Packages ({activePlans.length})
-            </span>
-
-            {myPlans.map((up, idx) => {
+            {displayedPlans.map((up, idx) => {
               const isTurbo = Boolean(up.durationMinutes);
               const isReady = isTurbo
                 ? (up.nextClaimTime ? currentTime >= up.nextClaimTime : true)
@@ -261,8 +395,10 @@ export const MyProductsView: React.FC = () => {
               return (
                 <div
                   key={`${up.id || 'up'}-${idx}`}
-                  className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm space-y-3"
+                  className="bg-white p-4 rounded-3xl border border-gray-100 hover:border-gray-200 shadow-2xs space-y-3 transition-all relative"
                 >
+
+                  {/* Header: Title, Image, Status Badge */}
                   <div className="flex justify-between items-start">
                     <div className="flex items-center space-x-2.5">
                       {up.imageUrl && (
@@ -270,7 +406,7 @@ export const MyProductsView: React.FC = () => {
                           src={up.imageUrl}
                           alt={up.title}
                           referrerPolicy="no-referrer"
-                          className="w-10 h-10 rounded-xl object-cover shrink-0 border border-emerald-200/50 bg-zinc-900 shadow-xs"
+                          className="w-11 h-11 rounded-2xl object-cover shrink-0 border border-emerald-200/50 bg-zinc-900 shadow-xs"
                         />
                       )}
                       <div>
@@ -278,16 +414,18 @@ export const MyProductsView: React.FC = () => {
                           <span>{up.title}</span>
                           {isTurbo && (
                             <span className="text-[9px] font-extrabold bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded border border-amber-300">
-                              ⚡ {up.durationMinutes === 60 ? '1 Hour' : `${up.durationMinutes} ${up.durationMinutes === 1 ? 'Minute' : 'Minutes'}`}
+                              ⚡ {up.durationMinutes === 60 ? '1 Hour' : `${up.durationMinutes}m`}
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-gray-400">Purchased: {up.purchasedAt}</span>
+                        <span className="text-[8.5px] text-gray-400 font-mono block mt-0.5">
+                          Purchased: {formatRecordDateTime(up.purchasedAt)}
+                        </span>
                       </div>
                     </div>
 
                     <span
-                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                      className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full ${
                         up.status === 'active'
                           ? isTurbo
                             ? 'bg-amber-100 text-amber-900 font-extrabold border border-amber-300'
@@ -299,20 +437,20 @@ export const MyProductsView: React.FC = () => {
                     >
                       {up.status === 'active'
                         ? isTurbo
-                          ? '⚡ Turbo Running'
-                          : 'Active'
+                          ? '⚡ Accruing'
+                          : 'Active & Earning'
                         : up.status === 'returned'
-                        ? '↩ Plan Returned'
+                        ? '↩ Plan Liquidated'
                         : 'Completed'}
                     </span>
                   </div>
 
                   {/* Plan Return Info Bar */}
-                  <div className="flex items-center justify-between text-[11px] text-gray-500 bg-emerald-50/50 px-3 py-1.5 rounded-xl border border-emerald-100/50">
+                  <div className="flex items-center justify-between text-[11px] text-gray-500 bg-gray-50/80 px-3 py-1.5 rounded-xl border border-gray-100">
                     <span className="flex items-center space-x-1">
                       <Clock className="w-3.5 h-3.5 text-emerald-700" />
-                      <span>Return Time:</span>
-                      <strong className="text-gray-900">
+                      <span>Tenure:</span>
+                      <strong className="text-gray-900 font-mono">
                         {isTurbo
                           ? up.durationMinutes === 60
                             ? '1 Hour'
@@ -321,110 +459,79 @@ export const MyProductsView: React.FC = () => {
                       </strong>
                     </span>
                     <span>
-                      Progress: <strong className="text-gray-900">{isTurbo ? (up.status === 'completed' ? 'Settled' : 'In Progress') : `${up.daysClaimed}/${up.returnDays} Days`}</strong>
+                      Settled: <strong className="text-gray-900 font-mono">{isTurbo ? (up.status === 'completed' ? 'Settled' : 'In Progress') : `${up.daysClaimed}/${up.returnDays} Days`}</strong>
                     </span>
                   </div>
 
                   {/* Metrics Row */}
                   <div className="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-2xl text-center text-xs">
                     <div>
-                      <span className="text-[9px] text-gray-400 block">Deposit</span>
-                      <span className="font-bold text-gray-800 tabular-nums">{formatINR(up.depositAmount, { decimals: 0 })}</span>
+                      <span className="text-[9px] text-gray-400 block uppercase">Deposit</span>
+                      <span className="font-bold text-gray-800 tabular-nums font-mono">{formatINR(up.depositAmount, { decimals: 0 })}</span>
                     </div>
                     <div>
-                      <span className="text-[9px] text-gray-400 block">
-                        {isTurbo ? 'Plan Return' : 'Daily Return'}
+                      <span className="text-[9px] text-gray-400 block uppercase">
+                        {isTurbo ? 'Plan Return' : 'Daily Income'}
                       </span>
-                      <span className="font-extrabold text-emerald-600 tabular-nums">{formatINR(up.dailyIncome, { decimals: 0 })}</span>
+                      <span className="font-extrabold text-emerald-600 tabular-nums font-mono">{formatINR(up.dailyIncome, { decimals: 0 })}</span>
                     </div>
                     <div>
-                      <span className="text-[9px] text-gray-400 block">Total Est.</span>
-                      <span className="font-extrabold text-emerald-700 tabular-nums">{formatINR(up.totalReturn, { decimals: 0 })}</span>
+                      <span className="text-[9px] text-gray-400 block uppercase">Total Return</span>
+                      <span className="font-extrabold text-emerald-700 tabular-nums font-mono">{formatINR(up.totalReturn, { decimals: 0 })}</span>
                     </div>
                   </div>
 
                   {/* Progress Bar */}
-                  <div>
-                    <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-                      <span>
-                        {isTurbo ? (
-                          up.status === 'completed' ? (
-                            'Status: Completed & Claimed'
-                          ) : isReady ? (
-                            <span className="text-emerald-600 font-bold">⚡ Ready to Collect!</span>
-                          ) : (
-                            <span>
-                              Remaining: {Math.floor(remainingMs / 60000)} Minutes {Math.floor((remainingMs % 60000) / 1000)} Seconds
-                            </span>
-                          )
-                        ) : up.status === 'returned' ? (
-                          <span className="text-rose-600 font-bold">Plan Returned & Refunded</span>
-                        ) : (
-                          `Progress: ${up.daysClaimed}/${up.returnDays} Days`
-                        )}
-                      </span>
-                      <span className="font-mono font-bold">{progressPct}%</span>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[10px] text-gray-500 font-mono">
+                      <span>Cycle Lifecycle</span>
+                      <span className="font-bold text-gray-900">{progressPct}%</span>
                     </div>
-                    <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          up.status === 'returned'
-                            ? 'bg-rose-400'
-                            : isTurbo
-                            ? 'bg-gradient-to-r from-amber-400 to-amber-500'
-                            : 'bg-emerald-500'
-                        }`}
-                        style={{ width: `${progressPct}%` }}
-                      ></div>
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${progressPct}%`,
+                          background: 'var(--brand-chamkila-gradient, linear-gradient(90deg, #00d26a, #00ba58))'
+                        }}
+                      />
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
+                  {/* Action Buttons for Plan */}
                   {up.status === 'active' && (
-                    <div className="space-y-2 pt-1">
-                      {isTurbo ? (
-                        isReady ? (
-                          <button
-                            id={`claim-turbo-btn-${up.id}`}
-                            onClick={() => handleClaimSingle(up.id, profitAmount)}
-                            className="w-full py-2.5 btn-chamkila-gold text-amber-950 rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer ring-1 ring-amber-300"
-                          >
-                            <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-700 animate-bounce" />
-                            <span>Collect Turbo Return (+{formatINR(profitAmount, { decimals: 0 })})</span>
-                          </button>
-                        ) : (
-                          <div className="w-full py-2 bg-amber-50/90 border border-amber-200 rounded-xl text-center text-[11px] font-bold text-amber-900 flex items-center justify-center space-x-1.5">
-                            <Clock className="w-3.5 h-3.5 text-amber-600 animate-spin" />
-                            <span>
-                              In Progress: {Math.floor(remainingMs / 60000)} Minutes {Math.floor((remainingMs % 60000) / 1000)} Seconds remaining
-                            </span>
-                          </div>
-                        )
-                      ) : up.lastClaimDate === todayStr ? (
-                        <div className="w-full py-2 bg-emerald-50 rounded-xl text-center text-[11px] font-bold text-emerald-700 flex items-center justify-center space-x-1 border border-emerald-100">
-                          <Check className="w-3.5 h-3.5 stroke-[3]" />
-                          <span>Today's Profit Claimed (Next in {timeLeft.h} Hours {timeLeft.m} Minutes)</span>
-                        </div>
-                      ) : (
+                    <div className="pt-1 flex items-center justify-between space-x-2">
+                      {isReady ? (
                         <button
-                          id={`claim-daily-btn-${up.id}`}
-                          onClick={() => handleClaimSingle(up.id, up.dailyIncome)}
-                          className="w-full py-2.5 btn-chamkila text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
+                          type="button"
+                          onClick={() => handleClaimSingle(up.id, profitAmount)}
+                          className="flex-1 py-2 px-3 rounded-xl btn-chamkila text-white font-black text-xs shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center space-x-1.5"
                         >
-                          <Coins className="w-3.5 h-3.5 text-amber-200" />
-                          <span>Collect Today's Profit (+{formatINR(up.dailyIncome, { decimals: 0 })})</span>
+                          <Coins className="w-4 h-4" />
+                          <span>Collect Profit ({formatINR(profitAmount, { decimals: 0 })})</span>
                         </button>
+                      ) : (
+                        <div className="flex-1 py-2 px-3 rounded-xl bg-gray-100 text-gray-500 text-xs font-bold text-center flex items-center justify-center space-x-1.5">
+                          <Clock className="w-3.5 h-3.5 text-gray-400" />
+                          <span>
+                            {isTurbo
+                              ? remainingMs > 0
+                                ? `Settling in ${Math.ceil(remainingMs / 1000)}s...`
+                                : 'Settling now...'
+                              : "Today's income credited"}
+                          </span>
+                        </div>
                       )}
 
-                      {/* Return Plan / Refund Button */}
+                      {/* Early Return / Refund Option */}
                       <button
-                        id={`return-plan-btn-${up.id}`}
                         type="button"
                         onClick={() => setPlanToReturn(up)}
-                        className="w-full py-2 bg-gray-50 hover:bg-rose-50 text-gray-600 hover:text-rose-700 border border-gray-200 hover:border-rose-200 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer"
+                        title="Early Capital Refund"
+                        className="py-2 px-2.5 rounded-xl border border-gray-200 text-gray-500 hover:text-rose-600 hover:border-rose-300 text-[11px] font-bold transition-all active:scale-95 cursor-pointer flex items-center space-x-1"
                       >
-                        <RotateCcw className="w-3.5 h-3.5 text-rose-500" />
-                        <span>Return Plan (Refund Deposit {formatINR(up.depositAmount, { decimals: 0 })})</span>
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Refund</span>
                       </button>
                     </div>
                   )}
@@ -435,74 +542,53 @@ export const MyProductsView: React.FC = () => {
         )}
       </div>
 
-      {/* Return Plan Confirmation Modal */}
-      {planToReturn &&
-        createPortal(
-          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
-            <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden text-center p-6 space-y-4">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shadow-inner">
-                <RotateCcw className="w-7 h-7" />
-              </div>
-
-              <div>
-                <h3 className="text-base font-black text-gray-900">Return Investment Plan?</h3>
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                  Are you sure you want to return the investment plan for{' '}
-                  <strong className="text-gray-800">{planToReturn.title}</strong>?
-                </p>
-              </div>
-
-              <div className="p-3 bg-rose-50/80 rounded-2xl border border-rose-100 text-left space-y-1.5 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Plan:</span>
-                  <span className="font-bold text-gray-800">{planToReturn.title}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Return Time:</span>
-                  <span className="font-bold text-gray-800">
-                    {planToReturn.durationMinutes
-                      ? `${planToReturn.durationMinutes} Minutes`
-                      : `${planToReturn.returnDays} Days`}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t border-rose-200/60 pt-1.5">
-                  <span className="text-rose-700 font-bold">Refund to Wallet:</span>
-                  <span className="text-rose-700 font-extrabold text-sm font-mono">
-                    +{formatINR(planToReturn.depositAmount, { decimals: 0 })}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2 pt-1">
-                <button
-                  id="confirm-return-plan-btn"
-                  type="button"
-                  onClick={() => {
-                    sfx.playSuccess();
-                    returnPlanCycle(planToReturn.id);
-                    setPlanToReturn(null);
-                  }}
-                  className="w-full py-3 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black text-xs rounded-xl shadow-md active:scale-95 transition-all cursor-pointer"
-                >
-                  Yes, Return Plan & Refund Deposit
-                </button>
-
-                <button
-                  id="cancel-return-plan-btn"
-                  type="button"
-                  onClick={() => {
-                    sfx.playTap();
-                    setPlanToReturn(null);
-                  }}
-                  className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl active:scale-95 transition-all cursor-pointer"
-                >
-                  Keep Plan Running
-                </button>
-              </div>
+      {/* Early Return Confirmation Modal */}
+      {planToReturn && createPortal(
+        <div
+          onClick={() => setPlanToReturn(null)}
+          className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-gray-100 space-y-3.5 text-center"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-100">
+              <AlertTriangle className="w-6 h-6" />
             </div>
-          </div>,
-          document.body
-        )}
+
+            <h3 className="text-base font-black text-gray-900">
+              Return Plan Early?
+            </h3>
+
+            <p className="text-xs text-gray-500 leading-relaxed">
+              Are you sure you want to exit <strong>{planToReturn.title}</strong>? Your principal capital of{' '}
+              <strong className="text-gray-900 font-mono">{formatINR(planToReturn.depositAmount)}</strong> will be credited back to your balance immediately, and future daily dividends will stop.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setPlanToReturn(null)}
+                className="py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs cursor-pointer active:scale-95 transition-all"
+              >
+                Keep Earning
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  returnPlanCycle(planToReturn.id);
+                  setPlanToReturn(null);
+                }}
+                className="py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs cursor-pointer active:scale-95 transition-all shadow-sm"
+              >
+                Confirm Exit
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

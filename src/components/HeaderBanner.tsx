@@ -13,7 +13,6 @@ interface BannerSlide {
   tagline: string;
   statLabel: string;
   statValue: string;
-  accentColor: string;
 }
 
 const SLIDES: BannerSlide[] = [
@@ -25,8 +24,7 @@ const SLIDES: BannerSlide[] = [
     imageUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80',
     tagline: 'High-frequency compounding with daily automated returns',
     statLabel: 'Active Profit Rate',
-    statValue: 'Up to 600% Return Time',
-    accentColor: 'from-emerald-900/80 via-emerald-800/35 to-transparent'
+    statValue: 'Up to 600% Return Time'
   },
   {
     id: 'akm-special-return',
@@ -36,8 +34,7 @@ const SLIDES: BannerSlide[] = [
     imageUrl: 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?auto=format&fit=crop&w=1200&q=80',
     tagline: 'Deposit ₹720 & earn ₹8,708 in just 48 hours Return Time',
     statLabel: 'Settlement Window',
-    statValue: 'Instant Bank IMPS',
-    accentColor: 'from-emerald-900/80 via-amber-800/30 to-transparent'
+    statValue: 'Instant Bank IMPS'
   },
   {
     id: 'akm-turbo-ultra',
@@ -47,8 +44,7 @@ const SLIDES: BannerSlide[] = [
     imageUrl: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?auto=format&fit=crop&w=1200&q=80',
     tagline: 'Minute-level turbo harvests with 24/7 liquidity clearance',
     statLabel: 'Security Level',
-    statValue: '256-Bit Vault',
-    accentColor: 'from-teal-900/80 via-emerald-800/30 to-transparent'
+    statValue: '256-Bit Vault'
   },
   {
     id: 'akm-fintech-growth',
@@ -58,8 +54,7 @@ const SLIDES: BannerSlide[] = [
     imageUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80',
     tagline: 'Zero surcharge deposits and real-time IMPS direct banking',
     statLabel: 'Clearance Speed',
-    statValue: '0.8s Ultra Fast',
-    accentColor: 'from-emerald-900/80 via-teal-800/30 to-transparent'
+    statValue: '0.8s Ultra Fast'
   }
 ];
 
@@ -136,14 +131,20 @@ export const HeaderBanner: React.FC = () => {
   const slide = SLIDES[currentSlide];
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-emerald-800 via-emerald-700 to-[#008a44] rounded-b-3xl shadow-lg border-b border-emerald-600/30">
-      {/* Top Bar with Status & Admin Quick Access */}
-      <div className="relative z-20 px-3.5 pt-2 pb-1.5 flex items-center justify-between text-xs bg-emerald-900/40 backdrop-blur-md border-b border-white/15">
-        <div className="flex items-center space-x-1.5 bg-white/20 px-2 py-0.5 rounded-full border border-white/20">
+    <div
+      className="relative overflow-hidden rounded-b-3xl shadow-lg border-b border-white/20"
+      style={{
+        background: 'var(--brand-hero-gradient, linear-gradient(135deg, #065f46 0%, #047857 50%, #064e3b 100%))',
+      }}
+    >
+      {/* Top Bar with Status & Admin Quick Access (Cute & Professional) */}
+      <div className="relative z-20 px-3.5 pt-2 pb-1.5 flex items-center justify-between text-xs bg-emerald-950/25 backdrop-blur-md border-b border-white/15">
+        <div className="flex items-center space-x-1.5 bg-white/20 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/25 shadow-xs">
           <ShieldCheck className="w-3 h-3 text-emerald-300" />
-          <span className="font-bold tracking-wide text-white text-[10px]">
+          <span className="font-black tracking-wider text-white text-[9.5px] uppercase">
             AKM ENTERPRISES
           </span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
         </div>
 
         <div className="flex items-center space-x-1.5">
@@ -152,7 +153,7 @@ export const HeaderBanner: React.FC = () => {
             <button
               id="header-admin-btn"
               onClick={() => setIsAdminOpen(true)}
-              className="flex items-center space-x-1 font-bold px-2 py-0.5 rounded-full shadow-sm text-[10px] transition-transform active:scale-95 cursor-pointer bg-amber-400 hover:bg-amber-300 text-slate-950 font-black ring-1 ring-amber-300"
+              className="flex items-center space-x-1 font-black px-2.5 py-0.5 rounded-full shadow-sm text-[10px] transition-transform active:scale-90 cursor-pointer bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-200 text-slate-950 ring-1 ring-amber-300"
               title="Open Admin Control Panel"
             >
               <span>🔐 Admin</span>
@@ -162,7 +163,7 @@ export const HeaderBanner: React.FC = () => {
           <button
             id="header-notification-btn"
             onClick={() => setIsAnnouncementOpen(true)}
-            className="bg-white/20 hover:bg-white/30 p-1.5 rounded-full text-white transition-colors cursor-pointer active:scale-95"
+            className="bg-white/20 hover:bg-white/30 p-1.5 rounded-full text-white transition-all cursor-pointer active:scale-90 border border-white/20 shadow-xs"
             title="Notifications"
           >
             <Bell className="w-3 h-3" />
@@ -196,30 +197,46 @@ export const HeaderBanner: React.FC = () => {
                 className="w-full h-full object-cover object-center filter brightness-[0.75] contrast-105 scale-105 transition-transform duration-1000 ease-out"
                 referrerPolicy="no-referrer"
               />
-              <div className={`absolute inset-0 bg-gradient-to-t ${slide.accentColor}`} />
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/75 via-emerald-900/35 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-emerald-950/90 via-emerald-900/50 to-transparent" />
+              <div
+                className="absolute inset-0 opacity-40 mix-blend-overlay pointer-events-none"
+                style={{ background: 'var(--brand-hero-gradient)' }}
+              />
+              <div
+                className="absolute inset-0 opacity-35 pointer-events-none"
+                style={{ background: 'linear-gradient(to top, var(--brand-secondary) 0%, transparent 75%)' }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
             </div>
 
             {/* Slide Content Header: Official AKM Badge & Category Tag */}
             <div className="relative z-10 flex items-start justify-between">
               <div className="flex flex-col items-start">
                 <div className="flex items-center space-x-1.5">
-                  <div className="bg-gradient-to-r from-emerald-500 to-[#00ba58] text-white px-2 py-0.5 rounded-md shadow-md border border-white/20 flex items-center space-x-1">
+                  <div
+                    className="text-white px-2 py-0.5 rounded-md shadow-md border border-white/20 flex items-center space-x-1"
+                    style={{ background: 'var(--brand-chamkila-gradient)' }}
+                  >
                     <span className="font-black text-xs tracking-tighter leading-none">
                       AKM
                     </span>
-                    <span className="text-[7.5px] font-extrabold uppercase tracking-widest text-emerald-100">
+                    <span className="text-[7.5px] font-extrabold uppercase tracking-widest text-white/90">
                       GROWTH
                     </span>
                   </div>
                   <span className="flex h-1.5 w-1.5 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                    <span
+                      className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                      style={{ backgroundColor: 'var(--brand-primary)' }}
+                    />
+                    <span
+                      className="relative inline-flex rounded-full h-1.5 w-1.5"
+                      style={{ backgroundColor: 'var(--brand-primary)' }}
+                    />
                   </span>
                   <div className="flex items-center space-x-1 ml-1">
                     <div className="h-0.5 w-2 bg-amber-400"></div>
-                    <span className="text-[8px] font-black tracking-wider text-emerald-200 uppercase drop-shadow-sm">
+                    <span className="text-[8px] font-black tracking-wider text-white uppercase drop-shadow-sm">
                       {slide.title}
                     </span>
                   </div>
@@ -231,22 +248,25 @@ export const HeaderBanner: React.FC = () => {
               </div>
 
               {/* Badge Tag */}
-              <div className="flex items-center space-x-1 bg-emerald-950/50 backdrop-blur-md px-2 py-0.5 rounded-full border border-emerald-300/30 text-[8px] font-black text-emerald-200 shadow-md">
+              <div className="flex items-center space-x-1 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/20 text-[8px] font-black text-white shadow-md">
                 <Award className="w-2.5 h-2.5 text-amber-300" />
                 <span>{slide.badge}</span>
               </div>
             </div>
 
             {/* Bottom Slider Ribbon with Stat and Balance preview */}
-            <div className="relative z-10 flex items-center justify-between bg-emerald-950/60 backdrop-blur-md rounded-lg px-2.5 py-1 border border-white/20 text-white shadow-md">
+            <div className="relative z-10 flex items-center justify-between bg-black/45 backdrop-blur-md rounded-lg px-2.5 py-1 border border-white/20 text-white shadow-md">
               <div className="flex items-center space-x-1.5 min-w-0 pr-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></div>
+                <div
+                  className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0"
+                  style={{ backgroundColor: 'var(--brand-primary)' }}
+                />
                 <span className="text-[8.5px] font-semibold text-gray-200 truncate">
                   {slide.tagline}
                 </span>
               </div>
-              <div className="text-[9.5px] font-black text-emerald-300 font-mono tracking-tight shrink-0 flex items-center space-x-1">
-                <TrendingUp className="w-2.5 h-2.5 text-emerald-400" />
+              <div className="text-[9.5px] font-black font-mono tracking-tight shrink-0 flex items-center space-x-1 text-white">
+                <TrendingUp className="w-2.5 h-2.5" style={{ color: 'var(--brand-primary)' }} />
                 <span>{slide.statValue}</span>
               </div>
             </div>
@@ -257,7 +277,7 @@ export const HeaderBanner: React.FC = () => {
         <button
           type="button"
           onClick={handlePrev}
-          className="absolute left-1.5 top-1/2 -translate-y-1/2 z-20 w-5 h-5 rounded-full bg-emerald-900/60 hover:bg-emerald-800/80 text-white flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer border border-white/20"
+          className="absolute left-1.5 top-1/2 -translate-y-1/2 z-20 w-5 h-5 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer border border-white/20"
           aria-label="Previous Slide"
         >
           <ChevronLeft className="w-3 h-3" />
@@ -265,7 +285,7 @@ export const HeaderBanner: React.FC = () => {
         <button
           type="button"
           onClick={handleNext}
-          className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20 w-5 h-5 rounded-full bg-emerald-900/60 hover:bg-emerald-800/80 text-white flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer border border-white/20"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20 w-5 h-5 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer border border-white/20"
           aria-label="Next Slide"
         >
           <ChevronRight className="w-3 h-3" />
@@ -279,9 +299,13 @@ export const HeaderBanner: React.FC = () => {
               onClick={() => goToSlide(idx)}
               className={`transition-all rounded-full cursor-pointer ${
                 currentSlide === idx
-                  ? 'w-4 h-1 bg-emerald-400 shadow-xs shadow-emerald-400/50'
+                  ? 'w-4 h-1'
                   : 'w-1 h-1 bg-white/40 hover:bg-white/70'
               }`}
+              style={{
+                backgroundColor: currentSlide === idx ? 'var(--brand-primary)' : undefined,
+                boxShadow: currentSlide === idx ? '0 0 8px var(--brand-glow)' : undefined,
+              }}
               aria-label={`Slide ${idx + 1}`}
             />
           ))}

@@ -253,7 +253,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Branding & Header */}
         <div className="flex items-center space-x-2.5 mb-3.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#008a44] via-[#00ba58] to-[#1cdb77] text-white flex items-center justify-center font-bold text-lg shadow-md shadow-emerald-600/30 shrink-0">
+          <div
+            className="w-9 h-9 rounded-xl text-white flex items-center justify-center font-bold text-lg shadow-md shrink-0"
+            style={{ background: 'var(--brand-chamkila-gradient)', boxShadow: '0 4px 12px var(--brand-glow)' }}
+          >
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>

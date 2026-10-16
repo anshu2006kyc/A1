@@ -40,7 +40,10 @@ export const AnnouncementModal: React.FC = () => {
 
         <div className="flex flex-col items-center text-center">
           {/* Icon Header */}
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#00a859] to-[#25d366] text-white flex items-center justify-center mb-3 shadow-lg shadow-emerald-600/30">
+          <div
+            className="w-14 h-14 rounded-2xl text-white flex items-center justify-center mb-3 shadow-lg"
+            style={{ background: 'var(--brand-chamkila-gradient)', boxShadow: '0 8px 20px var(--brand-glow)' }}
+          >
             <Bell className="w-7 h-7" />
           </div>
 

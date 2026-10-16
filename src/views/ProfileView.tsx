@@ -116,7 +116,13 @@ export const ProfileView: React.FC = () => {
       {/* Profile Top Bar */}
       <div className="bg-white p-4 border-b border-gray-100 flex items-center justify-between shadow-2xs">
         <div className="flex items-center space-x-3">
-          <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-[#008f4c] via-[#00ba58] to-[#25d366] text-white flex items-center justify-center shadow-md shadow-emerald-600/20 shrink-0 border border-emerald-400/40">
+          <div
+            className="w-13 h-13 rounded-2xl text-white flex items-center justify-center shrink-0 border border-white/20"
+            style={{
+              background: 'var(--brand-chamkila-gradient)',
+              boxShadow: '0 4px 14px var(--brand-glow)'
+            }}
+          >
             <User className="w-6 h-6" />
           </div>
           <div>
@@ -161,7 +167,12 @@ export const ProfileView: React.FC = () => {
           {!isLoggedIn && (
             <button
               onClick={() => openAuthModal('login')}
-              className="px-2.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-100 active:scale-95 transition-all flex items-center space-x-1 cursor-pointer"
+              className="px-2.5 py-1.5 rounded-xl border text-xs font-bold active:scale-95 transition-all flex items-center space-x-1 cursor-pointer"
+              style={{
+                backgroundColor: 'var(--theme-color-50, #ecfdf5)',
+                borderColor: 'var(--theme-color-200, #a7f3d0)',
+                color: 'var(--brand-primary)',
+              }}
               title="Sign In"
             >
               <LogIn className="w-3.5 h-3.5" />
@@ -171,7 +182,12 @@ export const ProfileView: React.FC = () => {
 
           <button
             onClick={() => setCurrentView('bank')}
-            className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center hover:bg-emerald-100 active:scale-95 transition-all cursor-pointer border border-emerald-200"
+            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-all cursor-pointer border"
+            style={{
+              backgroundColor: 'var(--theme-color-50, #ecfdf5)',
+              borderColor: 'var(--theme-color-200, #a7f3d0)',
+              color: 'var(--brand-primary)',
+            }}
             title="Bank Details"
           >
             <Building2 className="w-4 h-4" />
@@ -181,9 +197,18 @@ export const ProfileView: React.FC = () => {
 
       <div className="p-3.5 space-y-3.5">
         {!isLoggedIn && (
-          <div className="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-3 flex items-center justify-between">
+          <div
+            className="border rounded-2xl p-3 flex items-center justify-between"
+            style={{
+              background: 'linear-gradient(to right, rgba(245, 158, 11, 0.08), var(--theme-color-50, #ecfdf5))',
+              borderColor: 'var(--brand-glow)',
+            }}
+          >
             <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                style={{ backgroundColor: 'var(--theme-color-100)', color: 'var(--brand-secondary)' }}
+              >
                 <LogIn className="w-4 h-4" />
               </div>
               <div>
@@ -193,7 +218,7 @@ export const ProfileView: React.FC = () => {
             </div>
             <button
               onClick={() => openAuthModal('login')}
-              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs active:scale-95 transition-all"
+              className="px-3 py-1.5 rounded-xl btn-chamkila text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs active:scale-95 transition-all"
             >
               Sign In
             </button>
@@ -201,9 +226,20 @@ export const ProfileView: React.FC = () => {
         )}
 
         {/* ADVANCE TITANIUM VIP PROFILE CARD (COMPACT & SLEEK) */}
-        <div className="bg-gradient-to-br from-[#0a1f16] via-[#072a1b] to-[#04150d] text-white p-3.5 rounded-2xl shadow-lg border border-emerald-500/25 relative overflow-hidden backdrop-blur-md">
+        <div
+          className="text-white p-3.5 rounded-2xl shadow-lg border relative overflow-hidden backdrop-blur-md"
+          style={{
+            background: 'var(--brand-dark-gradient, linear-gradient(135deg, #0a1f16 0%, #072a1b 50%, #04150d 100%))',
+            borderColor: 'var(--brand-primary)',
+          }}
+        >
           {/* Subtle Cyber Grid Accent Overlay */}
-          <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:14px_14px] opacity-10 pointer-events-none"></div>
+          <div
+            className="absolute inset-0 [background-size:14px_14px] opacity-10 pointer-events-none"
+            style={{
+              backgroundImage: 'radial-gradient(var(--brand-primary) 1px, transparent 1px)'
+            }}
+          />
 
           {/* Top Row: EMV Gold Chip + Member Tier + UID */}
           <div className="flex items-center justify-between relative z-10">
@@ -349,7 +385,10 @@ export const ProfileView: React.FC = () => {
         <div className="bg-white rounded-3xl p-4 border border-gray-100 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div
+                className="w-6 h-6 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
+              >
                 <Receipt className="w-3.5 h-3.5" />
               </div>
               <h3 className="text-xs font-black text-gray-900 tracking-tight">
@@ -362,7 +401,8 @@ export const ProfileView: React.FC = () => {
                 sfx.playTap();
                 navigateToTransactions('all');
               }}
-              className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center space-x-0.5 cursor-pointer"
+              className="text-[11px] font-bold flex items-center space-x-0.5 cursor-pointer"
+              style={{ color: 'var(--brand-primary)' }}
             >
               <span>View All</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -377,18 +417,28 @@ export const ProfileView: React.FC = () => {
                 sfx.playTap();
                 navigateToTransactions('deposit');
               }}
-              className="p-3 rounded-2xl bg-gradient-to-b from-emerald-50/80 to-emerald-50/20 border border-emerald-100/90 hover:border-emerald-300 hover:shadow-sm active:scale-95 transition-all text-left cursor-pointer flex flex-col justify-between space-y-2 group"
+              className="p-3 rounded-2xl border hover:shadow-sm active:scale-95 transition-all text-left cursor-pointer flex flex-col justify-between space-y-2 group"
+              style={{
+                background: 'linear-gradient(to bottom, var(--theme-color-50, #ecfdf5), white)',
+                borderColor: 'var(--theme-color-200, #a7f3d0)',
+              }}
             >
               <div className="flex items-center justify-between">
-                <div className="w-7 h-7 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                <div
+                  className="w-7 h-7 rounded-xl text-white flex items-center justify-center shadow-xs"
+                  style={{ backgroundColor: 'var(--brand-primary)' }}
+                >
                   <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
                 </div>
               </div>
               <div>
-                <span className="text-xs font-bold text-gray-900 block group-hover:text-emerald-700 transition-colors">
+                <span className="text-xs font-bold text-gray-900 block transition-colors">
                   Recharge Record
                 </span>
-                <span className="text-[10px] text-emerald-700 font-bold font-mono block mt-0.5">
+                <span
+                  className="text-[10px] font-bold font-mono block mt-0.5"
+                  style={{ color: 'var(--brand-primary)' }}
+                >
                   {showBalance ? formatINR(effectiveTotalRecharge) : '•••'}
                 </span>
               </div>
@@ -456,7 +506,10 @@ export const ProfileView: React.FC = () => {
             className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
+              >
                 <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
@@ -467,7 +520,7 @@ export const ProfileView: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold text-emerald-700 font-mono">
+              <span className="text-xs font-bold font-mono" style={{ color: 'var(--brand-primary)' }}>
                 {showBalance ? formatINR(effectiveTotalRecharge) : '•••'}
               </span>
               <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -537,7 +590,10 @@ export const ProfileView: React.FC = () => {
             className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
+              >
                 <Building2 className="w-4 h-4" />
               </div>
               <span className="text-xs font-bold text-gray-800">Bank Account</span>
@@ -552,7 +608,10 @@ export const ProfileView: React.FC = () => {
             className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
+              >
                 <Package className="w-4 h-4" />
               </div>
               <span className="text-xs font-bold text-gray-800">My Investment Products</span>
@@ -567,13 +626,16 @@ export const ProfileView: React.FC = () => {
             className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
+              >
                 <HistoryIcon className="w-4 h-4" />
               </div>
               <div>
                 <span className="text-xs font-bold text-gray-800 block">All Financial Statements</span>
                 <span className="text-[10px] text-gray-400 block mt-0.5">
-                  Complete account audit trail & downloadable slips
+                  Complete account audit trail & statements
                 </span>
               </div>
             </div>
@@ -587,7 +649,10 @@ export const ProfileView: React.FC = () => {
             className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
+              >
                 <KeyRound className="w-4 h-4" />
               </div>
               <span className="text-xs font-bold text-gray-800">Security & Password</span>
@@ -602,7 +667,10 @@ export const ProfileView: React.FC = () => {
             className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
+              >
                 <Info className="w-4 h-4" />
               </div>
               <span className="text-xs font-bold text-gray-800">About AKM Enterprises</span>

@@ -25,6 +25,8 @@ import { useApp } from '../context/AppContext';
 import { WhatsAppIcon, TelegramIcon } from '../components/BrandIcons';
 import { formatINR } from '../utils/currency';
 import { sfx } from '../utils/sound';
+import { TeamMember } from '../types';
+import { sortRecordsNewestFirst } from '../utils/date';
 
 export const TeamView: React.FC = () => {
   const {
@@ -103,7 +105,7 @@ export const TeamView: React.FC = () => {
 
   // Team metrics scoped strictly to current user's invite network
   const myTeamMembers = useMemo(() => {
-    return teamMembers.filter((m) => m.sponsorId === user.id);
+    return sortRecordsNewestFirst<TeamMember>(teamMembers.filter((m) => m.sponsorId === user.id));
   }, [teamMembers, user.id]);
 
   const l1Members = useMemo(() => myTeamMembers.filter((m) => m.level === 1), [myTeamMembers]);
@@ -183,7 +185,10 @@ export const TeamView: React.FC = () => {
       {/* Main Container */}
       <div className="p-4 space-y-4">
         {/* Top Header Card: Ambassador Summary */}
-        <div className="bg-gradient-to-br from-[#008f4c] via-[#00a859] to-[#0a6634] text-white p-5 rounded-3xl shadow-lg relative overflow-hidden">
+        <div
+          className="text-white p-5 rounded-3xl shadow-lg relative overflow-hidden"
+          style={{ background: 'var(--brand-card-gradient, linear-gradient(135deg, #008f4c 0%, #00a859 50%, #0a6634 100%))' }}
+        >
           <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
           <div className="absolute -left-8 -bottom-8 w-32 h-32 rounded-full bg-emerald-950/20 blur-xl pointer-events-none" />
 
@@ -312,10 +317,10 @@ export const TeamView: React.FC = () => {
               {/* Large Telegram Share Card */}
               <button
                 onClick={handleShareTelegram}
-                className="py-3 px-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#0074ad] hover:brightness-105 text-white flex items-center space-x-3 shadow-md active:scale-95 transition-all cursor-pointer border border-[#0088cc]/40"
+                className="py-3 px-3 rounded-2xl bg-gradient-to-r from-[#0088cc] to-[#0074ad] hover:brightness-105 text-white flex items-center space-x-3 shadow-md active:scale-95 transition-all cursor-pointer border border-[#0088cc]/40 group"
               >
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 shadow-xs">
-                  <TelegramIcon className="w-6 h-6 fill-white drop-shadow-sm" />
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                  <TelegramIcon animated={true} className="w-6 h-6 fill-white drop-shadow-sm" />
                 </div>
                 <div className="text-left">
                   <span className="text-xs font-black block tracking-wide">Telegram</span>

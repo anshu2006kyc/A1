@@ -20,6 +20,8 @@ import { useApp } from '../context/AppContext';
 import { formatINR } from '../utils/currency';
 import { maskPhone } from '../utils/phone';
 import { sfx } from '../utils/sound';
+import { sortRecordsNewestFirst } from '../utils/date';
+import { CheckInRecord } from '../types';
 
 export const CheckInView: React.FC = () => {
   const {
@@ -127,18 +129,25 @@ export const CheckInView: React.FC = () => {
       {/* Top Navigation - Clean & Working Header (Back button & ? icon removed) */}
       <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-100 sticky top-0 z-20">
         <div className="flex items-center space-x-1.5 min-w-[70px]">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[11px] font-black tracking-wider text-emerald-700 uppercase">AKM</span>
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--brand-primary)' }} />
+          <span className="text-[11px] font-black tracking-wider uppercase" style={{ color: 'var(--brand-primary)' }}>AKM</span>
         </div>
 
         <div className="text-center flex-1">
           <h1 className="text-base font-bold text-gray-900 leading-tight">Daily Check-in</h1>
-          <span className="text-[10px] text-emerald-600 font-medium">Daily Streak & Reward Center</span>
+          <span className="text-[10px] font-medium" style={{ color: 'var(--brand-secondary)' }}>Daily Streak & Reward Center</span>
         </div>
 
         <div className="min-w-[70px] flex justify-end">
-          <div className="flex items-center space-x-1 bg-emerald-50 border border-emerald-200/70 px-2.5 py-1 rounded-full text-emerald-700 text-[10px] font-bold shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div
+            className="flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-bold border shadow-2xs"
+            style={{
+              backgroundColor: 'var(--theme-color-50, #ecfdf5)',
+              borderColor: 'var(--theme-color-200, #a7f3d0)',
+              color: 'var(--brand-primary)',
+            }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--brand-primary)' }} />
             <span>Active</span>
           </div>
         </div>
@@ -146,7 +155,10 @@ export const CheckInView: React.FC = () => {
 
       <div className="p-4 space-y-4">
         {/* Top Header Card */}
-        <div className="bg-gradient-to-br from-[#008f4c] via-[#00a859] to-[#0a6634] text-white p-5 rounded-3xl shadow-lg relative overflow-hidden">
+        <div
+          className="text-white p-5 rounded-3xl shadow-lg relative overflow-hidden"
+          style={{ background: 'var(--brand-card-gradient, linear-gradient(135deg, #008f4c 0%, #00a859 50%, #0a6634 100%))' }}
+        >
           {/* Subtle decorative circles */}
           <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
           <div className="absolute -left-8 -bottom-8 w-32 h-32 rounded-full bg-emerald-900/20 blur-xl pointer-events-none" />
@@ -216,11 +228,21 @@ export const CheckInView: React.FC = () => {
 
           {/* 3D Gold Coin Artwork */}
           <div className="relative my-2">
-            <div className={`w-28 h-28 rounded-full flex items-center justify-center p-2 shadow-xl transition-all duration-300 ${
-              hasCheckedInToday
-                ? 'bg-gradient-to-tr from-emerald-500 to-teal-300 shadow-emerald-500/20'
-                : 'bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-500 shadow-amber-400/40 animate-pulse'
-            }`}>
+            <div
+              className={`w-28 h-28 rounded-full flex items-center justify-center p-2 shadow-xl transition-all duration-300 ${
+                hasCheckedInToday
+                  ? ''
+                  : 'bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-500 shadow-amber-400/40 animate-pulse'
+              }`}
+              style={
+                hasCheckedInToday
+                  ? {
+                      background: 'var(--brand-chamkila-gradient)',
+                      boxShadow: '0 8px 24px var(--brand-glow)',
+                    }
+                  : undefined
+              }
+            >
               <div className="w-full h-full rounded-full border-4 border-dashed border-white/50 flex items-center justify-center bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-500 shadow-inner">
                 {hasCheckedInToday ? (
                   <Check className="w-12 h-12 text-white stroke-[3.5] drop-shadow-md" />
@@ -232,7 +254,10 @@ export const CheckInView: React.FC = () => {
           </div>
 
           {/* Amount Label */}
-          <div className="text-3xl font-black text-emerald-700 mt-2 tabular-nums font-mono">
+          <div
+            className="text-3xl font-black mt-2 tabular-nums font-mono"
+            style={{ color: 'var(--brand-secondary)' }}
+          >
             {formatINR(todayRewardAmount, { decimals: 0 })}
           </div>
           <span className="text-xs text-gray-500 mt-0.5">
@@ -277,10 +302,16 @@ export const CheckInView: React.FC = () => {
         <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-1.5 text-xs font-bold text-gray-900">
-              <Calendar className="w-4 h-4 text-emerald-600" />
+              <Calendar className="w-4 h-4" style={{ color: 'var(--brand-primary)' }} />
               <span>7-Day Continuous Streak Period</span>
             </div>
-            <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+            <span
+              className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+              style={{
+                backgroundColor: 'var(--theme-color-50, #ecfdf5)',
+                color: 'var(--brand-secondary)',
+              }}
+            >
               Round {Math.floor(streakDays / 7) + 1}
             </span>
           </div>
@@ -292,36 +323,47 @@ export const CheckInView: React.FC = () => {
                 ? d.dayNumber <= currentCycleDay
                 : d.dayNumber < currentCycleDay;
               const isToday = d.dayNumber === currentCycleDay;
-              const isUpcoming = hasCheckedInToday
-                ? d.dayNumber > currentCycleDay
-                : d.dayNumber > currentCycleDay;
 
               return (
                 <div
                   key={d.dayNumber}
                   className={`py-2.5 px-0.5 rounded-2xl flex flex-col items-center justify-between transition-all relative ${
                     isPastChecked
-                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                      ? 'border'
                       : isToday
-                      ? 'bg-gradient-to-b from-emerald-600 to-emerald-700 text-white shadow-md ring-2 ring-emerald-400/50 scale-[1.03]'
+                      ? 'text-white shadow-md scale-[1.03]'
                       : d.isSpecial
                       ? 'bg-amber-50/70 border border-amber-200 text-gray-600'
                       : 'bg-gray-50 border border-gray-100 text-gray-500'
                   }`}
+                  style={isPastChecked ? {
+                    backgroundColor: 'var(--theme-color-50, #ecfdf5)',
+                    borderColor: 'var(--theme-color-200, #a7f3d0)',
+                    color: 'var(--brand-secondary)'
+                  } : isToday ? {
+                    background: 'var(--brand-chamkila-gradient)',
+                    boxShadow: '0 4px 12px var(--brand-glow)'
+                  } : undefined}
                 >
                   {/* Top Day Tag */}
-                  <span className={`text-[9px] font-bold block ${isToday ? 'text-emerald-100' : 'text-gray-400'}`}>
+                  <span className={`text-[9px] font-bold block ${isToday ? 'text-white' : 'text-gray-400'}`}>
                     {d.title}
                   </span>
 
                   {/* Icon */}
                   <div className="my-1.5">
                     {isPastChecked ? (
-                      <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                      <div
+                        className="w-5 h-5 rounded-full text-white flex items-center justify-center shadow-xs"
+                        style={{ backgroundColor: 'var(--brand-primary)' }}
+                      >
                         <Check className="w-3 h-3 stroke-[3]" />
                       </div>
                     ) : isToday ? (
-                      <div className="w-5 h-5 rounded-full bg-white text-emerald-600 flex items-center justify-center shadow-xs animate-pulse">
+                      <div
+                        className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-xs animate-pulse"
+                        style={{ color: 'var(--brand-primary)' }}
+                      >
                         <Check className="w-3 h-3 stroke-[3]" />
                       </div>
                     ) : d.isSpecial ? (
@@ -336,7 +378,10 @@ export const CheckInView: React.FC = () => {
                   </div>
 
                   {/* Reward Amount */}
-                  <span className={`text-[10px] font-black tabular-nums ${isToday ? 'text-white' : isPastChecked ? 'text-emerald-700' : 'text-gray-700'}`}>
+                  <span
+                    className={`text-[10px] font-black tabular-nums ${isToday ? 'text-white' : 'text-gray-700'}`}
+                    style={isPastChecked ? { color: 'var(--brand-primary)' } : undefined}
+                  >
                     +{d.reward}
                   </span>
 
@@ -476,7 +521,7 @@ export const CheckInView: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-              {checkIns.filter((ci) => ci.userId === user.id).map((ci, idx) => (
+              {sortRecordsNewestFirst<CheckInRecord>(checkIns.filter((ci) => ci.userId === user.id)).map((ci, idx) => (
                 <div
                   key={`${ci.id || 'chk'}-${idx}`}
                   className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/80 border border-gray-100 hover:bg-gray-50 transition-colors"

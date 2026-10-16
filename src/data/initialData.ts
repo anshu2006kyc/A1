@@ -399,7 +399,7 @@ export const INITIAL_AUDIT_LOGS = [
     timestamp: "1 hour ago",
     type: "bonus" as const,
     title: "3-Tier Commission Credited",
-    details: "Level 1 referral bonus of ₹180.00 disbursed to sponsor account.",
+    details: "Level 1 referral bonus of ₹180.00 credited to sponsor account.",
     amount: 180,
     status: "info" as const
   }

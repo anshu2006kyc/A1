@@ -34,12 +34,24 @@ export const AboutView: React.FC = () => {
 
       <div className="p-4 space-y-4">
         {/* Top Hero Brand Card */}
-        <div className="bg-gradient-to-br from-[#0c5c2e] via-[#008a44] to-[#128a47] text-white p-5 rounded-3xl shadow-lg relative overflow-hidden text-center">
+        <div
+          className="text-white p-5 rounded-3xl shadow-lg relative overflow-hidden text-center"
+          style={{ background: 'var(--brand-hero-gradient, linear-gradient(135deg, #0c5c2e 0%, #008a44 50%, #128a47 100%))' }}
+        >
           <div className="flex justify-center mb-2">
-            <div className="bg-white text-[#008a44] font-black text-2xl px-4 py-1 rounded-xl shadow-md border-2 border-white flex items-center space-x-2">
+            <div
+              className="bg-white font-black text-2xl px-4 py-1 rounded-xl shadow-md border-2 border-white flex items-center space-x-2"
+              style={{ color: 'var(--brand-secondary)' }}
+            >
               <span>AKM</span>
-              <div className="w-3.5 h-3.5 rounded-full border-2 border-[#008a44] flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-[#008a44] rounded-full"></div>
+              <div
+                className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center"
+                style={{ borderColor: 'var(--brand-secondary)' }}
+              >
+                <div
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: 'var(--brand-secondary)' }}
+                />
               </div>
             </div>
           </div>
@@ -190,7 +202,10 @@ export const AboutView: React.FC = () => {
         </div>
 
         {/* Mission Statement */}
-        <div className="bg-[#00a859] text-white p-5 rounded-3xl shadow-md">
+        <div
+          className="text-white p-5 rounded-3xl shadow-md"
+          style={{ background: 'var(--brand-card-gradient, #00a859)' }}
+        >
           <div className="text-xs font-extrabold uppercase tracking-widest text-emerald-100 mb-1">
             Our Mission
           </div>

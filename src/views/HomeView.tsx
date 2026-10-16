@@ -1,18 +1,26 @@
 import React, { useState } from 'react';
-import { Crown, Sprout, Zap } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { Crown, Sprout, Zap, Timer } from 'lucide-react';
 import { BuyModal } from '../components/BuyModal';
 import { HeaderBanner } from '../components/HeaderBanner';
 import { PlanCard } from '../components/PlanCard';
 import { QuickActions } from '../components/QuickActions';
-import { LiveTicker } from '../components/LiveTicker';
 import { useApp } from '../context/AppContext';
 import { Plan } from '../types';
 import { sfx } from '../utils/sound';
-import { formatINR } from '../utils/currency';
 
 export const HomeView: React.FC = () => {
-  const { user, plans, userPlans, transactions, selectedCategory, setSelectedCategory, buyPlan, navigateToRecharge, setCurrentView, showToast } = useApp();
+  const {
+    user,
+    plans,
+    userPlans,
+    transactions,
+    selectedCategory,
+    setSelectedCategory,
+    buyPlan,
+    navigateToRecharge,
+    setCurrentView,
+    showToast
+  } = useApp();
   const [selectedPlanToBuy, setSelectedPlanToBuy] = useState<Plan | null>(null);
   const [turboDurationFilter, setTurboDurationFilter] = useState<'all' | '1m' | '1h'>('all');
 
@@ -37,11 +45,6 @@ export const HomeView: React.FC = () => {
     <div className="pb-24 animate-fade-in">
       {/* Header Banner */}
       <HeaderBanner />
-
-      {/* Live Activity & Payout Ticker */}
-      <div className="mt-3">
-        <LiveTicker />
-      </div>
 
       {/* Quick 4 Actions (Recharge, Withdraw, Service, Channel) */}
       <QuickActions />

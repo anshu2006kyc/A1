@@ -45,6 +45,7 @@ import {
 import { formatINR } from '../utils/currency';
 import { sfx } from '../utils/sound';
 import { applyTheme } from '../utils/theme';
+import { parseRecordTimestamp, sortRecordsNewestFirst } from '../utils/date';
 
 export type AppView =
   | 'home'
@@ -221,7 +222,7 @@ export const generateUniqueId = (prefix: string): string => {
 
 export const sanitizeTransactions = (list: Transaction[]): Transaction[] => {
   const seenIds = new Set<string>();
-  return list.map((tx, idx) => {
+  const sanitized = list.map((tx, idx) => {
     let id = tx.id;
     if (!id || seenIds.has(id)) {
       id = generateUniqueId(`${id || 'tx'}-${idx}`);
@@ -229,6 +230,9 @@ export const sanitizeTransactions = (list: Transaction[]): Transaction[] => {
     seenIds.add(id);
     return { ...tx, id };
   });
+
+  // STRICT REQUIREMENT: Newest records on TOP, older records at the bottom
+  return sortRecordsNewestFirst(sanitized);
 };
 
 export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
@@ -2551,7 +2555,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       status: 'success',
       utr: utr || tx.utr || `IMPS${Date.now().toString().slice(-10)}`,
       utrNumber: utr || tx.utrNumber || `IMPS${Date.now().toString().slice(-10)}`,
-      adminRemark: `Approved and Disbursed by Admin${utr ? ` (RRN: ${utr})` : ''}`
+      adminRemark: `Approved and Transferred by Admin${utr ? ` (RRN: ${utr})` : ''}`
     };
     setTransactions((prev) =>
       prev.map((t) => (t.id === txId ? updatedTx : t))

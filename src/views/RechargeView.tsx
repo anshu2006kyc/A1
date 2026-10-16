@@ -200,7 +200,10 @@ export const RechargeView: React.FC = () => {
         {/* A. Available Balance Pill */}
         <div className="bg-white px-3.5 py-2.5 rounded-2xl border border-gray-200/80 shadow-xs flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#00ba58] flex items-center justify-center">
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
+            >
               <Wallet className="w-4 h-4 stroke-[2.3]" />
             </div>
             <div>
@@ -211,8 +214,15 @@ export const RechargeView: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-1 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full text-[10px] font-bold text-[#00ba58]">
-            <ShieldCheck className="w-3 h-3 text-[#00ba58]" />
+          <div
+            className="flex items-center space-x-1 px-2 py-1 rounded-full text-[10px] font-bold border"
+            style={{
+              backgroundColor: 'var(--theme-color-50, #ecfdf5)',
+              borderColor: 'var(--theme-color-200, #a7f3d0)',
+              color: 'var(--brand-primary)',
+            }}
+          >
+            <ShieldCheck className="w-3 h-3" style={{ color: 'var(--brand-primary)' }} />
             <span>Instant Clearance</span>
           </div>
         </div>
@@ -229,15 +239,19 @@ export const RechargeView: React.FC = () => {
           </div>
 
           {/* Amount Input */}
-          <div className="flex items-center space-x-1.5 py-1 border-b-2 border-emerald-500/30 focus-within:border-[#00ba58] transition-colors">
-            <span className="text-2xl font-black text-[#00ba58]">₹</span>
+          <div
+            className="flex items-center space-x-1.5 py-1 border-b-2 transition-colors"
+            style={{ borderBottomColor: 'var(--brand-primary)' }}
+          >
+            <span className="text-2xl font-black" style={{ color: 'var(--brand-primary)' }}>₹</span>
             <input
               type="text"
               inputMode="numeric"
               value={customInput}
               onChange={handleCustomInputChange}
               placeholder="0"
-              className="text-2xl font-black text-[#00ba58] w-full focus:outline-none tabular-nums font-mono bg-transparent"
+              className="text-2xl font-black w-full focus:outline-none tabular-nums font-mono bg-transparent"
+              style={{ color: 'var(--brand-primary)' }}
             />
           </div>
 
@@ -254,7 +268,7 @@ export const RechargeView: React.FC = () => {
                   className={`py-1.5 px-1 rounded-xl text-xs font-bold text-center transition-all cursor-pointer select-none active:scale-95 ${
                     isSelected
                       ? 'btn-chamkila text-white font-black shadow-sm'
-                      : 'border border-gray-200 bg-white text-gray-700 hover:border-emerald-300 hover:bg-emerald-50/20'
+                      : 'border border-gray-200 bg-white text-gray-700 hover:border-[var(--brand-primary)]'
                   }`}
                 >
                   <span className="tabular-nums">₹{amt}</span>
@@ -270,7 +284,7 @@ export const RechargeView: React.FC = () => {
 
           <div className="text-[10px] text-gray-500 flex items-center justify-between pt-0.5">
             <span>Min: ₹{adminSettings.minRecharge || 285}</span>
-            <span className="text-emerald-700 font-bold">Transfer Fee: ₹0</span>
+            <span className="font-bold" style={{ color: 'var(--brand-secondary)' }}>Transfer Fee: ₹0</span>
           </div>
         </div>
 
@@ -278,7 +292,7 @@ export const RechargeView: React.FC = () => {
         <div className="bg-white p-3 rounded-2xl border border-gray-200/80 shadow-xs space-y-2">
           <div className="text-xs font-bold text-gray-800 flex items-center justify-between">
             <span>Select Payment Channel</span>
-            <span className="text-[10px] text-emerald-600 font-bold">100% Automated Instant</span>
+            <span className="text-[10px] font-bold" style={{ color: 'var(--brand-primary)' }}>100% Automated Instant</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
@@ -290,20 +304,31 @@ export const RechargeView: React.FC = () => {
               }}
               className={`p-2.5 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                 selectedChannel === 'watchpay'
-                  ? 'border-[#00ba58] bg-emerald-50/70 shadow-xs'
+                  ? 'shadow-xs'
                   : 'border-gray-200 bg-white hover:border-gray-300'
               }`}
+              style={selectedChannel === 'watchpay' ? {
+                borderColor: 'var(--brand-primary)',
+                backgroundColor: 'var(--theme-color-50, #ecfdf5)'
+              } : undefined}
             >
               <div className="flex items-center justify-between">
-                <div className="w-6 h-6 rounded-lg bg-[#00ba58] text-white flex items-center justify-center">
+                <div
+                  className="w-6 h-6 rounded-lg text-white flex items-center justify-center shadow-xs"
+                  style={{ backgroundColor: 'var(--brand-primary)' }}
+                >
                   <Zap className="w-3.5 h-3.5 fill-current" />
                 </div>
                 <div
                   className={`w-4 h-4 rounded-full flex items-center justify-center border-2 ${
                     selectedChannel === 'watchpay'
-                      ? 'border-[#00ba58] bg-[#00ba58] text-white'
+                      ? 'text-white'
                       : 'border-gray-300 bg-white'
                   }`}
+                  style={selectedChannel === 'watchpay' ? {
+                    borderColor: 'var(--brand-primary)',
+                    backgroundColor: 'var(--brand-primary)'
+                  } : undefined}
                 >
                   {selectedChannel === 'watchpay' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                 </div>
@@ -314,7 +339,10 @@ export const RechargeView: React.FC = () => {
                     UPI Fast Pay
                   </span>
                   {(adminSettings.defaultGateway || 'watchpay') === 'watchpay' && (
-                    <span className="text-[8px] bg-emerald-100 text-emerald-800 font-bold px-1 rounded-full">
+                    <span
+                      className="text-[8px] font-bold px-1 rounded-full"
+                      style={{ backgroundColor: 'var(--theme-color-100)', color: 'var(--brand-secondary)' }}
+                    >
                       Default
                     </span>
                   )}
@@ -338,13 +366,16 @@ export const RechargeView: React.FC = () => {
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center">
+                <div
+                  className="w-6 h-6 rounded-lg text-white flex items-center justify-center shadow-xs"
+                  style={{ backgroundColor: 'var(--brand-secondary)' }}
+                >
                   <ShieldCheck className="w-3.5 h-3.5" />
                 </div>
                 <div
                   className={`w-4 h-4 rounded-full flex items-center justify-center border-2 ${
                     selectedChannel === 'sunpay'
-                      ? 'border-emerald-600 bg-emerald-600 text-white'
+                      ? 'border-amber-600 bg-amber-600 text-white'
                       : 'border-gray-300 bg-white'
                   }`}
                 >
@@ -357,7 +388,10 @@ export const RechargeView: React.FC = () => {
                     UPI Express
                   </span>
                   {adminSettings.defaultGateway === 'sunpays' && (
-                    <span className="text-[8px] bg-emerald-100 text-emerald-800 font-bold px-1 rounded-full">
+                    <span
+                      className="text-[8px] font-bold px-1 rounded-full"
+                      style={{ backgroundColor: 'var(--theme-color-100)', color: 'var(--brand-secondary)' }}
+                    >
                       Default
                     </span>
                   )}
@@ -371,9 +405,16 @@ export const RechargeView: React.FC = () => {
         </div>
 
         {/* D. Instant Auto-Credit Assurance */}
-        <div className="bg-emerald-50/80 border border-emerald-200/80 p-2.5 rounded-xl flex items-center space-x-2 text-[11px] text-emerald-900">
-          <CheckCircle2 className="w-4 h-4 text-[#00ba58] shrink-0" />
-          <span className="font-semibold">
+        <div
+          className="border p-2.5 rounded-xl flex items-center space-x-2 text-[11px]"
+          style={{
+            backgroundColor: 'var(--theme-color-50, #ecfdf5)',
+            borderColor: 'var(--theme-color-200, #a7f3d0)',
+            color: 'var(--brand-secondary)'
+          }}
+        >
+          <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: 'var(--brand-primary)' }} />
+          <span className="font-semibold text-gray-800">
             Automatic Deposit: Balance is credited to your wallet immediately after payment.
           </span>
         </div>

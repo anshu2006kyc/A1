@@ -81,6 +81,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
   };
 
   const activeSupportUrl = supportUrl || adminSettings.telegramSupportUrl || 'https://t.me/akm_official_support';
+  const activeChannelUrl = channelUrl || adminSettings.telegramChannelUrl || 'https://t.me/akm_official_channel';
   const activeWhatsappUrl = adminSettings.whatsappSupportUrl || 'https://wa.me/919876543210';
 
   return createPortal(
@@ -167,7 +168,10 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
               <div className="p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200/80 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-[#00ba58] text-white flex items-center justify-center shadow-xs">
+                    <div
+                      className="w-8 h-8 rounded-xl text-white flex items-center justify-center shadow-xs"
+                      style={{ background: 'var(--brand-primary)' }}
+                    >
                       <CreditCard className="w-4 h-4" />
                     </div>
                     <div>
@@ -265,12 +269,30 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                 className="flex items-center justify-between p-2.5 bg-sky-50 hover:bg-sky-100 rounded-2xl border border-sky-100 text-sky-900 transition-colors group"
               >
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-[#0088cc] text-white flex items-center justify-center shadow-xs shrink-0">
-                    <TelegramIcon className="w-4 h-4 fill-white" />
+                  <div className="w-8 h-8 rounded-xl bg-[#0088cc] text-white flex items-center justify-center shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                    <TelegramIcon animated={true} className="w-4 h-4 fill-white" />
                   </div>
                   <div>
                     <div className="text-xs font-bold">Official Telegram Representative</div>
                     <div className="text-[10px] text-sky-600 font-medium">@akm_official_support · Live 24/7</div>
+                  </div>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-sky-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
+              </a>
+
+              <a
+                href={activeChannelUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between p-2.5 bg-sky-50/80 hover:bg-sky-100/90 rounded-2xl border border-sky-200 text-sky-900 transition-colors group"
+              >
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0088cc] to-[#24A1DE] text-white flex items-center justify-center shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                    <TelegramIcon animated={true} className="w-4 h-4 fill-white" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold">Official Telegram Channel</div>
+                    <div className="text-[10px] text-sky-600 font-medium">Daily Updates & Notice Board</div>
                   </div>
                 </div>
                 <ExternalLink className="w-3.5 h-3.5 text-sky-400 group-hover:translate-x-0.5 transition-transform shrink-0" />

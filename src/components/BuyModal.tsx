@@ -101,7 +101,10 @@ export const BuyModal: React.FC<BuyModalProps> = ({
         {purchaseSuccess ? (
           /* Success Screen */
           <div className="space-y-4 py-2">
-            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner animate-bounce">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-inner animate-bounce"
+              style={{ backgroundColor: 'var(--theme-color-100)', color: 'var(--brand-primary)' }}
+            >
               <CheckCircle2 className="w-9 h-9" />
             </div>
 
@@ -114,14 +117,20 @@ export const BuyModal: React.FC<BuyModalProps> = ({
               </p>
             </div>
 
-            <div className="p-3 bg-emerald-50/80 rounded-2xl border border-emerald-100 text-left space-y-1 text-xs">
+            <div
+              className="p-3 rounded-2xl border text-left space-y-1 text-xs"
+              style={{
+                backgroundColor: 'var(--theme-color-50, #ecfdf5)',
+                borderColor: 'var(--theme-color-200, #a7f3d0)',
+              }}
+            >
               <div className="flex justify-between text-gray-600">
                 <span>Invested:</span>
                 <span className="font-bold text-gray-900 font-mono">{formatINR(plan.depositAmount, { decimals: 0 })}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>{plan.durationMinutes ? 'Total Return:' : 'Daily Profit:'}</span>
-                <span className="font-bold text-emerald-700 font-mono">
+                <span className="font-bold font-mono" style={{ color: 'var(--brand-primary)' }}>
                   {formatINR(plan.dailyIncome, { decimals: 0 })}{plan.durationMinutes ? '' : '/day'}
                 </span>
               </div>
@@ -162,17 +171,23 @@ export const BuyModal: React.FC<BuyModalProps> = ({
               {isZeroDeposit || isLowBalance ? 'Deposit Required to Subscribe' : 'Confirm Plan Purchase'}
             </h3>
 
-            <div className="my-3 p-3 bg-emerald-50 rounded-2xl border border-emerald-100 text-left flex items-start space-x-3">
+            <div
+              className="my-3 p-3 rounded-2xl border text-left flex items-start space-x-3"
+              style={{
+                backgroundColor: 'var(--theme-color-50, #ecfdf5)',
+                borderColor: 'var(--theme-color-200, #a7f3d0)',
+              }}
+            >
               {plan.imageUrl ? (
                 <img
                   src={plan.imageUrl}
                   alt={plan.title}
                   referrerPolicy="no-referrer"
-                  className="w-14 h-14 rounded-xl object-cover shrink-0 border border-emerald-200/60 bg-zinc-900 shadow-xs"
+                  className="w-14 h-14 rounded-xl object-cover shrink-0 border border-gray-200 bg-zinc-900 shadow-xs"
                 />
               ) : null}
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-emerald-900 truncate">{plan.title}</div>
+                <div className="text-xs font-bold text-gray-900 truncate">{plan.title}</div>
                 <div className="flex justify-between text-xs text-gray-600 mt-1">
                   <span>Deposit:</span>
                   <span className="font-bold text-gray-900 tabular-nums font-mono">{formatINR(plan.depositAmount, { decimals: 0 })}</span>
@@ -191,13 +206,13 @@ export const BuyModal: React.FC<BuyModalProps> = ({
                 </div>
                 <div className="flex justify-between text-xs text-gray-600 mt-0.5">
                   <span>{plan.durationMinutes ? 'Return:' : 'Daily Return:'}</span>
-                  <span className="font-bold text-emerald-600 tabular-nums font-mono">
+                  <span className="font-bold tabular-nums font-mono" style={{ color: 'var(--brand-primary)' }}>
                     {formatINR(plan.dailyIncome, { decimals: 0 })}{plan.durationMinutes ? '' : '/day'}
                   </span>
                 </div>
                 <div className="flex justify-between text-xs text-gray-600 mt-0.5">
                   <span>Total Return:</span>
-                  <span className="font-bold text-emerald-700 tabular-nums font-mono">{formatINR(plan.totalReturn, { decimals: 0 })}</span>
+                  <span className="font-bold tabular-nums font-mono" style={{ color: 'var(--brand-secondary)' }}>{formatINR(plan.totalReturn, { decimals: 0 })}</span>
                 </div>
               </div>
             </div>

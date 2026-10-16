@@ -35,14 +35,17 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
 
         {/* Fallback Graphic if Image Loading or Error */}
         {(!plan.imageUrl || imageError || !imageLoaded) && (
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0a4a25] via-[#0d6e37] to-[#128a47] flex flex-col items-center justify-center text-white p-2">
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center text-white p-2"
+            style={{ background: 'var(--brand-hero-gradient)' }}
+          >
             <div className="flex items-center space-x-2">
               <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex flex-col items-center justify-center shadow-lg">
                 <span className="text-[11px] font-black text-amber-300">AKM</span>
-                <span className="text-[7.5px] font-bold text-emerald-200 uppercase tracking-widest">ASSET</span>
+                <span className="text-[7.5px] font-bold text-white/90 uppercase tracking-widest">ASSET</span>
               </div>
             </div>
-            <div className="text-[9px] font-bold tracking-widest text-emerald-100 uppercase mt-1.5">
+            <div className="text-[9px] font-bold tracking-widest text-white/90 uppercase mt-1.5">
               AKM WEALTH ASSETS
             </div>
           </div>
@@ -53,16 +56,19 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
 
         {/* Floating Brand Pill (Bottom-Left) */}
         <div className="absolute bottom-1.5 left-2 z-10 flex items-center space-x-1 bg-black/70 backdrop-blur-xs px-2 py-0.5 rounded-full border border-white/20">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span className="text-[9px] font-black tracking-wider text-emerald-300">AKM ENTERPRISES</span>
+          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--brand-primary)' }} />
+          <span className="text-[9px] font-black tracking-wider text-white">AKM ENTERPRISES</span>
         </div>
 
         {/* Limit or Turbo Badge Top Right (Exact match to video) */}
-        <div className={`absolute top-0 right-0 z-10 text-[10px] font-bold px-2.5 py-0.5 rounded-bl-xl border-l border-b backdrop-blur-xs max-w-[140px] truncate ${
-          plan.durationMinutes
-            ? 'bg-amber-400 text-amber-950 border-amber-300 font-black shadow-xs'
-            : 'bg-[#00ba58] text-white border-[#00ba58]'
-        }`}>
+        <div
+          className={`absolute top-0 right-0 z-10 text-[10px] font-bold px-2.5 py-0.5 rounded-bl-xl border-l border-b backdrop-blur-xs max-w-[140px] truncate text-white ${
+            plan.durationMinutes
+              ? 'bg-amber-400 text-amber-950 border-amber-300 font-black shadow-xs'
+              : ''
+          }`}
+          style={!plan.durationMinutes ? { backgroundColor: 'var(--brand-primary)', borderColor: 'var(--brand-primary)' } : undefined}
+        >
           {plan.durationMinutes === 1
             ? '⏱️ 1 Min'
             : plan.durationMinutes === 60
@@ -72,9 +78,12 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
       </div>
 
       {/* Plan Title Banner */}
-      <div className={`text-white text-center py-1.5 px-2 text-xs font-bold tracking-wide line-clamp-1 ${
-        plan.durationMinutes ? 'bg-emerald-950 border-b border-amber-400/30 text-amber-300' : 'bg-emerald-900/90'
-      }`}>
+      <div
+        className={`text-white text-center py-1.5 px-2 text-xs font-bold tracking-wide line-clamp-1 ${
+          plan.durationMinutes ? 'bg-black/85 border-b border-amber-400/30 text-amber-300' : ''
+        }`}
+        style={!plan.durationMinutes ? { background: 'var(--brand-dark-gradient, #064e3b)' } : undefined}
+      >
         {plan.title}
       </div>
 
@@ -104,14 +113,20 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
           <span className="text-gray-400 block text-[10px]">
             {plan.durationMinutes ? 'Plan Return' : 'Daily Return'}
           </span>
-          <span className="font-extrabold text-[#00ba58] text-xs tabular-nums font-mono">
+          <span
+            className="font-extrabold text-xs tabular-nums font-mono"
+            style={{ color: 'var(--brand-primary)' }}
+          >
             {formatINR(plan.dailyIncome, { decimals: 0 })}
           </span>
         </div>
 
         <div className="text-right">
           <span className="text-gray-400 block text-[10px]">Est. Total</span>
-          <span className="font-extrabold text-[#00ba58] text-xs tabular-nums font-mono">
+          <span
+            className="font-extrabold text-xs tabular-nums font-mono"
+            style={{ color: 'var(--brand-primary)' }}
+          >
             {formatINR(plan.totalReturn, { decimals: 0 })}
           </span>
         </div>

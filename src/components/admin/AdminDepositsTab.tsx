@@ -15,6 +15,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { formatINR } from '../../utils/currency';
 import { Transaction } from '../../types';
+import { sortRecordsNewestFirst } from '../../utils/date';
 
 export const AdminDepositsTab: React.FC = () => {
   const {
@@ -54,7 +55,7 @@ export const AdminDepositsTab: React.FC = () => {
     'Suspicious Account / Velocity Violation'
   ];
 
-  const deposits = transactions.filter((t) => t.type === 'recharge');
+  const deposits = sortRecordsNewestFirst<Transaction>(transactions.filter((t) => t.type === 'recharge'));
 
   const filteredDeposits = deposits.filter((tx) => {
     if (statusFilter !== 'all' && tx.status !== statusFilter) return false;
@@ -279,7 +280,7 @@ export const AdminDepositsTab: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="text-[11px] text-slate-400 flex items-center space-x-2 flex-wrap">
+                  <div className="text-[9.5px] text-slate-400 flex items-center space-x-2 flex-wrap">
                     <span>{tx.createdAt}</span>
                     <span>•</span>
                     <span>

@@ -1,8 +1,10 @@
 import React from 'react';
 
-interface BrandIconProps {
+export interface BrandIconProps {
   className?: string;
   size?: number;
+  animated?: boolean;
+  withCircle?: boolean;
 }
 
 /**
@@ -22,17 +24,63 @@ export const WhatsAppIcon: React.FC<BrandIconProps> = ({ className = 'w-5 h-5', 
 );
 
 /**
- * Official Real Telegram Vector Icon
+ * Official Real Telegram Vector Icon with authentic paper airplane fold geometry & animation support
  */
-export const TelegramIcon: React.FC<BrandIconProps> = ({ className = 'w-5 h-5', size }) => (
-  <svg
-    viewBox="0 0 24 24"
-    width={size || 24}
-    height={size || 24}
-    fill="currentColor"
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z" />
-  </svg>
+export const TelegramIcon: React.FC<BrandIconProps> = ({
+  className = 'w-5 h-5',
+  size,
+  animated = false,
+  withCircle = false,
+}) => {
+  return (
+    <svg
+      viewBox="0 0 240 240"
+      width={size || 24}
+      height={size || 24}
+      className={`${className} ${animated ? 'animate-telegram-fly' : ''}`}
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Telegram"
+    >
+      <defs>
+        <linearGradient id="telegramGradientOfficial" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#2AABEE" />
+          <stop offset="100%" stopColor="#229ED9" />
+        </linearGradient>
+      </defs>
+
+      {/* Optional official circular background */}
+      {withCircle && (
+        <circle cx="120" cy="120" r="120" fill="url(#telegramGradientOfficial)" />
+      )}
+
+      {/* Authentic Telegram paper airplane paths with aerodynamic paper fold depth */}
+      <g className={animated ? 'animate-telegram-fly' : ''}>
+        {/* Underside fold shadow */}
+        <path
+          d="M98 175c-3.88 0-3.22-1.47-4.56-5.16L82 132.88 177 74"
+          fill="currentColor"
+          opacity="0.72"
+        />
+        {/* Rudder flap connector */}
+        <path
+          d="M98 175c3 0 4.33-1.37 6-3l16-15.56-20-12"
+          fill="currentColor"
+          opacity="0.5"
+        />
+        {/* Main wing and cockpit body */}
+        <path
+          d="M100 144.44l48.42 35.78c5.56 3.07 9.56 1.48 10.95-5.14l19.7-92.83c2.03-8.15-3.11-11.83-8.45-9.4L45.47 110.15c-7.95 3.19-7.89 7.63-1.41 9.61l32.14 10.04 74.4-46.94c3.51-2.13 6.73-.99 4.08 1.36z"
+          fill="currentColor"
+        />
+      </g>
+    </svg>
+  );
+};
+
+/**
+ * Official Standalone Circular Telegram Brand Badge
+ */
+export const TelegramBadge: React.FC<BrandIconProps> = (props) => (
+  <TelegramIcon {...props} withCircle={true} className={`${props.className || 'w-10 h-10'} text-white`} />
 );

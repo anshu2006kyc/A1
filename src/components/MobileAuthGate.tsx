@@ -14,7 +14,6 @@ import {
   Lock,
   Phone,
   ShieldCheck,
-  Sparkles,
   UserCheck,
   UserPlus,
   Zap
@@ -228,9 +227,10 @@ export const MobileAuthGate: React.FC = () => {
               onClick={() => handleSwitchAuthMode('login')}
               className={`py-1.5 px-2 rounded-xl font-bold text-[11px] flex items-center justify-center space-x-1 transition-all cursor-pointer ${
                 authMode === 'login'
-                  ? 'bg-gradient-to-r from-emerald-600 to-[#00ba58] text-white shadow-md shadow-emerald-700/20'
+                  ? 'text-white shadow-md'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
+              style={authMode === 'login' ? { background: 'var(--brand-chamkila-gradient)', boxShadow: '0 4px 12px var(--brand-glow)' } : undefined}
             >
               <UserCheck className="w-3 h-3" />
               <span>Log In (लॉग इन)</span>
@@ -241,9 +241,10 @@ export const MobileAuthGate: React.FC = () => {
               onClick={() => handleSwitchAuthMode('register')}
               className={`py-1.5 px-2 rounded-xl font-bold text-[11px] flex items-center justify-center space-x-1 transition-all cursor-pointer ${
                 authMode === 'register'
-                  ? 'bg-gradient-to-r from-emerald-600 to-[#00ba58] text-white shadow-md shadow-emerald-700/20'
+                  ? 'text-white shadow-md'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
+              style={authMode === 'register' ? { background: 'var(--brand-chamkila-gradient)', boxShadow: '0 4px 12px var(--brand-glow)' } : undefined}
             >
               <UserPlus className="w-3 h-3" />
               <span>Register (नया खाता)</span>
@@ -549,7 +550,7 @@ export const MobileAuthGate: React.FC = () => {
                         className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-[10px] font-mono font-bold text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-emerald-500 uppercase"
                       />
                       <span className="text-[8.5px] text-emerald-700 font-semibold block mt-1 flex items-center space-x-1">
-                        <Sparkles className="w-2.5 h-2.5 text-amber-500 inline shrink-0" />
+                        <Gift className="w-2.5 h-2.5 text-amber-500 inline shrink-0" />
                         <span>Instant ₹28 Free Joining Bonus wallet me credit hoga!</span>
                       </span>
                     </motion.div>
