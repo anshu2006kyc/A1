@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="60%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+    <radialGradient id="flash" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#f59e0b" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#67e8f9"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg)"/>
+  <circle cx="200" cy="140" r="110" fill="url(#flash)"/>
+  <circle cx="200" cy="140" r="85" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6"/>
+  <circle cx="200" cy="140" r="70" fill="#0f172a" stroke="url(#goldGrad)" stroke-width="4"/>
+  <!-- Rotor Turbine Blades -->
+  <g transform="translate(200, 140)">
+    <g>
+      <path d="M0,0 L12,-55 C22,-45 28,-25 15,-10 Z" fill="url(#goldGrad)" opacity="0.95"/>
+      <path d="M0,0 L50,-25 C50,-10 38,5 18,2 Z" fill="url(#goldGrad)" opacity="0.9"/>
+      <path d="M0,0 L48,28 C38,40 22,42 8,18 Z" fill="url(#goldGrad)" opacity="0.95"/>
+      <path d="M0,0 L5,55 C-8,55 -22,42 -12,18 Z" fill="url(#goldGrad)" opacity="0.9"/>
+      <path d="M0,0 L-45,30 C-50,18 -40,-2 -18,2 Z" fill="url(#goldGrad)" opacity="0.95"/>
+      <path d="M0,0 L-48,-25 C-38,-40 -20,-42 -6,-18 Z" fill="url(#goldGrad)" opacity="0.9"/>
+    </g>
+    <!-- Lightning Flash Spark -->
+    <path d="M-15,-30 L10,-5 L-4,2 L15,35 L-12,5 L2,-2 Z" fill="#ffffff" filter="drop-shadow(0 0 8px #fef08a)"/>
+    <circle cx="0" cy="0" r="16" fill="#020617" stroke="#fbbf24" stroke-width="3"/>
+    <circle cx="0" cy="0" r="6" fill="#fbbf24"/>
+  </g>
+  <!-- Speed lines -->
+  <path d="M30,80 L90,80" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <path d="M20,100 L110,100" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <path d="M40,120 L80,120" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <path d="M370,160 L310,160" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <path d="M380,180 L290,180" stroke="#67e8f9" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <!-- Badge Label -->
+  <g transform="translate(200, 265)">
+    <rect x="-85" y="-14" width="170" height="26" rx="13" fill="#020617" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="0" y="4" font-family="system-ui, sans-serif" font-size="11" font-weight="900" fill="#fbbf24" text-anchor="middle" letter-spacing="1.5">⚡ 1 MIN FLASH TURBO</text>
+  </g>
+</svg>

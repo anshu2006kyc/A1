@@ -237,7 +237,7 @@ export const TeamView: React.FC = () => {
                   <TrendingUp className="w-3.5 h-3.5" />
                 </div>
                 <div className="text-sm font-black text-white tabular-nums font-mono">
-                  {formatINR(totalTeamTurnover, { decimals: 0 })}
+                  {formatINR(totalTeamTurnover)}
                 </div>
                 <div className="text-[8.5px] font-bold text-emerald-200 tracking-wider">TURNOVER</div>
               </div>
@@ -247,7 +247,7 @@ export const TeamView: React.FC = () => {
                   <Coins className="w-3.5 h-3.5" />
                 </div>
                 <div className="text-sm font-black text-white tabular-nums font-mono">
-                  {formatINR(l1Commission, { decimals: 0 })}
+                  {formatINR(l1Commission)}
                 </div>
                 <div className="text-[8.5px] font-bold text-emerald-200 tracking-wider">L1 BONUS</div>
               </div>
@@ -518,8 +518,8 @@ export const TeamView: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs font-black text-emerald-600 block tabular-nums">
-                        +{formatINR(quest.reward, { decimals: 0 })}
+                      <span className="text-xs font-black text-emerald-600 block tabular-nums font-mono">
+                        +{formatINR(quest.reward)}
                       </span>
                     </div>
                   </div>
@@ -553,7 +553,7 @@ export const TeamView: React.FC = () => {
                         className="px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-emerald-600 text-white font-extrabold text-[10px] shadow-xs active:scale-95 transition-all cursor-pointer flex items-center space-x-1"
                       >
                         <Gift className="w-3 h-3" />
-                        <span>Claim {formatINR(quest.reward, { decimals: 0 })} Bonus</span>
+                        <span>Claim {formatINR(quest.reward)} Bonus</span>
                       </button>
                     ) : (
                       <span className="text-[9.5px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full flex items-center space-x-1">
@@ -699,8 +699,8 @@ export const TeamView: React.FC = () => {
                       <span className="text-xs font-bold text-emerald-600 block tabular-nums font-mono">
                         +{formatINR(m.commissionEarned)}
                       </span>
-                      <span className="text-[9.5px] text-gray-400 block tabular-nums">
-                        Recharge: {formatINR(m.rechargeAmount, { decimals: 0 })}
+                      <span className="text-[9.5px] text-gray-400 block tabular-nums font-mono">
+                        Recharge: {formatINR(m.rechargeAmount)}
                       </span>
                     </div>
                   </div>

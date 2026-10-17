@@ -55,7 +55,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 250,
     totalReturn: 250,
     badge: "⚡ 1 Minute",
-    imageUrl: "https://images.unsplash.com/photo-1592838064575-70ed626d3a0e?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/turbo-1m.svg",
     isActive: true
   },
   {
@@ -69,7 +69,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 660,
     totalReturn: 660,
     badge: "⚡ 3 Minutes",
-    imageUrl: "https://images.unsplash.com/photo-1578844251758-2f71da64c96f?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/turbo-3m.svg",
     isActive: true
   },
   {
@@ -83,7 +83,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 1400,
     totalReturn: 1400,
     badge: "🔥 5 Minutes",
-    imageUrl: "https://images.unsplash.com/photo-1530267981375-f0de937f5f13?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/turbo-5m.svg",
     isActive: true
   },
   {
@@ -97,7 +97,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 3000,
     totalReturn: 3000,
     badge: "⚡ 10 Minutes",
-    imageUrl: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/turbo-10m.svg",
     isActive: true
   },
   {
@@ -111,7 +111,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 5600,
     totalReturn: 5600,
     badge: "🚀 15 Minutes",
-    imageUrl: "https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/turbo-15m.svg",
     isActive: true
   },
   {
@@ -125,7 +125,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 8500,
     totalReturn: 8500,
     badge: "💎 30 Minutes",
-    imageUrl: "https://images.unsplash.com/photo-1616423640778-28d1b53229bd?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/turbo-30m.svg",
     isActive: true
   },
   {
@@ -139,7 +139,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 13500,
     totalReturn: 13500,
     badge: "👑 45 Minutes",
-    imageUrl: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/turbo-45m.svg",
     isActive: true
   },
   {
@@ -153,7 +153,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 19000,
     totalReturn: 19000,
     badge: "⚡ 1 Hour",
-    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/turbo-60m.svg",
     isActive: true
   },
   {
@@ -166,7 +166,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 4354,
     totalReturn: 8708,
     badge: "Limit 10",
-    imageUrl: "https://images.unsplash.com/photo-1592838064575-70ed626d3a0e?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/tire-special.svg",
     isActive: true
   },
   {
@@ -179,7 +179,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 245,
     totalReturn: 7350,
     badge: "Limit 10",
-    imageUrl: "https://images.unsplash.com/photo-1578844251758-2f71da64c96f?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/tire-product-1.svg",
     isActive: true
   },
   {
@@ -192,7 +192,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 480,
     totalReturn: 16800,
     badge: "Limit 10",
-    imageUrl: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/tire-product-2.svg",
     isActive: true
   },
   {
@@ -205,7 +205,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 960,
     totalReturn: 38400,
     badge: "Limit 10",
-    imageUrl: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/plant-product-3.svg",
     isActive: true
   },
   {
@@ -218,7 +218,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 2100,
     totalReturn: 94500,
     badge: "Limit 5",
-    imageUrl: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/plant-product-4.svg",
     isActive: true
   },
   {
@@ -231,7 +231,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 5500,
     totalReturn: 275000,
     badge: "Limit 5",
-    imageUrl: "https://images.unsplash.com/photo-1642543492481-44e81e3914a7?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/plant-product-5.svg",
     isActive: true
   },
   {
@@ -244,7 +244,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 2200,
     totalReturn: 2200,
     badge: "VIP 1 Exclusive",
-    imageUrl: "https://images.unsplash.com/photo-1621416894569-0f39ed31d247?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/vip-1.svg",
     isActive: true
   },
   {
@@ -257,7 +257,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 8500,
     totalReturn: 25500,
     badge: "VIP 2 Exclusive",
-    imageUrl: "https://images.unsplash.com/photo-1618042164219-62c820f10723?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "/assets/products/vip-2.svg",
     isActive: true
   }
 ];

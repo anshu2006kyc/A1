@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg2" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1c1917"/>
+      <stop offset="60%" stop-color="#0c0a09"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <radialGradient id="amberGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ea580c" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#c2410c" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="copperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fdba74"/>
+      <stop offset="50%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#7c2d12"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg2)"/>
+  <circle cx="200" cy="135" r="120" fill="url(#amberGlow)"/>
+  <!-- Twin Turbo Scroll Housing -->
+  <g transform="translate(200, 135)">
+    <path d="M-80,-20 C-80,-70 -30,-90 20,-90 C80,-90 100,-40 90,20 C80,80 20,95 -40,85 C-90,75 -95,20 -70,-20 L-40,-15" fill="none" stroke="url(#copperGrad)" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="55" fill="#1c1917" stroke="#fdba74" stroke-width="3"/>
+    <!-- Impeller Blades -->
+    <path d="M0,0 Q15,-40 5,-48" stroke="#f97316" stroke-width="5" stroke-linecap="round"/>
+    <path d="M0,0 Q40,-15 48,-5" stroke="#f97316" stroke-width="5" stroke-linecap="round"/>
+    <path d="M0,0 Q35,25 40,35" stroke="#f97316" stroke-width="5" stroke-linecap="round"/>
+    <path d="M0,0 Q0,40 -5,48" stroke="#f97316" stroke-width="5" stroke-linecap="round"/>
+    <path d="M0,0 Q-40,15 -48,5" stroke="#f97316" stroke-width="5" stroke-linecap="round"/>
+    <path d="M0,0 Q-35,-25 -40,-35" stroke="#f97316" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="18" fill="#ea580c" stroke="#fed7aa" stroke-width="2"/>
+    <circle cx="0" cy="0" r="6" fill="#fff"/>
+  </g>
+  <g transform="translate(200, 265)">
+    <rect x="-85" y="-14" width="170" height="26" rx="13" fill="#0c0a09" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="0" y="4" font-family="system-ui, sans-serif" font-size="11" font-weight="900" fill="#fdba74" text-anchor="middle" letter-spacing="1.5">⚡ 3 MIN TURBO SPEED</text>
+  </g>
+</svg>

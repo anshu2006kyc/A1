@@ -203,7 +203,7 @@ export const CheckInView: React.FC = () => {
                   <Coins className="w-4 h-4" />
                 </div>
                 <div className="text-base font-black text-white tabular-nums font-mono">
-                  {formatINR(totalCheckInEarned, { decimals: 0 })}
+                  {formatINR(totalCheckInEarned)}
                 </div>
                 <div className="text-[9px] font-bold text-emerald-200 tracking-wider">EARNED</div>
               </div>
@@ -258,7 +258,7 @@ export const CheckInView: React.FC = () => {
             className="text-3xl font-black mt-2 tabular-nums font-mono"
             style={{ color: 'var(--brand-secondary)' }}
           >
-            {formatINR(todayRewardAmount, { decimals: 0 })}
+            {formatINR(todayRewardAmount)}
           </div>
           <span className="text-xs text-gray-500 mt-0.5">
             {hasCheckedInToday ? 'Earned Today · Return tomorrow for more' : 'Collect today\'s streak reward bonus'}
@@ -292,7 +292,7 @@ export const CheckInView: React.FC = () => {
                 className="w-full py-4 rounded-2xl btn-chamkila-gold text-amber-950 font-black text-sm flex items-center justify-center space-x-2 shadow-xl hover:brightness-105 active:scale-95 transition-all cursor-pointer tracking-wide"
               >
                 <Gift className="w-4 h-4 text-amber-900" />
-                <span className="drop-shadow-xs">Claim {formatINR(todayRewardAmount, { decimals: 0 })} Bonus Now</span>
+                <span className="drop-shadow-xs">Claim {formatINR(todayRewardAmount)} Bonus Now</span>
               </button>
             )}
           </div>
@@ -441,8 +441,8 @@ export const CheckInView: React.FC = () => {
 
                   <div className="my-2">
                     <div className="text-xs font-bold text-gray-900">{sr.days} Days Streak</div>
-                    <div className="text-sm font-black text-emerald-600 tabular-nums">
-                      +{formatINR(sr.reward, { decimals: 0 })}
+                    <div className="text-sm font-black text-emerald-600 tabular-nums font-mono">
+                      +{formatINR(sr.reward)}
                     </div>
                   </div>
 

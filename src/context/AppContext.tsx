@@ -93,8 +93,8 @@ interface AppContextType {
   openAuthModal: (mode?: 'login' | 'register' | 'forgot') => void;
   login: (phone: string, password?: string) => { success: boolean; message: string };
   loginWithOtp: (phone: string, otp: string) => { success: boolean; message: string };
-  quickMobileAuth: (phone: string, inviteCode?: string) => { success: boolean; message: string; isNewUser: boolean; user?: User };
-  registerUser: (data: { phone: string; password?: string; tradePassword?: string; inviteCode?: string }) => { success: boolean; message: string };
+  quickMobileAuth: (phone: string, inviteCode?: string, name?: string) => { success: boolean; message: string; isNewUser: boolean; user?: User };
+  registerUser: (data: { phone: string; name?: string; password?: string; tradePassword?: string; inviteCode?: string }) => { success: boolean; message: string };
   logoutUser: () => void;
   switchUser: (userId: number) => void;
   adminCreateUser: (userData: Partial<User>) => void;
@@ -406,9 +406,10 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       const combined = [...missingInitialPlans, ...parsed];
       return combined.map((p) => {
         const defaultPlan = INITIAL_PLANS.find((ip) => ip.id === p.id);
+        const isOldUnsplash = typeof p.imageUrl === 'string' && p.imageUrl.includes('images.unsplash.com');
         return {
           ...p,
-          imageUrl: p.imageUrl || defaultPlan?.imageUrl || 'https://images.unsplash.com/photo-1592838064575-70ed626d3a0e?auto=format&fit=crop&w=800&q=80'
+          imageUrl: (defaultPlan && (isOldUnsplash || !p.imageUrl)) ? defaultPlan.imageUrl : (p.imageUrl || defaultPlan?.imageUrl || '')
         };
       });
     } catch {
@@ -430,10 +431,11 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         }
         seen.add(id);
         const matchingPlan = INITIAL_PLANS.find((p) => p.id === up.planId);
+        const isOldUnsplash = typeof up.imageUrl === 'string' && up.imageUrl.includes('images.unsplash.com');
         return {
           ...up,
           id,
-          imageUrl: up.imageUrl || matchingPlan?.imageUrl
+          imageUrl: (matchingPlan && (isOldUnsplash || !up.imageUrl)) ? matchingPlan.imageUrl : (up.imageUrl || matchingPlan?.imageUrl)
         };
       });
     } catch {
@@ -1120,7 +1122,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     }
   };
 
-  const quickMobileAuth = (phone: string, inviteCode?: string): { success: boolean; message: string; isNewUser: boolean; user?: User } => {
+  const quickMobileAuth = (phone: string, inviteCode?: string, name?: string): { success: boolean; message: string; isNewUser: boolean; user?: User } => {
     const cleanPhone = phone.replace(/\D/g, '');
     if (cleanPhone.length < 10) {
       return { success: false, message: 'Please enter a valid 10-digit mobile number.', isNewUser: false };
@@ -1132,6 +1134,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     if (existing) {
       const updatedUser: User = {
         ...existing,
+        name: existing.name || name?.trim() || existing.name,
         lastLogin: new Date().toISOString().replace('T', ' ').substring(0, 19)
       };
       setUser(updatedUser);
@@ -1159,7 +1162,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         phone: `+91 ${last10}`,
         password: 'password123',
         tradePassword: '123456',
-        name: `User_${last10.slice(-4)}`,
+        name: name?.trim() || `User_${last10.slice(-4)}`,
         balance: 28.0,
         totalRecharge: 0,
         totalWithdraw: 0,
@@ -1213,7 +1216,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     }
   };
 
-  const registerUser = (data: { phone: string; password?: string; tradePassword?: string; inviteCode?: string }) => {
+  const registerUser = (data: { phone: string; name?: string; password?: string; tradePassword?: string; inviteCode?: string }) => {
     const cleanPhone = data.phone.replace(/\D/g, '');
     if (cleanPhone.length < 10) {
       return { success: false, message: 'Kripya 10-digit mobile number enter karein.' };
@@ -1235,7 +1238,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       phone: `+91 ${last10}`,
       password: data.password || 'password123',
       tradePassword: data.tradePassword || '123456',
-      name: `Investor_${last10.slice(-4)}`,
+      name: data.name?.trim() || `Investor_${last10.slice(-4)}`,
       balance: 28.0,
       totalRecharge: 0,
       totalWithdraw: 0,

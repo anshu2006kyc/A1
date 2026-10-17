@@ -126,12 +126,12 @@ export const BuyModal: React.FC<BuyModalProps> = ({
             >
               <div className="flex justify-between text-gray-600">
                 <span>Invested:</span>
-                <span className="font-bold text-gray-900 font-mono">{formatINR(plan.depositAmount, { decimals: 0 })}</span>
+                <span className="font-bold text-gray-900 font-mono">{formatINR(plan.depositAmount)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>{plan.durationMinutes ? 'Total Return:' : 'Daily Profit:'}</span>
                 <span className="font-bold font-mono" style={{ color: 'var(--brand-primary)' }}>
-                  {formatINR(plan.dailyIncome, { decimals: 0 })}{plan.durationMinutes ? '' : '/day'}
+                  {formatINR(plan.dailyIncome)}{plan.durationMinutes ? '' : '/day'}
                 </span>
               </div>
               <div className="flex justify-between text-gray-600">
@@ -190,7 +190,7 @@ export const BuyModal: React.FC<BuyModalProps> = ({
                 <div className="text-xs font-bold text-gray-900 truncate">{plan.title}</div>
                 <div className="flex justify-between text-xs text-gray-600 mt-1">
                   <span>Deposit:</span>
-                  <span className="font-bold text-gray-900 tabular-nums font-mono">{formatINR(plan.depositAmount, { decimals: 0 })}</span>
+                  <span className="font-bold text-gray-900 tabular-nums font-mono">{formatINR(plan.depositAmount)}</span>
                 </div>
                 <div className="flex justify-between text-xs text-gray-600 mt-0.5">
                   <span>Return Time:</span>
@@ -207,12 +207,12 @@ export const BuyModal: React.FC<BuyModalProps> = ({
                 <div className="flex justify-between text-xs text-gray-600 mt-0.5">
                   <span>{plan.durationMinutes ? 'Return:' : 'Daily Return:'}</span>
                   <span className="font-bold tabular-nums font-mono" style={{ color: 'var(--brand-primary)' }}>
-                    {formatINR(plan.dailyIncome, { decimals: 0 })}{plan.durationMinutes ? '' : '/day'}
+                    {formatINR(plan.dailyIncome)}{plan.durationMinutes ? '' : '/day'}
                   </span>
                 </div>
                 <div className="flex justify-between text-xs text-gray-600 mt-0.5">
                   <span>Total Return:</span>
-                  <span className="font-bold tabular-nums font-mono" style={{ color: 'var(--brand-secondary)' }}>{formatINR(plan.totalReturn, { decimals: 0 })}</span>
+                  <span className="font-bold tabular-nums font-mono" style={{ color: 'var(--brand-secondary)' }}>{formatINR(plan.totalReturn)}</span>
                 </div>
               </div>
             </div>
@@ -236,7 +236,7 @@ export const BuyModal: React.FC<BuyModalProps> = ({
                 </p>
                 <div className="flex justify-between items-center text-[10.5px] text-gray-700 pt-1.5 border-t border-amber-200/80 font-bold">
                   <span>Required Deposit:</span>
-                  <span className="text-emerald-700 font-black font-mono text-xs">{formatINR(plan.depositAmount, { decimals: 0 })}</span>
+                  <span className="text-emerald-700 font-black font-mono text-xs">{formatINR(plan.depositAmount)}</span>
                 </div>
               </div>
             ) : isLimitReached ? (
@@ -261,7 +261,7 @@ export const BuyModal: React.FC<BuyModalProps> = ({
                   <span className="font-bold text-red-600 tabular-nums">{formatINR(userBalance)}</span>
                 </div>
                 <div className="text-[10px] text-amber-700 mt-0.5">
-                  Is plan ko activate karne ke liye {formatINR(plan.depositAmount, { decimals: 0 })} deposit karein.
+                  Is plan ko activate karne ke liye {formatINR(plan.depositAmount)} deposit karein.
                 </div>
               </div>
             ) : (
@@ -288,7 +288,7 @@ export const BuyModal: React.FC<BuyModalProps> = ({
                   className="py-2.5 px-3 rounded-xl btn-chamkila text-white font-black text-xs shadow-md flex items-center justify-center space-x-1 active:scale-95 transition-all cursor-pointer hover:brightness-110 tracking-wide"
                 >
                   <Wallet className="w-3.5 h-3.5 drop-shadow-xs" />
-                  <span className="drop-shadow-xs">Deposit ₹{plan.depositAmount}</span>
+                  <span className="drop-shadow-xs font-mono">Deposit {formatINR(plan.depositAmount)}</span>
                 </button>
               ) : isLimitReached ? (
                 <button

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg5" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#042f2e"/>
+      <stop offset="60%" stop-color="#021a19"/>
+      <stop offset="100%" stop-color="#010e0d"/>
+    </radialGradient>
+    <linearGradient id="emeraldGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="50%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#064e3b"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg5)"/>
+  <!-- Agricultural Kinetic Harvester Wheel -->
+  <g transform="translate(200, 135)">
+    <circle cx="0" cy="0" r="95" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="6 4" opacity="0.5"/>
+    <circle cx="0" cy="0" r="80" fill="#022c22" stroke="url(#emeraldGold)" stroke-width="6"/>
+    <!-- Cog teeth around ring -->
+    <path d="M-80,-10 L-95,-15 L-95,15 L-80,10 Z M80,-10 L95,-15 L95,15 L80,10 Z M-10,-80 L-15,-95 L15,-95 L10,-80 Z M-10,80 L-15,95 L15,95 L10,80 Z" fill="#34d399"/>
+    <!-- 8 Heavy Spokes -->
+    <line x1="0" y1="-75" x2="0" y2="75" stroke="#10b981" stroke-width="6"/>
+    <line x1="-75" y1="0" x2="75" y2="0" stroke="#10b981" stroke-width="6"/>
+    <line x1="-53" y1="-53" x2="53" y2="53" stroke="#10b981" stroke-width="6"/>
+    <line x1="-53" y1="53" x2="53" y2="-53" stroke="#10b981" stroke-width="6"/>
+    <!-- Center Hub -->
+    <circle cx="0" cy="0" r="35" fill="#064e3b" stroke="#6ee7b7" stroke-width="4"/>
+    <circle cx="0" cy="0" r="14" fill="#34d399"/>
+    <text x="0" y="4" font-family="system-ui, sans-serif" font-size="10" font-weight="900" fill="#022c22" text-anchor="middle">5M</text>
+  </g>
+  <g transform="translate(200, 265)">
+    <rect x="-90" y="-14" width="180" height="26" rx="13" fill="#022c22" stroke="#10b981" stroke-width="1.5"/>
+    <text x="0" y="4" font-family="system-ui, sans-serif" font-size="11" font-weight="900" fill="#34d399" text-anchor="middle" letter-spacing="1.5">🔥 5 MIN QUICK HARVEST</text>
+  </g>
+</svg>

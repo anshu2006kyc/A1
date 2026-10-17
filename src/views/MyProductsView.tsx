@@ -229,7 +229,7 @@ export const MyProductsView: React.FC = () => {
                 <span>Active Capital Invested</span>
               </span>
               <div className="text-3xl font-black mt-1 tracking-tight tabular-nums font-mono">
-                {formatINR(totalInvested, { decimals: 0 })}
+                {formatINR(totalInvested)}
               </div>
             </div>
 
@@ -273,21 +273,21 @@ export const MyProductsView: React.FC = () => {
             <div>
               <span className="text-[9.5px] text-emerald-200 font-bold block uppercase">DAILY RUN-RATE</span>
               <span className="text-sm font-black text-white mt-0.5 block tabular-nums font-mono">
-                {formatINR(dailyIncomeTotal, { decimals: 0 })}
+                {formatINR(dailyIncomeTotal)}
               </span>
             </div>
 
             <div>
               <span className="text-[9.5px] text-emerald-200 font-bold block uppercase">30-DAY FORECAST</span>
               <span className="text-sm font-black text-white mt-0.5 block tabular-nums font-mono">
-                {formatINR(monthlyProjected, { decimals: 0 })}
+                {formatINR(monthlyProjected)}
               </span>
             </div>
 
             <div>
               <span className="text-[9.5px] text-emerald-200 font-bold block uppercase">REMAINING TARGET</span>
               <span className="text-sm font-black text-white mt-0.5 block tabular-nums font-mono">
-                {formatINR(remainingReturn, { decimals: 0 })}
+                {formatINR(remainingReturn)}
               </span>
             </div>
           </div>
@@ -305,7 +305,7 @@ export const MyProductsView: React.FC = () => {
                   ⚡ Unclaimed Dividends Ready
                 </div>
                 <div className="text-sm font-black text-slate-950 mt-0.5 tabular-nums font-mono">
-                  {formatINR(claimableAmount, { decimals: 0 })} Ready to Collect
+                  {formatINR(claimableAmount)} Ready to Collect
                 </div>
               </div>
             </div>
@@ -467,17 +467,17 @@ export const MyProductsView: React.FC = () => {
                   <div className="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-2xl text-center text-xs">
                     <div>
                       <span className="text-[9px] text-gray-400 block uppercase">Deposit</span>
-                      <span className="font-bold text-gray-800 tabular-nums font-mono">{formatINR(up.depositAmount, { decimals: 0 })}</span>
+                      <span className="font-bold text-gray-800 tabular-nums font-mono">{formatINR(up.depositAmount)}</span>
                     </div>
                     <div>
                       <span className="text-[9px] text-gray-400 block uppercase">
                         {isTurbo ? 'Plan Return' : 'Daily Income'}
                       </span>
-                      <span className="font-extrabold text-emerald-600 tabular-nums font-mono">{formatINR(up.dailyIncome, { decimals: 0 })}</span>
+                      <span className="font-extrabold text-emerald-600 tabular-nums font-mono">{formatINR(up.dailyIncome)}</span>
                     </div>
                     <div>
                       <span className="text-[9px] text-gray-400 block uppercase">Total Return</span>
-                      <span className="font-extrabold text-emerald-700 tabular-nums font-mono">{formatINR(up.totalReturn, { decimals: 0 })}</span>
+                      <span className="font-extrabold text-emerald-700 tabular-nums font-mono">{formatINR(up.totalReturn)}</span>
                     </div>
                   </div>
 
@@ -508,7 +508,7 @@ export const MyProductsView: React.FC = () => {
                           className="flex-1 py-2 px-3 rounded-xl btn-chamkila text-white font-black text-xs shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center space-x-1.5"
                         >
                           <Coins className="w-4 h-4" />
-                          <span>Collect Profit ({formatINR(profitAmount, { decimals: 0 })})</span>
+                          <span>Collect Profit ({formatINR(profitAmount)})</span>
                         </button>
                       ) : (
                         <div className="flex-1 py-2 px-3 rounded-xl bg-gray-100 text-gray-500 text-xs font-bold text-center flex items-center justify-center space-x-1.5">

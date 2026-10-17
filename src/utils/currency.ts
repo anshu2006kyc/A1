@@ -15,7 +15,9 @@ export function formatINR(
   options: FormatINROptions = {}
 ): string {
   const num = typeof amount === 'string' ? parseFloat(amount) : (amount ?? 0);
-  const decimals = options.decimals !== undefined ? options.decimals : 2;
+  // User requested: "Amount har zaGah Proffeshnal dikhna CHAHiYE Paiso ke sath Product card Pe Bhi"
+  // Always include standard 2 decimal places (paise) for professional Indian banking format
+  const decimals = options.decimals !== undefined ? Math.max(options.decimals, 2) : 2;
   const withSymbol = options.symbol !== false;
 
   if (isNaN(num)) {

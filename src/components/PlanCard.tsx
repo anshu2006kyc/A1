@@ -60,9 +60,17 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
           <span className="text-[9px] font-black tracking-wider text-white">AKM ENTERPRISES</span>
         </div>
 
+        {/* Floating Price Tag with Paise (Top-Left) */}
+        <div className="absolute top-1.5 left-2 z-10 flex items-center space-x-1 bg-black/85 backdrop-blur-md px-2 py-0.5 rounded-full border border-emerald-400/40 shadow-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[9px] font-black font-mono text-emerald-300 tracking-tight">
+            {formatINR(plan.depositAmount)}
+          </span>
+        </div>
+
         {/* Limit or Turbo Badge Top Right (Exact match to video) */}
         <div
-          className={`absolute top-0 right-0 z-10 text-[10px] font-bold px-2.5 py-0.5 rounded-bl-xl border-l border-b backdrop-blur-xs max-w-[140px] truncate text-white ${
+          className={`absolute top-0 right-0 z-10 text-[9px] font-bold px-2 py-0.5 rounded-bl-xl border-l border-b backdrop-blur-xs max-w-[140px] truncate text-white ${
             plan.durationMinutes
               ? 'bg-amber-400 text-amber-950 border-amber-300 font-black shadow-xs'
               : ''
@@ -79,7 +87,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
 
       {/* Plan Title Banner */}
       <div
-        className={`text-white text-center py-1.5 px-2 text-xs font-bold tracking-wide line-clamp-1 ${
+        className={`text-white text-center py-1.5 px-2 text-[10.5px] font-bold tracking-wide line-clamp-1 ${
           plan.durationMinutes ? 'bg-black/85 border-b border-amber-400/30 text-amber-300' : ''
         }`}
         style={!plan.durationMinutes ? { background: 'var(--brand-dark-gradient, #064e3b)' } : undefined}
@@ -88,10 +96,10 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
       </div>
 
       {/* Metrics 4-Grid: Return Time, Deposit, Daily Return, Est. Total */}
-      <div className="p-2.5 grid grid-cols-2 gap-y-2 gap-x-2 text-[11px]">
+      <div className="p-2.5 grid grid-cols-2 gap-y-2 gap-x-2 text-[10px]">
         <div>
-          <span className="text-gray-400 block text-[10px]">Return Time</span>
-          <span className={`font-bold text-xs ${plan.durationMinutes ? 'text-amber-600 font-black' : 'text-gray-900'}`}>
+          <span className="text-gray-400 block text-[8.5px]">Return Time</span>
+          <span className={`font-bold text-[10px] ${plan.durationMinutes ? 'text-amber-600 font-black' : 'text-gray-900'}`}>
             {plan.durationMinutes
               ? plan.durationMinutes === 60
                 ? '1 Hour'
@@ -103,31 +111,29 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
         </div>
 
         <div className="text-right">
-          <span className="text-gray-400 block text-[10px]">Deposit</span>
-          <span className="font-bold text-gray-900 text-xs tabular-nums font-mono">
-            {formatINR(plan.depositAmount, { decimals: 0 })}
+          <span className="text-gray-400 block text-[8.5px]">Deposit</span>
+          <span className="font-extrabold text-gray-900 text-[9.5px] tabular-nums font-mono tracking-tight">
+            {formatINR(plan.depositAmount)}
           </span>
         </div>
 
         <div>
-          <span className="text-gray-400 block text-[10px]">
+          <span className="text-gray-400 block text-[8.5px]">
             {plan.durationMinutes ? 'Plan Return' : 'Daily Return'}
           </span>
           <span
-            className="font-extrabold text-xs tabular-nums font-mono"
-            style={{ color: 'var(--brand-primary)' }}
+            className="font-black text-[9.5px] tabular-nums font-mono text-emerald-600 tracking-tight"
           >
-            {formatINR(plan.dailyIncome, { decimals: 0 })}
+            +{formatINR(plan.dailyIncome)}
           </span>
         </div>
 
         <div className="text-right">
-          <span className="text-gray-400 block text-[10px]">Est. Total</span>
+          <span className="text-gray-400 block text-[8.5px]">Est. Total</span>
           <span
-            className="font-extrabold text-xs tabular-nums font-mono"
-            style={{ color: 'var(--brand-primary)' }}
+            className="font-black text-[9.5px] tabular-nums font-mono text-emerald-700 tracking-tight"
           >
-            {formatINR(plan.totalReturn, { decimals: 0 })}
+            {formatINR(plan.totalReturn)}
           </span>
         </div>
       </div>
@@ -138,7 +144,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
           <button
             id={`buy-btn-${plan.id}`}
             disabled
-            className="w-full py-2.5 px-3 rounded-xl bg-gray-100 text-gray-400 font-bold text-xs flex items-center justify-center space-x-1.5 cursor-not-allowed border border-gray-200"
+            className="w-full py-2 px-2.5 rounded-xl bg-gray-100 text-gray-400 font-bold text-[11px] flex items-center justify-center space-x-1.5 cursor-not-allowed border border-gray-200"
           >
             <span>Limit Reached ({activePurchasedCount}/{plan.limit})</span>
           </button>
@@ -146,11 +152,13 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
           <button
             id={`buy-btn-${plan.id}`}
             onClick={() => onBuyClick(plan)}
-            className="w-full py-2.5 px-3 rounded-xl btn-chamkila text-white font-black text-xs flex items-center justify-center space-x-1.5 active:scale-[0.97] transition-all cursor-pointer shadow-md tracking-wide hover:brightness-110"
+            className="w-full py-2 px-2.5 rounded-xl btn-chamkila text-white font-black text-[11px] flex items-center justify-center space-x-1 active:scale-[0.97] transition-all cursor-pointer shadow-md tracking-wide hover:brightness-110"
           >
-            <ShoppingCart className="w-3.5 h-3.5 stroke-[2.4] drop-shadow-xs" />
-            <span className="drop-shadow-xs">
-              {activePurchasedCount > 0 ? `Buy Again (${activePurchasedCount}/${plan.limit})` : 'Buy Now'}
+            <ShoppingCart className="w-3 h-3 stroke-[2.4] drop-shadow-xs shrink-0" />
+            <span className="drop-shadow-xs font-mono font-bold tracking-tight text-[10px] truncate">
+              {activePurchasedCount > 0
+                ? `Buy Again • ${formatINR(plan.depositAmount)}`
+                : `Invest ${formatINR(plan.depositAmount)}`}
             </span>
           </button>
         )}
