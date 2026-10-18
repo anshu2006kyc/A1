@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   AlertTriangle,
   ArrowLeft,
+  Bell,
   Calendar,
   Check,
   CheckCircle2,
@@ -25,6 +26,7 @@ import { sfx } from '../utils/sound';
 import { formatINR } from '../utils/currency';
 import { UserPlan } from '../types';
 import { sortRecordsNewestFirst, formatRecordDateTime, getRelativeTimeLabel } from '../utils/date';
+import { getProductArtworkDataUri } from '../components/ProductArtwork';
 
 export const MyProductsView: React.FC = () => {
   const {
@@ -38,7 +40,10 @@ export const MyProductsView: React.FC = () => {
     showToast,
     isLoggedIn,
     openAuthModal,
-    navigateToTransactions
+    navigateToTransactions,
+    isNotificationModalOpen,
+    setIsNotificationModalOpen,
+    unreadNotificationCount
   } = useApp();
 
   const [planToReturn, setPlanToReturn] = useState<UserPlan | null>(null);
@@ -184,13 +189,31 @@ export const MyProductsView: React.FC = () => {
           </h1>
         </div>
 
-        <button
-          onClick={() => navigateToTransactions('revenue')}
-          title="Income Records"
-          className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 flex items-center justify-center active:scale-95 transition-all cursor-pointer border border-emerald-200/60"
-        >
-          <History className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center space-x-1.5">
+          <button
+            onClick={() => {
+              sfx.playTap();
+              setIsNotificationModalOpen(true);
+            }}
+            title="Interest & Payout Alerts"
+            className="w-8 h-8 rounded-full bg-amber-50 text-amber-700 hover:bg-amber-100 flex items-center justify-center active:scale-95 transition-all cursor-pointer border border-amber-200/60 relative"
+          >
+            <Bell className="w-3.5 h-3.5" />
+            {unreadNotificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-950 font-black text-[8px] rounded-full flex items-center justify-center ring-1 ring-white shadow-xs animate-pulse">
+                {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => navigateToTransactions('revenue')}
+            title="Income Records"
+            className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 flex items-center justify-center active:scale-95 transition-all cursor-pointer border border-emerald-200/60"
+          >
+            <History className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       <div className="p-3.5 space-y-3.5">
@@ -401,14 +424,19 @@ export const MyProductsView: React.FC = () => {
                   {/* Header: Title, Image, Status Badge */}
                   <div className="flex justify-between items-start">
                     <div className="flex items-center space-x-2.5">
-                      {up.imageUrl && (
-                        <img
-                          src={up.imageUrl}
-                          alt={up.title}
-                          referrerPolicy="no-referrer"
-                          className="w-11 h-11 rounded-2xl object-cover shrink-0 border border-emerald-200/50 bg-zinc-900 shadow-xs"
-                        />
-                      )}
+                      {(() => {
+                        const img = (!up.imageUrl || up.imageUrl.includes('unsplash.com'))
+                          ? getProductArtworkDataUri(up.planId || up.id, up.durationMinutes ? 'turbo' : 'normal')
+                          : up.imageUrl;
+                        return (
+                          <img
+                            src={img}
+                            alt={up.title}
+                            referrerPolicy="no-referrer"
+                            className="w-11 h-11 rounded-2xl object-cover shrink-0 border border-emerald-300/60 bg-zinc-950 shadow-xs"
+                          />
+                        );
+                      })()}
                       <div>
                         <div className="text-xs font-bold text-gray-900 flex items-center space-x-1">
                           <span>{up.title}</span>

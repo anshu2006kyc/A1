@@ -33,7 +33,7 @@ export const AdminPlansTab: React.FC = () => {
     dailyIncome: 650,
     totalReturn: 650,
     badge: '⚡ 5 Minutes Turbo',
-    imageUrl: 'https://images.unsplash.com/photo-1592838064575-70ed626d3a0e?auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/assets/products/turbo-5m.svg',
     isActive: true
   });
 
@@ -60,7 +60,7 @@ export const AdminPlansTab: React.FC = () => {
       dailyIncome: 650,
       totalReturn: 650,
       badge: '⚡ 5 Minutes Turbo',
-      imageUrl: 'https://images.unsplash.com/photo-1592838064575-70ed626d3a0e?auto=format&fit=crop&w=800&q=80',
+      imageUrl: '/assets/products/turbo-5m.svg',
       isActive: true
     });
   };
@@ -103,11 +103,11 @@ export const AdminPlansTab: React.FC = () => {
 
       {/* Plans Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-        {filteredPlans.map((plan) => {
+        {filteredPlans.map((plan, idx) => {
           const roiPercent = Math.round(((plan.totalReturn - plan.depositAmount) / plan.depositAmount) * 100);
           return (
             <div
-              key={plan.id}
+              key={`plan-item-${plan.id || 'p'}-${idx}`}
               className="bg-slate-800/90 rounded-3xl border border-slate-700 overflow-hidden flex flex-col justify-between shadow-md hover:border-slate-600 transition-all"
             >
               {/* Image & Badge Header */}

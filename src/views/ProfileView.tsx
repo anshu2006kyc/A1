@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   ArrowDownLeft,
   Banknote,
+  Bell,
   Building2,
   Check,
   ChevronRight,
@@ -43,6 +44,9 @@ export const ProfileView: React.FC = () => {
     transactions,
     setCurrentView,
     setIsAdminOpen,
+    isNotificationModalOpen,
+    setIsNotificationModalOpen,
+    unreadNotificationCount,
     showToast,
     resetAllData,
     navigateToTransactions,
@@ -617,6 +621,45 @@ export const ProfileView: React.FC = () => {
               <span className="text-xs font-bold text-gray-800">My Investment Products</span>
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
+          </button>
+
+          {/* Alerts & Notifications Center */}
+          <button
+            id="menu-notifications"
+            onClick={() => {
+              sfx.playTap();
+              setIsNotificationModalOpen(true);
+            }}
+            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+          >
+            <div className="flex items-center space-x-3">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center bg-amber-50 text-amber-600 relative"
+              >
+                <Bell className="w-4 h-4" />
+                {unreadNotificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-950 font-black text-[8px] rounded-full flex items-center justify-center ring-1 ring-white shadow-xs animate-pulse">
+                    {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                  </span>
+                )}
+              </div>
+              <div>
+                <span className="text-xs font-bold text-gray-800 block">Alerts & Notifications</span>
+                <span className="text-[10px] text-gray-400 block mt-0.5">
+                  Interest credits & withdrawal status tracker
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              {unreadNotificationCount > 0 ? (
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                  {unreadNotificationCount} New
+                </span>
+              ) : (
+                <span className="text-[10px] text-emerald-600 font-bold">Active</span>
+              )}
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </div>
           </button>
 
           {/* All Financial Statements */}

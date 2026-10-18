@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertCircle, CheckCircle2, ChevronRight, Loader2, Package, Wallet, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ChevronRight, Loader2, Package, ShieldCheck, Wallet, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Plan } from '../types';
 import { formatINR } from '../utils/currency';
 import { sfx } from '../utils/sound';
+import { getProductArtworkDataUri } from './ProductArtwork';
 
 interface BuyModalProps {
   plan: Plan | null;
@@ -178,16 +179,22 @@ export const BuyModal: React.FC<BuyModalProps> = ({
                 borderColor: 'var(--theme-color-200, #a7f3d0)',
               }}
             >
-              {plan.imageUrl ? (
+              <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-emerald-300/60 bg-zinc-950 shadow-xs">
                 <img
-                  src={plan.imageUrl}
+                  src={(!plan.imageUrl || plan.imageUrl.includes('unsplash.com')) ? getProductArtworkDataUri(plan.id, plan.category) : plan.imageUrl}
                   alt={plan.title}
                   referrerPolicy="no-referrer"
-                  className="w-14 h-14 rounded-xl object-cover shrink-0 border border-gray-200 bg-zinc-900 shadow-xs"
+                  className="w-full h-full object-cover"
                 />
-              ) : null}
+                <div className="absolute bottom-0 inset-x-0 bg-black/70 backdrop-blur-xs text-[7px] font-black text-emerald-300 text-center py-0.5 flex items-center justify-center space-x-0.5">
+                  <ShieldCheck className="w-2 h-2 text-emerald-400 shrink-0" />
+                  <span>SECURE</span>
+                </div>
+              </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-gray-900 truncate">{plan.title}</div>
+                <div className="text-xs font-bold text-gray-900 truncate flex items-center space-x-1">
+                  <span className="truncate">{plan.title}</span>
+                </div>
                 <div className="flex justify-between text-xs text-gray-600 mt-1">
                   <span>Deposit:</span>
                   <span className="font-bold text-gray-900 tabular-nums font-mono">{formatINR(plan.depositAmount)}</span>

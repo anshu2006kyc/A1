@@ -79,6 +79,7 @@ export interface Transaction {
   finalAmount: number;
   status: TransactionStatus;
   createdAt: string;
+  phone?: string;
   utrNumber?: string;
   adminRemark?: string;
   gateway?: 'lgpay' | 'sunpays' | 'watchpay' | 'upi';
@@ -213,4 +214,23 @@ export interface AdminSettings {
 
   // Theme & Appearance Customization
   activeThemeId?: string;
+}
+
+export type NotificationType = 'interest_credit' | 'withdrawal_status' | 'checkin' | 'system';
+
+export interface AppNotification {
+  id: string;
+  userId: number;
+  type: NotificationType;
+  title: string;
+  body: string;
+  amount?: number;
+  status?: 'success' | 'failed' | 'pending' | 'info';
+  timestamp: string;
+  createdAt: number;
+  read: boolean;
+  linkView?: string;
+  txId?: string;
+  planId?: string;
+  utrNumber?: string;
 }

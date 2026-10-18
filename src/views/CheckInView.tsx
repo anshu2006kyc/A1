@@ -22,6 +22,7 @@ import { maskPhone } from '../utils/phone';
 import { sfx } from '../utils/sound';
 import { sortRecordsNewestFirst } from '../utils/date';
 import { CheckInRecord } from '../types';
+import { StreakCalendarTracker } from '../components/checkin/StreakCalendarTracker';
 
 export const CheckInView: React.FC = () => {
   const {
@@ -40,6 +41,7 @@ export const CheckInView: React.FC = () => {
   } = useApp();
 
   const [showRules, setShowRules] = useState(false);
+  const [triggerCelebration, setTriggerCelebration] = useState(false);
   const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>({
     hours: 0,
     minutes: 0,
@@ -113,6 +115,11 @@ export const CheckInView: React.FC = () => {
     const res = claimDailyCheckIn();
     if (res?.message) {
       showToast(res.message, res.success ? 'success' : 'info');
+    }
+    if (res?.is7DayStreak) {
+      setTimeout(() => {
+        setTriggerCelebration(true);
+      }, 350);
     }
   };
 
@@ -298,108 +305,18 @@ export const CheckInView: React.FC = () => {
           </div>
         </div>
 
-        {/* 7-Day Progressive Streak Journey */}
-        <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-1.5 text-xs font-bold text-gray-900">
-              <Calendar className="w-4 h-4" style={{ color: 'var(--brand-primary)' }} />
-              <span>7-Day Continuous Streak Period</span>
-            </div>
-            <span
-              className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-              style={{
-                backgroundColor: 'var(--theme-color-50, #ecfdf5)',
-                color: 'var(--brand-secondary)',
-              }}
-            >
-              Round {Math.floor(streakDays / 7) + 1}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-7 gap-1 text-center">
-            {sevenDaysPlan.map((d) => {
-              // Status logic
-              const isPastChecked = hasCheckedInToday
-                ? d.dayNumber <= currentCycleDay
-                : d.dayNumber < currentCycleDay;
-              const isToday = d.dayNumber === currentCycleDay;
-
-              return (
-                <div
-                  key={d.dayNumber}
-                  className={`py-2.5 px-0.5 rounded-2xl flex flex-col items-center justify-between transition-all relative ${
-                    isPastChecked
-                      ? 'border'
-                      : isToday
-                      ? 'text-white shadow-md scale-[1.03]'
-                      : d.isSpecial
-                      ? 'bg-amber-50/70 border border-amber-200 text-gray-600'
-                      : 'bg-gray-50 border border-gray-100 text-gray-500'
-                  }`}
-                  style={isPastChecked ? {
-                    backgroundColor: 'var(--theme-color-50, #ecfdf5)',
-                    borderColor: 'var(--theme-color-200, #a7f3d0)',
-                    color: 'var(--brand-secondary)'
-                  } : isToday ? {
-                    background: 'var(--brand-chamkila-gradient)',
-                    boxShadow: '0 4px 12px var(--brand-glow)'
-                  } : undefined}
-                >
-                  {/* Top Day Tag */}
-                  <span className={`text-[9px] font-bold block ${isToday ? 'text-white' : 'text-gray-400'}`}>
-                    {d.title}
-                  </span>
-
-                  {/* Icon */}
-                  <div className="my-1.5">
-                    {isPastChecked ? (
-                      <div
-                        className="w-5 h-5 rounded-full text-white flex items-center justify-center shadow-xs"
-                        style={{ backgroundColor: 'var(--brand-primary)' }}
-                      >
-                        <Check className="w-3 h-3 stroke-[3]" />
-                      </div>
-                    ) : isToday ? (
-                      <div
-                        className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-xs animate-pulse"
-                        style={{ color: 'var(--brand-primary)' }}
-                      >
-                        <Check className="w-3 h-3 stroke-[3]" />
-                      </div>
-                    ) : d.isSpecial ? (
-                      <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
-                        <Gift className="w-3 h-3" />
-                      </div>
-                    ) : (
-                      <div className="w-5 h-5 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center">
-                        <Lock className="w-2.5 h-2.5" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Reward Amount */}
-                  <span
-                    className={`text-[10px] font-black tabular-nums ${isToday ? 'text-white' : 'text-gray-700'}`}
-                    style={isPastChecked ? { color: 'var(--brand-primary)' } : undefined}
-                  >
-                    +{d.reward}
-                  </span>
-
-                  {d.isSpecial && !isPastChecked && !isToday && (
-                    <span className="text-[7.5px] font-extrabold text-amber-700 bg-amber-200/80 px-1 rounded mt-0.5">
-                      MEGA
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
-            <span>Progress: {currentCycleDay}/7 Days</span>
-            <span className="text-emerald-600 font-semibold">Day 7 includes Mega Mystery Box 🎁</span>
-          </div>
-        </div>
+        {/* Interactive Visual Calendar & 7-Day Streak Tracker */}
+        <StreakCalendarTracker
+          checkIns={checkIns}
+          currentUserId={user.id}
+          streakDays={streakDays}
+          totalCheckInDays={totalCheckInDays}
+          totalCheckInEarned={totalCheckInEarned}
+          hasCheckedInToday={hasCheckedInToday}
+          onClaimClick={handleClaim}
+          triggerCelebration={triggerCelebration}
+          onCelebrationClosed={() => setTriggerCelebration(false)}
+        />
 
         {/* Streak Milestone Rewards & Mystery Chests */}
         <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">

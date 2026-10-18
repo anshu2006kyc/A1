@@ -86,7 +86,7 @@ export const AdminTabNav: React.FC<AdminTabNavProps> = ({ activeTab, onSelectTab
   ];
 
   return (
-    <div className="flex bg-slate-900/90 p-1.5 rounded-3xl border border-slate-800 overflow-x-auto no-scrollbar gap-1 text-xs shadow-inner">
+    <div className="flex bg-slate-900/95 p-1 rounded-2xl border border-slate-800/90 overflow-x-auto no-scrollbar gap-1 text-[11px] sm:text-xs shadow-inner scroll-smooth snap-x">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
@@ -94,18 +94,18 @@ export const AdminTabNav: React.FC<AdminTabNavProps> = ({ activeTab, onSelectTab
           <button
             key={tab.id}
             onClick={() => onSelectTab(tab.id)}
-            className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+            className={`flex items-center space-x-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 snap-start active:scale-95 ${
               isActive
-                ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/25 ring-1 ring-emerald-400/30'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
             }`}
           >
-            <Icon className="w-3.5 h-3.5 shrink-0" />
+            <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
             <span>{tab.label}</span>
             {tab.badge !== undefined && tab.badge > 0 && (
               <span
-                className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-black shrink-0 ${
-                  tab.badgeColor || 'bg-amber-400 text-slate-950'
+                className={`ml-1 px-1.5 py-0.2 rounded-full text-[9.5px] font-black shrink-0 ${
+                  isActive ? 'bg-slate-950 text-emerald-300 ring-1 ring-emerald-400/30' : tab.badgeColor || 'bg-amber-400 text-slate-950'
                 }`}
               >
                 {tab.badge}

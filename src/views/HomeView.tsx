@@ -170,9 +170,9 @@ export const HomeView: React.FC = () => {
       {/* Plans Grid (2 columns) */}
       <div className="px-4">
         <div className="grid grid-cols-2 gap-3">
-          {filteredPlans.map((plan) => (
+          {filteredPlans.map((plan, idx) => (
             <PlanCard
-              key={plan.id}
+              key={`home-plan-${plan.id || 'p'}-${idx}`}
               plan={plan}
               activePurchasedCount={getActiveCount(plan.id)}
               onBuyClick={(p) => {

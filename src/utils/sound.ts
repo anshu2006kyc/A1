@@ -81,6 +81,43 @@ class SoundEffects {
     }
   }
 
+  // Grand celebratory fanfare for 7-day streaks & milestones
+  playFanfare() {
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+
+      const fanfareChords = [
+        { freq: 523.25, time: 0.0, dur: 0.15 }, // C5
+        { freq: 659.25, time: 0.12, dur: 0.15 }, // E5
+        { freq: 783.99, time: 0.24, dur: 0.2 }, // G5
+        { freq: 1046.5, time: 0.42, dur: 0.4 }, // C6
+        { freq: 1318.5, time: 0.52, dur: 0.5 }, // E6
+        { freq: 1567.98, time: 0.62, dur: 0.7 } // G6 triumph
+      ];
+
+      fanfareChords.forEach(({ freq, time, dur }) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        const startTime = ctx.currentTime + time;
+        const endTime = startTime + dur;
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, startTime);
+
+        gain.gain.setValueAtTime(0.15, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, endTime);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(startTime);
+        osc.stop(endTime);
+      });
+    } catch {}
+  }
+
   // Gateway initiation futuristic sound
   playGatewayLaunch() {
     try {
@@ -150,6 +187,39 @@ class SoundEffects {
     } catch {}
   }
 
+  // Crisp, double bell chime for local alerts and push reminders
+  playNotification() {
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+
+      const chimes = [
+        { freq: 659.25, time: 0.0, dur: 0.18 }, // E5
+        { freq: 880.0, time: 0.1, dur: 0.28 }   // A5
+      ];
+
+      chimes.forEach(({ freq, time, dur }) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        const startTime = ctx.currentTime + time;
+        const endTime = startTime + dur;
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+
+        gain.gain.setValueAtTime(0.14, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, endTime);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(startTime);
+        osc.stop(endTime);
+      });
+    } catch {}
+  }
+
   // Aliases
   click() {
     this.playTap();
@@ -169,6 +239,14 @@ class SoundEffects {
 
   warning() {
     this.playWarning();
+  }
+
+  fanfare() {
+    this.playFanfare();
+  }
+
+  notification() {
+    this.playNotification();
   }
 }
 

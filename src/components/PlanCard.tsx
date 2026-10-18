@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, ShieldCheck } from 'lucide-react';
 import { Plan } from '../types';
 import { formatINR } from '../utils/currency';
+import { getProductArtworkDataUri } from './ProductArtwork';
 
 interface PlanCardProps {
   plan: Plan;
@@ -14,50 +15,42 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
   const [imageError, setImageError] = useState(false);
   const isLimitReached = Boolean(plan.limit && activePurchasedCount >= plan.limit);
 
+  // High-trust institutional artwork (0ms instant loading & capital secure seals)
+  const isUnsplash = Boolean(plan.imageUrl && plan.imageUrl.includes('unsplash.com'));
+  const reliableImageSrc = !plan.imageUrl || isUnsplash || imageError
+    ? getProductArtworkDataUri(plan.id, plan.category)
+    : plan.imageUrl;
+
   return (
     <div className="relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between group">
       {/* Product Image Section */}
       <div className="relative h-32 bg-zinc-950 overflow-hidden flex items-center justify-center">
-        {/* Machine / Equipment Image */}
-        {plan.imageUrl && !imageError && (
-          <img
-            src={plan.imageUrl}
-            alt={plan.title}
-            referrerPolicy="no-referrer"
-            loading="lazy"
-            className={`w-full h-full object-cover object-center group-hover:scale-105 transition-all duration-500 ${
-              imageLoaded ? 'opacity-90 scale-100' : 'opacity-0 scale-95'
-            }`}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageError(true)}
-          />
-        )}
+        {/* Machine / Equipment / Bullion High-Trust Artwork */}
+        <img
+          src={reliableImageSrc}
+          alt={plan.title}
+          referrerPolicy="no-referrer"
+          loading="lazy"
+          className={`w-full h-full object-cover object-center group-hover:scale-105 transition-all duration-500 ${
+            imageLoaded || reliableImageSrc.startsWith('data:image') ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+          }`}
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageError(true)}
+        />
 
-        {/* Fallback Graphic if Image Loading or Error */}
-        {(!plan.imageUrl || imageError || !imageLoaded) && (
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center text-white p-2"
-            style={{ background: 'var(--brand-hero-gradient)' }}
-          >
-            <div className="flex items-center space-x-2">
-              <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex flex-col items-center justify-center shadow-lg">
-                <span className="text-[11px] font-black text-amber-300">AKM</span>
-                <span className="text-[7.5px] font-bold text-white/90 uppercase tracking-widest">ASSET</span>
-              </div>
-            </div>
-            <div className="text-[9px] font-bold tracking-widest text-white/90 uppercase mt-1.5">
-              AKM WEALTH ASSETS
-            </div>
-          </div>
-        )}
-
-        {/* Subtle Vignette Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/30 pointer-events-none" />
+        {/* Subtle Vignette Gradient for Depth */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/30 pointer-events-none" />
 
         {/* Floating Brand Pill (Bottom-Left) */}
-        <div className="absolute bottom-1.5 left-2 z-10 flex items-center space-x-1 bg-black/70 backdrop-blur-xs px-2 py-0.5 rounded-full border border-white/20">
+        <div className="absolute bottom-1.5 left-2 z-10 flex items-center space-x-1 bg-black/75 backdrop-blur-xs px-2 py-0.5 rounded-full border border-white/20">
           <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--brand-primary)' }} />
-          <span className="text-[9px] font-black tracking-wider text-white">AKM ENTERPRISES</span>
+          <span className="text-[8.5px] font-black tracking-wider text-white">AKM BKT ASSET</span>
+        </div>
+
+        {/* Official Capital Security Seal (Bottom-Right) */}
+        <div className="absolute bottom-1.5 right-2 z-10 flex items-center space-x-1 bg-black/80 backdrop-blur-xs px-1.5 py-0.5 rounded-full border border-emerald-400/40 shadow-xs">
+          <ShieldCheck className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
+          <span className="text-[8px] font-black text-emerald-300 tracking-wider">100% SECURE</span>
         </div>
 
         {/* Floating Price Tag with Paise (Top-Left) */}
@@ -68,7 +61,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
           </span>
         </div>
 
-        {/* Limit or Turbo Badge Top Right (Exact match to video) */}
+        {/* Limit or Turbo Badge Top Right */}
         <div
           className={`absolute top-0 right-0 z-10 text-[9px] font-bold px-2 py-0.5 rounded-bl-xl border-l border-b backdrop-blur-xs max-w-[140px] truncate text-white ${
             plan.durationMinutes
@@ -138,7 +131,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
         </div>
       </div>
 
-      {/* Buy Now Button (Matches vibrant green button in video) */}
+      {/* Buy Now / Buy Again Button */}
       <div className="p-2 pt-0">
         {isLimitReached ? (
           <button
@@ -152,14 +145,25 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
           <button
             id={`buy-btn-${plan.id}`}
             onClick={() => onBuyClick(plan)}
-            className="w-full py-2 px-2.5 rounded-xl btn-chamkila text-white font-black text-[11px] flex items-center justify-center space-x-1 active:scale-[0.97] transition-all cursor-pointer shadow-md tracking-wide hover:brightness-110"
+            className={`w-full py-2 px-2 rounded-xl btn-chamkila text-white font-black flex items-center justify-center space-x-1 active:scale-[0.97] transition-all cursor-pointer shadow-md tracking-wide hover:brightness-110 ${
+              activePurchasedCount > 0 ? 'text-[9px]' : 'text-[11px]'
+            }`}
           >
-            <ShoppingCart className="w-3 h-3 stroke-[2.4] drop-shadow-xs shrink-0" />
-            <span className="drop-shadow-xs font-mono font-bold tracking-tight text-[10px] truncate">
-              {activePurchasedCount > 0
-                ? `Buy Again • ${formatINR(plan.depositAmount)}`
-                : `Invest ${formatINR(plan.depositAmount)}`}
-            </span>
+            <ShoppingCart className={`stroke-[2.4] drop-shadow-xs shrink-0 ${activePurchasedCount > 0 ? 'w-2.5 h-2.5' : 'w-3 h-3'}`} />
+            {activePurchasedCount > 0 ? (
+              <span className="drop-shadow-xs font-mono font-bold tracking-tight text-[8px] sm:text-[8.5px] truncate flex items-center justify-center space-x-1">
+                <span className="bg-white/20 px-1 py-0.5 rounded text-[7px] sm:text-[7.5px] font-black uppercase tracking-wider">
+                  Buy Again
+                </span>
+                <span className="font-bold text-[8.5px]">
+                  {formatINR(plan.depositAmount)}
+                </span>
+              </span>
+            ) : (
+              <span className="drop-shadow-xs font-mono font-bold tracking-tight text-[10px] truncate">
+                Invest {formatINR(plan.depositAmount)}
+              </span>
+            )}
           </button>
         )}
       </div>

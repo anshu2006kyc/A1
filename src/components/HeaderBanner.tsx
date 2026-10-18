@@ -59,7 +59,16 @@ const SLIDES: BannerSlide[] = [
 ];
 
 export const HeaderBanner: React.FC = () => {
-  const { user, isAdminUser, setIsAdminOpen, setIsAnnouncementOpen, setCurrentView } = useApp();
+  const {
+    user,
+    isAdminUser,
+    setIsAdminOpen,
+    setIsAnnouncementOpen,
+    isNotificationModalOpen,
+    setIsNotificationModalOpen,
+    unreadNotificationCount,
+    setCurrentView
+  } = useApp();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -162,11 +171,16 @@ export const HeaderBanner: React.FC = () => {
 
           <button
             id="header-notification-btn"
-            onClick={() => setIsAnnouncementOpen(true)}
-            className="bg-white/20 hover:bg-white/30 p-1.5 rounded-full text-white transition-all cursor-pointer active:scale-90 border border-white/20 shadow-xs"
-            title="Notifications"
+            onClick={() => setIsNotificationModalOpen(true)}
+            className="bg-white/20 hover:bg-white/30 p-1.5 rounded-full text-white transition-all cursor-pointer active:scale-90 border border-white/20 shadow-xs relative"
+            title="Notifications & Alerts"
           >
-            <Bell className="w-3 h-3" />
+            <Bell className="w-3.5 h-3.5" />
+            {unreadNotificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-950 font-black text-[8.5px] rounded-full flex items-center justify-center ring-1 ring-white shadow-xs animate-pulse">
+                {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+              </span>
+            )}
           </button>
         </div>
       </div>

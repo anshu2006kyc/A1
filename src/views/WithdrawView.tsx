@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   ArrowLeft,
+  Bell,
   Building2,
   Check,
   Coins,
@@ -32,7 +33,10 @@ export const WithdrawView: React.FC = () => {
     transactions,
     showToast,
     isLoggedIn,
-    openAuthModal
+    openAuthModal,
+    isNotificationModalOpen,
+    setIsNotificationModalOpen,
+    unreadNotificationCount
   } = useApp();
 
   const [withdrawSpeed, setWithdrawSpeed] = useState<'express' | 'standard'>('express');
@@ -153,6 +157,23 @@ export const WithdrawView: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-1">
+          <button
+            type="button"
+            onClick={() => {
+              sfx.playTap();
+              setIsNotificationModalOpen(true);
+            }}
+            className="w-7 h-7 rounded-full bg-amber-50 text-amber-700 hover:bg-amber-100 flex items-center justify-center cursor-pointer active:scale-95 border border-amber-200/60 relative"
+            title="Payout Status Alerts"
+          >
+            <Bell className="w-3.5 h-3.5" />
+            {unreadNotificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-950 font-black text-[8px] rounded-full flex items-center justify-center ring-1 ring-white shadow-xs animate-pulse">
+                {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+              </span>
+            )}
+          </button>
+
           <button
             type="button"
             onClick={() => setShowRulesModal(true)}

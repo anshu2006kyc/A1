@@ -22,6 +22,7 @@ import { BottomNav } from './components/BottomNav';
 import { GatewaySimulatorModal } from './components/GatewaySimulatorModal';
 import { Toast } from './components/Toast';
 import { AnnouncementModal } from './components/AnnouncementModal';
+import { NotificationModal } from './components/notifications/NotificationModal';
 import { AuthModal } from './components/AuthModal';
 import { AdminAuthModal } from './components/AdminAuthModal';
 import { MobileAuthGate } from './components/MobileAuthGate';
@@ -203,6 +204,7 @@ const MainAppContent: React.FC = () => {
         />
         <GatewaySimulatorModal />
         <AnnouncementModal />
+        <NotificationModal />
         <Toast />
 
         {/* Bottom Navigation */}

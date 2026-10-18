@@ -1,4 +1,5 @@
 import { AdminSettings, CheckInRecord, Plan, SecurityAlert, TeamMember, Transaction, User } from '../types';
+import { getProductArtworkDataUri } from '../components/ProductArtwork';
 
 export const INITIAL_USER: User = {
   id: 0,
@@ -55,7 +56,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 250,
     totalReturn: 250,
     badge: "⚡ 1 Minute",
-    imageUrl: "/assets/products/turbo-1m.svg",
+    imageUrl: getProductArtworkDataUri("plan-turbo-1m", "turbo"),
     isActive: true
   },
   {
@@ -69,7 +70,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 660,
     totalReturn: 660,
     badge: "⚡ 3 Minutes",
-    imageUrl: "/assets/products/turbo-3m.svg",
+    imageUrl: getProductArtworkDataUri("plan-turbo-3m", "turbo"),
     isActive: true
   },
   {
@@ -83,7 +84,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 1400,
     totalReturn: 1400,
     badge: "🔥 5 Minutes",
-    imageUrl: "/assets/products/turbo-5m.svg",
+    imageUrl: getProductArtworkDataUri("plan-turbo-5m", "turbo"),
     isActive: true
   },
   {
@@ -97,7 +98,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 3000,
     totalReturn: 3000,
     badge: "⚡ 10 Minutes",
-    imageUrl: "/assets/products/turbo-10m.svg",
+    imageUrl: getProductArtworkDataUri("plan-turbo-10m", "turbo"),
     isActive: true
   },
   {
@@ -111,7 +112,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 5600,
     totalReturn: 5600,
     badge: "🚀 15 Minutes",
-    imageUrl: "/assets/products/turbo-15m.svg",
+    imageUrl: getProductArtworkDataUri("plan-turbo-15m", "turbo"),
     isActive: true
   },
   {
@@ -125,7 +126,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 8500,
     totalReturn: 8500,
     badge: "💎 30 Minutes",
-    imageUrl: "/assets/products/turbo-30m.svg",
+    imageUrl: getProductArtworkDataUri("plan-turbo-30m", "turbo"),
     isActive: true
   },
   {
@@ -139,7 +140,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 13500,
     totalReturn: 13500,
     badge: "👑 45 Minutes",
-    imageUrl: "/assets/products/turbo-45m.svg",
+    imageUrl: getProductArtworkDataUri("plan-turbo-45m", "turbo"),
     isActive: true
   },
   {
@@ -153,7 +154,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 19000,
     totalReturn: 19000,
     badge: "⚡ 1 Hour",
-    imageUrl: "/assets/products/turbo-60m.svg",
+    imageUrl: getProductArtworkDataUri("plan-turbo-60m", "turbo"),
     isActive: true
   },
   {
@@ -166,12 +167,12 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 4354,
     totalReturn: 8708,
     badge: "Limit 10",
-    imageUrl: "/assets/products/tire-special.svg",
+    imageUrl: getProductArtworkDataUri("plan-special-1", "normal"),
     isActive: true
   },
   {
     id: "plan-product-1",
-    title: "Product 1",
+    title: "Product 1 - BKT Agrimax Radial Agri Tire",
     category: "normal",
     limit: 10,
     returnDays: 30,
@@ -179,12 +180,12 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 245,
     totalReturn: 7350,
     badge: "Limit 10",
-    imageUrl: "/assets/products/tire-product-1.svg",
+    imageUrl: getProductArtworkDataUri("plan-product-1", "normal"),
     isActive: true
   },
   {
     id: "plan-product-2",
-    title: "Product 2 - AKM Apex Premium",
+    title: "Product 2 - AKM Apex Premium Mining Radial",
     category: "normal",
     limit: 10,
     returnDays: 35,
@@ -192,12 +193,12 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 480,
     totalReturn: 16800,
     badge: "Limit 10",
-    imageUrl: "/assets/products/tire-product-2.svg",
+    imageUrl: getProductArtworkDataUri("plan-product-2", "normal"),
     isActive: true
   },
   {
     id: "plan-product-3",
-    title: "Product 3 - AKM Sovereign Elite",
+    title: "Product 3 - AKM Sovereign Elite Tire Autoclave",
     category: "normal",
     limit: 10,
     returnDays: 40,
@@ -205,12 +206,12 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 960,
     totalReturn: 38400,
     badge: "Limit 10",
-    imageUrl: "/assets/products/plant-product-3.svg",
+    imageUrl: getProductArtworkDataUri("plan-product-3", "normal"),
     isActive: true
   },
   {
     id: "plan-product-4",
-    title: "Product 4 - AKM Capital Prime",
+    title: "Product 4 - AKM Capital Prime Heavy Hauler Fleet",
     category: "normal",
     limit: 5,
     returnDays: 45,
@@ -218,12 +219,12 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 2100,
     totalReturn: 94500,
     badge: "Limit 5",
-    imageUrl: "/assets/products/plant-product-4.svg",
+    imageUrl: getProductArtworkDataUri("plan-product-4", "normal"),
     isActive: true
   },
   {
     id: "plan-product-5",
-    title: "Product 5 - AKM Pinnacle Fund",
+    title: "Product 5 - AKM Pinnacle Fund Tire Extruder",
     category: "normal",
     limit: 5,
     returnDays: 50,
@@ -231,7 +232,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 5500,
     totalReturn: 275000,
     badge: "Limit 5",
-    imageUrl: "/assets/products/plant-product-5.svg",
+    imageUrl: getProductArtworkDataUri("plan-product-5", "normal"),
     isActive: true
   },
   {
@@ -244,7 +245,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 2200,
     totalReturn: 2200,
     badge: "VIP 1 Exclusive",
-    imageUrl: "/assets/products/vip-1.svg",
+    imageUrl: getProductArtworkDataUri("plan-vip-1", "vip"),
     isActive: true
   },
   {
@@ -257,7 +258,7 @@ export const INITIAL_PLANS: Plan[] = [
     dailyIncome: 8500,
     totalReturn: 25500,
     badge: "VIP 2 Exclusive",
-    imageUrl: "/assets/products/vip-2.svg",
+    imageUrl: getProductArtworkDataUri("plan-vip-2", "vip"),
     isActive: true
   }
 ];

@@ -32,9 +32,11 @@ import {
 } from '../data/initialData';
 import {
   AdminSettings,
+  AppNotification,
   AuditLog,
   BankAccount,
   CheckInRecord,
+  NotificationType,
   Plan,
   SecurityAlert,
   TeamMember,
@@ -46,6 +48,11 @@ import { formatINR } from '../utils/currency';
 import { sfx } from '../utils/sound';
 import { applyTheme } from '../utils/theme';
 import { parseRecordTimestamp, sortRecordsNewestFirst } from '../utils/date';
+import {
+  dispatchBrowserNotification,
+  getNotificationPermission,
+  requestNotificationPermission
+} from '../utils/notifications';
 
 export type AppView =
   | 'home'
@@ -116,7 +123,7 @@ interface AppContextType {
   // Check-In
   checkIns: CheckInRecord[];
   hasCheckedInToday: boolean;
-  claimDailyCheckIn: () => { success: boolean; amount: number; message: string };
+  claimDailyCheckIn: () => { success: boolean; amount: number; message: string; newStreak?: number; is7DayStreak?: boolean };
   streakDays: number;
   totalCheckInDays: number;
   totalCheckInEarned: number;
@@ -205,6 +212,32 @@ interface AppContextType {
     createdAt: number;
   } | null) => void;
   openPaymentPage: (amount: number, channel?: string, customOrderId?: string, payUrl?: string | null) => void;
+
+  // Local Notification System & Live Alerts
+  notifications: AppNotification[];
+  unreadNotificationCount: number;
+  sendLocalNotification: (notif: {
+    userId?: number;
+    type: NotificationType;
+    title: string;
+    body: string;
+    amount?: number;
+    status?: 'success' | 'failed' | 'pending' | 'info';
+    linkView?: string;
+    txId?: string;
+    planId?: string;
+    utrNumber?: string;
+  }) => void;
+  markNotificationAsRead: (id: string) => void;
+  markAllNotificationsAsRead: () => void;
+  clearAllNotifications: () => void;
+  deleteNotification: (id: string) => void;
+  isNotificationModalOpen: boolean;
+  setIsNotificationModalOpen: (open: boolean) => void;
+  notificationPermission: NotificationPermission | 'unsupported';
+  requestBrowserNotificationPermission: () => Promise<NotificationPermission | 'unsupported'>;
+  isNotificationSoundEnabled: boolean;
+  toggleNotificationSound: (enabled?: boolean) => void;
 
   // Cloud Database Integration
   dbConnectionStatus: 'connected' | 'connecting' | 'offline';
@@ -367,15 +400,36 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     } catch {}
   };
 
-  // Registered Users Registry
+  // Helper to ensure registered users have strictly unique IDs
+  const deduplicateUsers = (users: User[]): User[] => {
+    if (!Array.isArray(users)) return [];
+    const map = new Map<number, User>();
+    users.forEach((u) => {
+      if (u && typeof u.id === 'number') {
+        const existing = map.get(u.id);
+        if (!existing) {
+          map.set(u.id, u);
+        } else {
+          map.set(u.id, { ...existing, ...u });
+        }
+      }
+    });
+    return Array.from(map.values());
+  };
+
+  // Registered Users Registry (Always Deduplicated)
   const [registeredUsers, setRegisteredUsers] = useState<User[]>(() => {
     const saved = localStorage.getItem('akm_registered_users');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const deduped = deduplicateUsers(parsed);
+          if (deduped.length > 0) return deduped;
+        }
       } catch {}
     }
-    return INITIAL_USERS;
+    return deduplicateUsers(INITIAL_USERS);
   });
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
@@ -409,6 +463,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         const isOldUnsplash = typeof p.imageUrl === 'string' && p.imageUrl.includes('images.unsplash.com');
         return {
           ...p,
+          title: defaultPlan && (p.title === 'Product 1' || p.title === 'Product 2' || p.title === 'Product 3' || p.title === 'Product 4' || p.title === 'Product 5') ? defaultPlan.title : (p.title || defaultPlan?.title || ''),
           imageUrl: (defaultPlan && (isOldUnsplash || !p.imageUrl)) ? defaultPlan.imageUrl : (p.imageUrl || defaultPlan?.imageUrl || '')
         };
       });
@@ -697,6 +752,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
   // Toast Notification
   const [toast, setToast] = useState<{ text: string; type: 'error' | 'success' | 'info' } | null>(null);
   const [isAnnouncementOpen, setIsAnnouncementOpen] = useState<boolean>(false);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState<boolean>(false);
 
   const clearToast = () => {
     setToast(null);
@@ -712,6 +768,201 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       setToast((prev) => (prev?.text === text ? null : prev));
     }, 3500);
   };
+
+  // Local Notifications & Live Alerts System
+  const [notifications, setNotifications] = useState<AppNotification[]>(() => {
+    const initialWelcome: AppNotification[] = [
+      {
+        id: 'notif-welcome',
+        userId: 60,
+        type: 'system',
+        title: 'AKM Financial Alert Engine Active 🔔',
+        body: 'Automated local reminders are now live for daily interest credits and withdrawal status updates.',
+        timestamp: 'Today',
+        createdAt: Date.now() - 3600000,
+        read: false,
+        status: 'info'
+      }
+    ];
+    try {
+      const saved = localStorage.getItem('akm_local_notifications');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return initialWelcome;
+  });
+
+  const [isNotificationSoundEnabled, setIsNotificationSoundEnabled] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('akm_notif_sound');
+      return saved !== null ? saved === 'true' : true;
+    } catch {
+      return true;
+    }
+  });
+
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'unsupported'>(() => {
+    return getNotificationPermission();
+  });
+
+  // Sync notifications to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('akm_local_notifications', JSON.stringify(notifications));
+    } catch {}
+  }, [notifications]);
+
+  // Sync sound preference
+  useEffect(() => {
+    try {
+      localStorage.setItem('akm_notif_sound', String(isNotificationSoundEnabled));
+    } catch {}
+  }, [isNotificationSoundEnabled]);
+
+  const toggleNotificationSound = (enabled?: boolean) => {
+    setIsNotificationSoundEnabled((prev) => (typeof enabled === 'boolean' ? enabled : !prev));
+  };
+
+  const requestBrowserNotificationPermission = async () => {
+    const perm = await requestNotificationPermission();
+    setNotificationPermission(perm);
+    if (perm === 'granted') {
+      showToast('System browser notifications enabled successfully!', 'success');
+    } else if (perm === 'denied') {
+      showToast('Notifications blocked in browser settings. In-app alerts remain active.', 'info');
+    }
+    return perm;
+  };
+
+  const unreadNotificationCount = notifications.filter(
+    (n) => (!n.userId || n.userId === user.id) && !n.read
+  ).length;
+
+  const sendLocalNotification = (notif: {
+    userId?: number;
+    type: NotificationType;
+    title: string;
+    body: string;
+    amount?: number;
+    status?: 'success' | 'failed' | 'pending' | 'info';
+    linkView?: string;
+    txId?: string;
+    planId?: string;
+    utrNumber?: string;
+  }) => {
+    const now = new Date();
+    const formatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
+
+    const newNotif: AppNotification = {
+      id: generateUniqueId('notif'),
+      userId: notif.userId ?? user.id,
+      type: notif.type,
+      title: notif.title,
+      body: notif.body,
+      amount: notif.amount,
+      status: notif.status || 'info',
+      timestamp: formatted,
+      createdAt: Date.now(),
+      read: false,
+      linkView: notif.linkView,
+      txId: notif.txId,
+      planId: notif.planId,
+      utrNumber: notif.utrNumber
+    };
+
+    setNotifications((prev) => [newNotif, ...prev]);
+
+    // Audio chime feedback if enabled
+    if (isNotificationSoundEnabled) {
+      if (notif.status === 'failed') {
+        sfx.warning();
+      } else if (notif.type === 'interest_credit') {
+        sfx.cash();
+      } else {
+        sfx.notification();
+      }
+    }
+
+    // Native browser system notification
+    dispatchBrowserNotification(notif.title, {
+      body: notif.body,
+      onClick: () => {
+        if (notif.linkView) {
+          setCurrentView(notif.linkView as any);
+        }
+      }
+    });
+
+    // Concise toast notification for immediate awareness
+    showToast(
+      `${notif.title}: ${notif.body}`,
+      notif.status === 'failed' ? 'error' : notif.status === 'success' ? 'success' : 'info'
+    );
+  };
+
+  const markNotificationAsRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications((prev) =>
+      prev.map((n) => (!n.userId || n.userId === user.id ? { ...n, read: true } : n))
+    );
+    showToast('All notifications marked as read', 'info');
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications((prev) =>
+      prev.filter((n) => n.userId && n.userId !== user.id)
+    );
+    showToast('Notification history cleared', 'info');
+  };
+
+  const deleteNotification = (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
+
+  // Automated Watcher: Detects status transitions on user's withdrawals from external sources (e.g. Firestore, Admin panel)
+  const prevWithdrawalStatusesRef = useRef<Map<string, string>>(new Map());
+  useEffect(() => {
+    if (!user.id || user.id <= 0) return;
+    const userWithdrawals = transactions.filter((t) => t.userId === user.id && t.type === 'withdraw');
+
+    userWithdrawals.forEach((tx) => {
+      const prevStatus = prevWithdrawalStatusesRef.current.get(tx.id);
+      if (prevStatus && prevStatus !== tx.status) {
+        if (prevStatus === 'pending' && tx.status === 'success') {
+          sendLocalNotification({
+            userId: user.id,
+            type: 'withdrawal_status',
+            title: 'Withdrawal Approved & Disbursed! 🎉',
+            body: `Your payout of ${formatINR(tx.finalAmount || tx.amount)} (Order ${tx.orderId || tx.id}) has been approved and disbursed to your bank!${tx.utrNumber || tx.utr ? ` IMPS RRN: ${tx.utrNumber || tx.utr}` : ''}`,
+            amount: tx.finalAmount || tx.amount,
+            status: 'success',
+            linkView: 'transactions',
+            txId: tx.id,
+            utrNumber: tx.utrNumber || tx.utr
+          });
+        } else if (prevStatus === 'pending' && tx.status === 'failed') {
+          sendLocalNotification({
+            userId: user.id,
+            type: 'withdrawal_status',
+            title: 'Withdrawal Request Rejected ⚠️',
+            body: `Withdrawal of ${formatINR(tx.amount)} (Order ${tx.orderId || tx.id}) was rejected${tx.adminRemark ? `: ${tx.adminRemark}` : ''}. The full amount has been refunded to your wallet.`,
+            amount: tx.amount,
+            status: 'failed',
+            linkView: 'transactions',
+            txId: tx.id
+          });
+        }
+      }
+      prevWithdrawalStatusesRef.current.set(tx.id, tx.status);
+    });
+  }, [transactions, user.id]);
 
   // Cloud Database (Firestore) Integration State
   const [dbConnectionStatus, setDbConnectionStatus] = useState<'connected' | 'connecting' | 'offline'>('connecting');
@@ -932,9 +1183,9 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         if (idx >= 0) {
           const updated = [...prev];
           updated[idx] = { ...updated[idx], ...user };
-          return updated;
+          return deduplicateUsers(updated);
         }
-        return prev;
+        return deduplicateUsers([user, ...prev]);
       });
     }
     if (isRemoteUserSyncRef.current) {
@@ -996,6 +1247,40 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
   const todayStr = new Date().toISOString().split('T')[0];
   const userCheckIns = checkIns.filter((c) => c.userId === user.id);
   const hasCheckedInToday = userCheckIns.some((c) => c.dateStr === todayStr);
+
+  // Session Daily Interest Reminder: Remind users if they have pending interest to claim today
+  useEffect(() => {
+    if (!user.id || user.id <= 0) return;
+    const sessionReminderKey = `akm_interest_reminded_${user.id}_${todayStr}`;
+    try {
+      if (sessionStorage.getItem(sessionReminderKey)) return;
+    } catch {}
+
+    const unclaimedPlans = userPlans.filter(
+      (up) => up.userId === user.id && up.status === 'active' && !up.durationMinutes && up.lastClaimDate !== todayStr
+    );
+
+    if (unclaimedPlans.length > 0) {
+      try {
+        sessionStorage.setItem(sessionReminderKey, 'true');
+      } catch {}
+      const totalPotentialDaily = unclaimedPlans.reduce((sum, p) => sum + p.dailyIncome, 0);
+
+      const timer = setTimeout(() => {
+        sendLocalNotification({
+          userId: user.id,
+          type: 'interest_credit',
+          title: 'Daily Returns Ready to Claim! 💰',
+          body: `You have ${unclaimedPlans.length} active plan(s) ready with ${formatINR(totalPotentialDaily)} in daily income today. Tap to collect!`,
+          amount: totalPotentialDaily,
+          status: 'info',
+          linkView: 'myproducts'
+        });
+      }, 3500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [user.id, userPlans, todayStr]);
 
   // Calculate real consecutive streak for the current user
   const calculateStreak = (): number => {
@@ -1156,7 +1441,10 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     } else {
       // Instant automated registration with mobile number - regular user
       lockAdminSession();
-      const newId = registeredUsers.reduce((max, u) => Math.max(max, u.id), 100) + 1;
+      const existingIds = new Set(registeredUsers.map((u) => u.id));
+      let newId = registeredUsers.reduce((max, u) => Math.max(max, u.id), 100) + 1;
+      while (existingIds.has(newId)) newId++;
+
       const newUser: User = {
         id: newId,
         phone: `+91 ${last10}`,
@@ -1178,7 +1466,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         lastLogin: new Date().toISOString().replace('T', ' ').substring(0, 19)
       };
 
-      const updatedList = [newUser, ...registeredUsers];
+      const updatedList = deduplicateUsers([newUser, ...registeredUsers]);
       setRegisteredUsers(updatedList);
       setUser(newUser);
       setIsLoggedIn(true);
@@ -1231,7 +1519,10 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       return { success: false, message: 'Yeh mobile number pehle se registered hai. Kripya Login karein.' };
     }
 
-    const newId = registeredUsers.reduce((max, u) => Math.max(max, u.id), 100) + 1;
+    const existingIds = new Set(registeredUsers.map((u) => u.id));
+    let newId = registeredUsers.reduce((max, u) => Math.max(max, u.id), 100) + 1;
+    while (existingIds.has(newId)) newId++;
+
     const last10 = cleanPhone.slice(-10);
     const newUser: User = {
       id: newId,
@@ -1254,7 +1545,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       lastLogin: new Date().toISOString().replace('T', ' ').substring(0, 19)
     };
 
-    const updatedList = [newUser, ...registeredUsers];
+    const updatedList = deduplicateUsers([newUser, ...registeredUsers]);
     setRegisteredUsers(updatedList);
     setUser(newUser);
     setIsLoggedIn(true);
@@ -1314,7 +1605,10 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
   };
 
   const adminCreateUser = (userData: Partial<User>) => {
-    const newId = registeredUsers.reduce((max, u) => Math.max(max, u.id), 100) + 1;
+    const existingIds = new Set(registeredUsers.map((u) => u.id));
+    let newId = registeredUsers.reduce((max, u) => Math.max(max, u.id), 100) + 1;
+    while (existingIds.has(newId)) newId++;
+
     const phone = userData.phone || `+91 ${Math.floor(6000000000 + Math.random() * 3999999999)}`;
     const created: User = {
       id: newId,
@@ -1334,7 +1628,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       lastLogin: new Date().toISOString().replace('T', ' ').substring(0, 19),
       bankAccount: userData.bankAccount
     };
-    const updated = [created, ...registeredUsers];
+    const updated = deduplicateUsers([created, ...registeredUsers]);
     setRegisteredUsers(updated);
     localStorage.setItem('akm_registered_users', JSON.stringify(updated));
     syncUserToFirestore(created).catch(() => {});
@@ -1343,7 +1637,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   const adminUpdateUser = (userId: number, updates: Partial<User>) => {
     let targetMerged: User | null = null;
-    const updated = registeredUsers.map((u) => {
+    const updated = deduplicateUsers(registeredUsers.map((u) => {
       if (u.id === userId) {
         const merged = { ...u, ...updates };
         targetMerged = merged;
@@ -1353,7 +1647,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         return merged;
       }
       return u;
-    });
+    }));
     setRegisteredUsers(updated);
     localStorage.setItem('akm_registered_users', JSON.stringify(updated));
     if (targetMerged) {
@@ -1446,8 +1740,17 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       origin: { y: 0.6 }
     });
 
+    const newStreak = currentStreak + 1;
+    const is7DayStreak = newStreak === 7 || (newStreak > 0 && newStreak % 7 === 0);
+
     showToast(`Day ${nextStreakDay} Check-in Bonus +${formatINR(reward, { decimals: 0 })} Credited!`, 'success');
-    return { success: true, amount: reward, message: `+${formatINR(reward, { decimals: 0 })} Added to balance!` };
+    return {
+      success: true,
+      amount: reward,
+      message: `+${formatINR(reward, { decimals: 0 })} Added to balance!`,
+      newStreak,
+      is7DayStreak
+    };
   };
 
   // Claim Streak Milestone
@@ -1748,7 +2051,17 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       origin: { y: 0.6 }
     });
 
-    showToast(`+${formatINR(profit, { decimals: 0 })} Profit Collected!`, 'success');
+    sendLocalNotification({
+      userId: user.id,
+      type: 'interest_credit',
+      title: up.durationMinutes ? '⚡ Turbo Return Credited!' : 'Daily Interest Credited! 💰',
+      body: `+${formatINR(profit)} ${up.durationMinutes ? 'turbo profit' : 'daily earnings'} from "${up.title}" has been credited to your balance.`,
+      amount: profit,
+      status: 'success',
+      linkView: 'myproducts',
+      planId: up.planId
+    });
+
     return { success: true, amount: profit };
   };
 
@@ -1835,7 +2148,16 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       origin: { y: 0.6 }
     });
 
-    showToast(`Claimed ${formatINR(totalAmount, { decimals: 0 })} from ${claimable.length} products!`, 'success');
+    sendLocalNotification({
+      userId: user.id,
+      type: 'interest_credit',
+      title: 'Batch Profits Credited! 💰',
+      body: `+${formatINR(totalAmount)} accumulated daily interest from ${claimable.length} investment plans credited to your balance.`,
+      amount: totalAmount,
+      status: 'success',
+      linkView: 'myproducts'
+    });
+
     return { count: claimable.length, total: totalAmount };
   };
 
@@ -2320,7 +2642,18 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
     setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
     syncTransactionToFirestore(newTx).catch(() => {});
-    showToast(`Withdrawal request for ${formatINR(amount)} submitted! Processing within window.`, 'success');
+    
+    sendLocalNotification({
+      userId: user.id,
+      type: 'withdrawal_status',
+      title: 'Withdrawal Request Submitted ⏳',
+      body: `Payout request for ${formatINR(finalAmount)} (Order ${newTx.orderId}) is under audit. You will receive an alert once transferred.`,
+      amount: finalAmount,
+      status: 'pending',
+      linkView: 'transactions',
+      txId: newTx.id
+    });
+
     return { success: true, message: 'Withdrawal request submitted successfully.' };
   };
 
@@ -2371,7 +2704,17 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     syncTransactionToFirestore(updatedTx).catch(() => {});
     remoteUpdateUserBalance(user.id, tx.amount, 0, -tx.amount).catch(() => {});
 
-    showToast(`Withdrawal cancelled! ${formatINR(tx.amount)} refunded to balance.`, 'success');
+    sendLocalNotification({
+      userId: user.id,
+      type: 'withdrawal_status',
+      title: 'Withdrawal Cancelled & Refunded 🔄',
+      body: `Withdrawal of ${formatINR(tx.amount)} (${tx.orderId || tx.id}) was cancelled. Balance restored to your wallet.`,
+      amount: tx.amount,
+      status: 'info',
+      linkView: 'transactions',
+      txId: tx.id
+    });
+
     return { success: true, message: 'Withdrawal cancelled and refunded.' };
   };
 
@@ -2565,7 +2908,18 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     );
     syncTransactionToFirestore(updatedTx).catch(() => {});
     addAuditLog('withdrawal', 'Withdrawal Approved', `Approved payout for Order ${tx.orderId}${utr ? ` (RRN: ${utr})` : ''}`, tx.amount, 'success');
-    showToast(`Approved withdrawal of ${formatINR(tx.amount, { decimals: 0 })}!`, 'success');
+    
+    sendLocalNotification({
+      userId: tx.userId,
+      type: 'withdrawal_status',
+      title: 'Withdrawal Approved & Disbursed! 🎉',
+      body: `Your payout of ${formatINR(tx.finalAmount || tx.amount)} (Order ${tx.orderId || tx.id}) has been approved and transferred to your bank!${utr ? ` IMPS RRN: ${utr}` : ''}`,
+      amount: tx.finalAmount || tx.amount,
+      status: 'success',
+      linkView: 'transactions',
+      txId: tx.id,
+      utrNumber: utr
+    });
   };
 
   const rejectWithdrawal = (txId: string, reason?: string) => {
@@ -2615,7 +2969,17 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     remoteUpdateUserBalance(tx.userId, tx.amount, 0, -tx.amount).catch(() => {});
 
     addAuditLog('withdrawal', 'Withdrawal Rejected & Refunded', `Refunded ${tx.amount} to user: ${reason || 'Admin reject'}`, tx.amount, 'warning');
-    showToast(`Withdrawal rejected. ${formatINR(tx.amount, { decimals: 0 })} refunded to user!`, 'info');
+    
+    sendLocalNotification({
+      userId: tx.userId,
+      type: 'withdrawal_status',
+      title: 'Withdrawal Request Rejected ⚠️',
+      body: `Withdrawal of ${formatINR(tx.amount)} (Order ${tx.orderId || tx.id}) was rejected${reason ? `: ${reason}` : ''}. The full amount has been refunded to your wallet.`,
+      amount: tx.amount,
+      status: 'failed',
+      linkView: 'transactions',
+      txId: tx.id
+    });
   };
 
   const approveAllPendingDeposits = () => {
@@ -2709,9 +3073,18 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     pending.forEach((pTx) => {
       const updated: Transaction = { ...pTx, status: 'success', adminRemark: 'Batch Approved by Admin' };
       syncTransactionToFirestore(updated).catch(() => {});
+      sendLocalNotification({
+        userId: pTx.userId,
+        type: 'withdrawal_status',
+        title: 'Withdrawal Approved & Disbursed! 🎉',
+        body: `Your payout of ${formatINR(pTx.finalAmount || pTx.amount)} (Order ${pTx.orderId || pTx.id}) has been approved and disbursed to your bank!`,
+        amount: pTx.finalAmount || pTx.amount,
+        status: 'success',
+        linkView: 'transactions',
+        txId: pTx.id
+      });
     });
     addAuditLog('withdrawal', 'Batch Approved All Withdrawals', `Approved ${pending.length} pending payouts totalling ₹${totalAmt}`, totalAmt, 'success');
-    showToast(`Batch approved ${pending.length} withdrawals (${formatINR(totalAmt, { decimals: 0 })})!`, 'success');
     return pending.length;
   };
 
@@ -2813,9 +3186,18 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
       setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
       addAuditLog('settlement', 'Daily Settlement Executed', `Credited ${formatINR(totalCredited, { decimals: 0 })} across ${processed} plans`, totalCredited, 'success');
+
+      sendLocalNotification({
+        userId: user.id,
+        type: 'interest_credit',
+        title: 'Daily Settlement Credited! 📈',
+        body: `+${formatINR(totalCredited)} daily interest settlement across ${processed} active plans credited to your balance.`,
+        amount: totalCredited,
+        status: 'success',
+        linkView: 'myproducts'
+      });
     }
 
-    showToast(`Settlement completed: ${processed} plans credited ${formatINR(totalCredited, { decimals: 0 })}!`, 'success');
     return { processed, totalCredited };
   };
 
@@ -3072,6 +3454,19 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         clearToast,
         isAnnouncementOpen,
         setIsAnnouncementOpen,
+        isNotificationModalOpen,
+        setIsNotificationModalOpen,
+        notifications,
+        unreadNotificationCount,
+        sendLocalNotification,
+        markNotificationAsRead,
+        markAllNotificationsAsRead,
+        clearAllNotifications,
+        deleteNotification,
+        notificationPermission,
+        requestBrowserNotificationPermission,
+        isNotificationSoundEnabled,
+        toggleNotificationSound,
         activeCheckoutModal,
         setActiveCheckoutModal,
         activePayment,
