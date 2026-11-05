@@ -46,6 +46,20 @@ async function startServer() {
     console.log(`AKM ENTERPRISES Server running on http://${HOST}:${PORT}`);
   });
 
+  server.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.warn(`[Server] Port ${PORT} already in use. Retrying in 1s...`);
+      setTimeout(() => {
+        try {
+          server.close();
+        } catch {}
+        server.listen(PORT, HOST);
+      }, 1000);
+    } else {
+      console.error('[Server Error]', err);
+    }
+  });
+
   // Enterprise keep-alive tuning for high-traffic load balancers (Cloud Run, AWS ALB, Nginx)
   // Ensures server does not close sockets before the load balancer does
   server.keepAliveTimeout = 65000;

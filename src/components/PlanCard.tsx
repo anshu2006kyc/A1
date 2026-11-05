@@ -15,11 +15,12 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
   const [imageError, setImageError] = useState(false);
   const isLimitReached = Boolean(plan.limit && activePurchasedCount >= plan.limit);
 
-  // High-trust institutional artwork (0ms instant loading & capital secure seals)
-  const isUnsplash = Boolean(plan.imageUrl && plan.imageUrl.includes('unsplash.com'));
-  const reliableImageSrc = !plan.imageUrl || isUnsplash || imageError
-    ? getProductArtworkDataUri(plan.id, plan.category)
-    : plan.imageUrl;
+  React.useEffect(() => {
+    setImageError(false);
+  }, [plan.imageUrl]);
+
+  // Real photographic asset with graceful SVG fallback on load failure
+  const reliableImageSrc = !imageError && plan.imageUrl ? plan.imageUrl : getProductArtworkDataUri(plan.id, plan.category);
 
   return (
     <div className="relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between group">
@@ -30,40 +31,39 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
           src={reliableImageSrc}
           alt={plan.title}
           referrerPolicy="no-referrer"
-          loading="lazy"
-          className={`w-full h-full object-cover object-center group-hover:scale-105 transition-all duration-500 ${
-            imageLoaded || reliableImageSrc.startsWith('data:image') ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-          }`}
-          onLoad={() => setImageLoaded(true)}
+          loading="eager"
+          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
           onError={() => setImageError(true)}
         />
 
         {/* Subtle Vignette Gradient for Depth */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/30 pointer-events-none" />
 
-        {/* Floating Brand Pill (Bottom-Left) */}
-        <div className="absolute bottom-1.5 left-2 z-10 flex items-center space-x-1 bg-black/75 backdrop-blur-xs px-2 py-0.5 rounded-full border border-white/20">
-          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--brand-primary)' }} />
-          <span className="text-[8.5px] font-black tracking-wider text-white">AKM BKT ASSET</span>
+        {/* Floating Brand Pill (Bottom-Left) - Sleek Ultra-Micro Branding Text */}
+        <div className="absolute bottom-1.5 left-1.5 z-10 flex items-center space-x-0.5 bg-black/85 backdrop-blur-md px-1 py-0.5 rounded-full border border-white/20 shadow-xs">
+          <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: 'var(--brand-primary)' }} />
+          <span className="text-[5px] sm:text-[5.5px] font-black tracking-wider text-white/95 uppercase leading-none">
+            AKM ENTERPRISES
+          </span>
         </div>
 
-        {/* Official Capital Security Seal (Bottom-Right) */}
-        <div className="absolute bottom-1.5 right-2 z-10 flex items-center space-x-1 bg-black/80 backdrop-blur-xs px-1.5 py-0.5 rounded-full border border-emerald-400/40 shadow-xs">
-          <ShieldCheck className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
-          <span className="text-[8px] font-black text-emerald-300 tracking-wider">100% SECURE</span>
+        {/* Official Capital Security Seal (Bottom-Right) - Sleek Ultra-Micro Text */}
+        <div className="absolute bottom-1.5 right-1.5 z-10 flex items-center space-x-0.5 bg-black/85 backdrop-blur-md px-1 py-0.5 rounded-full border border-emerald-400/40 shadow-xs">
+          <ShieldCheck className="w-1.5 h-1.5 text-emerald-400 shrink-0" />
+          <span className="text-[5px] sm:text-[5.5px] font-black text-emerald-300 tracking-wider leading-none">100% SECURE</span>
         </div>
 
-        {/* Floating Price Tag with Paise (Top-Left) */}
-        <div className="absolute top-1.5 left-2 z-10 flex items-center space-x-1 bg-black/85 backdrop-blur-md px-2 py-0.5 rounded-full border border-emerald-400/40 shadow-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[9px] font-black font-mono text-emerald-300 tracking-tight">
+        {/* Floating Price Tag with Paise (Top-Left) - Ultra-Micro Compact Text Size */}
+        <div className="absolute top-1.5 left-1.5 z-10 flex items-center space-x-0.5 bg-black/85 backdrop-blur-md px-1 py-0.5 rounded-full border border-emerald-400/30 shadow-xs">
+          <span className="w-0.5 h-0.5 rounded-full bg-emerald-400" />
+          <span className="text-[5px] sm:text-[5.5px] font-black font-mono text-emerald-300 tracking-tight leading-none">
             {formatINR(plan.depositAmount)}
           </span>
         </div>
 
-        {/* Limit or Turbo Badge Top Right */}
+        {/* Limit or Turbo Badge (Top-Right) - Sleek Compact Corner Tag */}
         <div
-          className={`absolute top-0 right-0 z-10 text-[9px] font-bold px-2 py-0.5 rounded-bl-xl border-l border-b backdrop-blur-xs max-w-[140px] truncate text-white ${
+          className={`absolute top-0 right-0 z-10 text-[6.5px] sm:text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg border-l border-b backdrop-blur-xs max-w-[120px] truncate text-white leading-none ${
             plan.durationMinutes
               ? 'bg-amber-400 text-amber-950 border-amber-300 font-black shadow-xs'
               : ''
@@ -78,14 +78,15 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
         </div>
       </div>
 
-      {/* Plan Title Banner */}
+      {/* Plan Title Banner - Short One Line */}
       <div
-        className={`text-white text-center py-1.5 px-2 text-[10.5px] font-bold tracking-wide line-clamp-1 ${
+        className={`text-white text-center py-1 px-1.5 text-[9.5px] font-bold tracking-tight truncate whitespace-nowrap overflow-hidden text-ellipsis ${
           plan.durationMinutes ? 'bg-black/85 border-b border-amber-400/30 text-amber-300' : ''
         }`}
         style={!plan.durationMinutes ? { background: 'var(--brand-dark-gradient, #064e3b)' } : undefined}
+        title={plan.title}
       >
-        {plan.title}
+        {plan.title.replace(/\s*•\s*.*$/, '').trim()}
       </div>
 
       {/* Metrics 4-Grid: Return Time, Deposit, Daily Return, Est. Total */}

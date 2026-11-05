@@ -17,7 +17,11 @@ import {
   TrendingUp,
   Unlock,
   Wallet,
-  Zap
+  Zap,
+  Gift,
+  Share2,
+  Power,
+  AlertTriangle
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatINR } from '../../utils/currency';
@@ -320,6 +324,47 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onNavigateTa
           >
             <RotateCcw className="w-4 h-4 text-purple-400" />
             <span>Inject Demo Feed</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Advanced Executive Platform Controls */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        {/* Lucky Spin Quick Card */}
+        <div className="bg-gradient-to-r from-amber-950/70 to-slate-900 border border-amber-500/30 p-4 rounded-3xl flex items-center justify-between shadow-md">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-400/20 text-amber-300 flex items-center justify-center border border-amber-400/40">
+              <Gift className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="font-bold text-white text-xs">Lucky Spin Hub</div>
+              <div className="text-[10px] text-slate-400">Configure odds, rewards & festival resets</div>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigateTab('luckyspin')}
+            className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs cursor-pointer active:scale-95 transition-all"
+          >
+            Manage Wheel
+          </button>
+        </div>
+
+        {/* Multi-Tier Referral Quick Card */}
+        <div className="bg-gradient-to-r from-emerald-950/70 to-slate-900 border border-emerald-500/30 p-4 rounded-3xl flex items-center justify-between shadow-md">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-500/40">
+              <Share2 className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="font-bold text-white text-xs">Affiliate & VIP Network</div>
+              <div className="text-[10px] text-slate-400">3-Tier commission matrix & top leaders</div>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigateTab('affiliates')}
+            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs cursor-pointer active:scale-95 transition-all"
+          >
+            Manage Network
           </button>
         </div>
       </div>

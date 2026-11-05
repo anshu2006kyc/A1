@@ -23,6 +23,8 @@ import { sfx } from '../utils/sound';
 import { sortRecordsNewestFirst } from '../utils/date';
 import { CheckInRecord } from '../types';
 import { StreakCalendarTracker } from '../components/checkin/StreakCalendarTracker';
+import confetti from 'canvas-confetti';
+import { triggerCelebrationConfetti, triggerDailyCheckInConfetti } from '../utils/confetti';
 
 export const CheckInView: React.FC = () => {
   const {
@@ -113,19 +115,33 @@ export const CheckInView: React.FC = () => {
   const handleClaim = () => {
     sfx.cash();
     const res = claimDailyCheckIn();
+    if (res?.success) {
+      // Trigger rich celebratory canvas-confetti animation
+      triggerDailyCheckInConfetti(res.is7DayStreak);
+      if (res?.is7DayStreak) {
+        setTimeout(() => {
+          setTriggerCelebration(true);
+        }, 350);
+      }
+    }
     if (res?.message) {
       showToast(res.message, res.success ? 'success' : 'info');
-    }
-    if (res?.is7DayStreak) {
-      setTimeout(() => {
-        setTriggerCelebration(true);
-      }, 350);
     }
   };
 
   const handleClaimMilestone = (days: number, reward: number) => {
     sfx.success();
     const res = claimStreakMilestone(days, reward);
+    if (res?.success) {
+      triggerCelebrationConfetti('purchase');
+      confetti({
+        particleCount: 120,
+        spread: 85,
+        origin: { y: 0.5 },
+        colors: ['#008f4c', '#10b981', '#fbbf24', '#38bdf8', '#ffffff'],
+        disableForReducedMotion: true
+      });
+    }
     if (res?.message) {
       showToast(res.message, res.success ? 'success' : 'info');
     }

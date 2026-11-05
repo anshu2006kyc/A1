@@ -15,10 +15,10 @@ const SUNPAYS_PAYOUT_API_SECRET = process.env.SUNPAYS_PAYOUT_API_SECRET || 'ed73
 
 const SUNPAYS_API_BASE = 'https://ttpay.business/api/public/v1';
 
-// WATCHPAY / WatchGLB Gateway Credentials (User's Merchant Configuration)
+// WATCHPAY / WataiGlobal Gateway Credentials (User's Merchant Configuration)
 const WATCHPAY_MCH_ID = process.env.WATCHPAY_MCH_ID || process.env.LGPAY_MCH_ID || '100666859';
 const WATCHPAY_KEY = process.env.WATCHPAY_KEY || process.env.LGPAY_KEY || '4abd8ad7b8a44bfcbeaa8ad8e30dae30';
-const WATCHPAY_GATEWAY_URL = process.env.WATCHPAY_GATEWAY_URL || process.env.LGPAY_GATEWAY_URL || 'https://api.watchglb.com/pay/web';
+const WATCHPAY_GATEWAY_URL = process.env.WATCHPAY_GATEWAY_URL || process.env.LGPAY_GATEWAY_URL || 'https://api.wataiglobal.com/pay/web';
 
 // Backwards compatibility aliases
 const LGPAY_MCH_ID = WATCHPAY_MCH_ID;
@@ -544,7 +544,7 @@ if (process.env.VERCEL === '1') {
       merchantId: WATCHPAY_MCH_ID,
       currency: 'INR',
       gatewayUrl: WATCHPAY_GATEWAY_URL,
-      gatewayName: 'WATCHPAY (WatchGLB Gateway)'
+      gatewayName: 'WATCHPAY / WATAI (WataiGlobal Gateway)'
     });
   });
 

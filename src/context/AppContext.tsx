@@ -9,6 +9,7 @@ import {
   syncTransactionToFirestore,
   syncUserPlanToFirestore,
   syncPlanToFirestore,
+  deletePlanFromFirestore,
   syncAdminSettingsToFirestore,
   testFirestoreConnection,
   subscribeToAdminSettings,
@@ -17,7 +18,10 @@ import {
   subscribeToAllTransactions,
   subscribeToPlansCatalog,
   subscribeToUserPlans,
-  subscribeToRegisteredUsers
+  subscribeToRegisteredUsers,
+  syncSupportMessageToFirestore,
+  subscribeToUserSupportMessages,
+  subscribeToAllSupportMessages
 } from '../lib/firebase';
 import {
   INITIAL_ADMIN_SETTINGS,
@@ -28,17 +32,24 @@ import {
   INITIAL_TEAM_MEMBERS,
   INITIAL_TRANSACTIONS,
   INITIAL_USER,
-  INITIAL_USERS
+  INITIAL_USERS,
+  LUCKY_SPIN_SEGMENTS
 } from '../data/initialData';
 import {
   AdminSettings,
   AppNotification,
+  AuditActionCategory,
   AuditLog,
   BankAccount,
   CheckInRecord,
+  LuckySpinRecord,
+  LuckySpinSegment,
   NotificationType,
   Plan,
   SecurityAlert,
+  SupportCategory,
+  SupportMessage,
+  SupportPriority,
   TeamMember,
   Transaction,
   User,
@@ -48,6 +59,18 @@ import { formatINR } from '../utils/currency';
 import { sfx } from '../utils/sound';
 import { applyTheme } from '../utils/theme';
 import { parseRecordTimestamp, sortRecordsNewestFirst } from '../utils/date';
+import { getProductArtworkDataUri } from '../components/ProductArtwork';
+import {
+  triggerCelebrationConfetti,
+  triggerInvestmentPurchaseConfetti,
+  triggerDailyCheckInConfetti
+} from '../utils/confetti';
+import {
+  getHapticEnabled,
+  setHapticEnabled,
+  isHapticSupported,
+  triggerHaptic
+} from '../utils/haptics';
 import {
   dispatchBrowserNotification,
   getNotificationPermission,
@@ -104,11 +127,17 @@ interface AppContextType {
   registerUser: (data: { phone: string; name?: string; password?: string; tradePassword?: string; inviteCode?: string }) => { success: boolean; message: string };
   logoutUser: () => void;
   switchUser: (userId: number) => void;
+  impersonateUser: (userId: number) => void;
+  exitImpersonation: () => void;
+  impersonatedByAdmin: User | null;
   adminCreateUser: (userData: Partial<User>) => void;
   adminUpdateUser: (userId: number, updates: Partial<User>) => void;
   adminDeleteUser: (userId: number) => void;
   updateUserBalance: (amount: number, reason?: string) => void;
   updateBankAccount: (bank: BankAccount) => boolean;
+  refreshUserBalance: (isPolling?: boolean) => Promise<void>;
+  isBalanceRefreshing: boolean;
+  lastBalanceRefreshedAt: Date | null;
 
   // Plans & Investments
   plans: Plan[];
@@ -129,6 +158,16 @@ interface AppContextType {
   totalCheckInEarned: number;
   claimedStreakMilestones: number[];
   claimStreakMilestone: (days: number, reward: number) => { success: boolean; amount: number; message: string };
+
+  // Lucky Spin Wheel (1x Daily)
+  isLuckySpinOpen: boolean;
+  setIsLuckySpinOpen: (open: boolean) => void;
+  hasSpunToday: boolean;
+  lastSpinDate: string | null;
+  luckySpinSegments: LuckySpinSegment[];
+  spinLuckyWheel: (forcedTargetIndex?: number) => Promise<{ success: boolean; amount: number; segmentIndex: number; message: string; isJackpot?: boolean }>;
+  luckySpinRecords: LuckySpinRecord[];
+  totalSpinEarned: number;
 
   // Transactions
   transactions: Transaction[];
@@ -155,10 +194,28 @@ interface AppContextType {
   addNewPlan: (plan: Omit<Plan, 'id'>) => void;
   updatePlan: (id: string, plan: Partial<Plan>) => void;
   deletePlan: (id: string) => void;
+  clonePlan: (sourcePlanId: string) => void;
+  togglePlanActive: (id: string) => void;
+  restoreDefaultPlans: () => void;
   resetAllData: () => void;
 
   // Audit Logs & Batch Tools
   auditLogs: AuditLog[];
+  recordAuditLog: (params: {
+    actionCategory: AuditActionCategory;
+    type?: AuditLog['type'];
+    title: string;
+    details: string;
+    targetUserId?: number;
+    targetUserPhone?: string;
+    oldValue?: string | number;
+    newValue?: string | number;
+    amount?: number;
+    status?: AuditLog['status'];
+    adminId?: number | string;
+    adminName?: string;
+    ipAddress?: string;
+  }) => void;
   addAuditLog: (type: AuditLog['type'], title: string, details: string, amount?: number, status?: AuditLog['status']) => void;
   clearAuditLogs: () => void;
   approveAllPendingDeposits: () => number;
@@ -238,6 +295,27 @@ interface AppContextType {
   requestBrowserNotificationPermission: () => Promise<NotificationPermission | 'unsupported'>;
   isNotificationSoundEnabled: boolean;
   toggleNotificationSound: (enabled?: boolean) => void;
+  isHapticEnabled: boolean;
+  toggleHapticFeedback: (enabled?: boolean) => void;
+  isHapticSupported: boolean;
+
+  // Support & Investor Inquiries
+  supportMessages: SupportMessage[];
+  sendSupportMessage: (data: {
+    category: SupportCategory;
+    subject: string;
+    message: string;
+    planTitle?: string;
+    planId?: string;
+    priority?: SupportPriority;
+  }) => Promise<{ success: boolean; message: string; ticketId?: string }>;
+  replySupportMessage: (messageId: string, reply: string) => Promise<void>;
+  resolveSupportMessage: (messageId: string) => Promise<void>;
+  isSupportModalOpen: boolean;
+  setIsSupportModalOpen: (open: boolean) => void;
+
+  // Pull to refresh & Real-time Synchronization
+  refreshAppData: () => Promise<void>;
 
   // Cloud Database Integration
   dbConnectionStatus: 'connected' | 'connecting' | 'offline';
@@ -449,32 +527,45 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     setIsAuthModalOpen(true);
   };
 
-  // Plans
+  // Plans (Authoritative catalog preserving admin edits and deletions)
   const [plans, setPlans] = useState<Plan[]>(() => {
-    const saved = localStorage.getItem('akm_plans') || localStorage.getItem('bkt_plans');
-    if (!saved) return INITIAL_PLANS;
+    const saved = localStorage.getItem('akm_plans');
+    const deletedIds: string[] = (() => {
+      try {
+        return JSON.parse(localStorage.getItem('akm_deleted_plan_ids') || '[]');
+      } catch {
+        return [];
+      }
+    })();
+
+    if (!saved) {
+      return INITIAL_PLANS.filter((p) => !deletedIds.includes(p.id));
+    }
+
     try {
       const parsed: Plan[] = JSON.parse(saved);
-      // Merge in any plans from INITIAL_PLANS that aren't yet in localStorage (e.g. 1m to 60m turbo plans)
-      const missingInitialPlans = INITIAL_PLANS.filter((ip) => !parsed.some((p) => p.id === ip.id));
-      const combined = [...missingInitialPlans, ...parsed];
-      return combined.map((p) => {
-        const defaultPlan = INITIAL_PLANS.find((ip) => ip.id === p.id);
-        const isOldUnsplash = typeof p.imageUrl === 'string' && p.imageUrl.includes('images.unsplash.com');
-        return {
-          ...p,
-          title: defaultPlan && (p.title === 'Product 1' || p.title === 'Product 2' || p.title === 'Product 3' || p.title === 'Product 4' || p.title === 'Product 5') ? defaultPlan.title : (p.title || defaultPlan?.title || ''),
-          imageUrl: (defaultPlan && (isOldUnsplash || !p.imageUrl)) ? defaultPlan.imageUrl : (p.imageUrl || defaultPlan?.imageUrl || '')
-        };
-      });
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        return INITIAL_PLANS.filter((p) => !deletedIds.includes(p.id));
+      }
+
+      // Filter out any plans that were explicitly deleted by admin
+      const activeParsed = parsed.filter((p) => !deletedIds.includes(p.id));
+
+      // Append any initial plans that are not yet in parsed AND not deleted by admin
+      const missingInitialPlans = INITIAL_PLANS.filter(
+        (ip) => !activeParsed.some((p) => p.id === ip.id) && !deletedIds.includes(ip.id)
+      );
+
+      // Return preserved plans without overwriting admin's custom edits!
+      return [...activeParsed, ...missingInitialPlans];
     } catch {
-      return INITIAL_PLANS;
+      return INITIAL_PLANS.filter((p) => !deletedIds.includes(p.id));
     }
   });
 
   // User Purchased Plans
   const [userPlans, setUserPlans] = useState<UserPlan[]>(() => {
-    const saved = localStorage.getItem('akm_user_plans') || localStorage.getItem('bkt_user_plans');
+    const saved = localStorage.getItem('akm_user_plans');
     if (!saved) return [];
     try {
       const parsed: UserPlan[] = JSON.parse(saved);
@@ -485,12 +576,14 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
           id = generateUniqueId(`up-${idx}`);
         }
         seen.add(id);
-        const matchingPlan = INITIAL_PLANS.find((p) => p.id === up.planId);
-        const isOldUnsplash = typeof up.imageUrl === 'string' && up.imageUrl.includes('images.unsplash.com');
+        const matchingPlan = INITIAL_PLANS.find((ip) => ip.id === up.planId);
+        const finalImageUrl = matchingPlan ? matchingPlan.imageUrl : (up.imageUrl || getProductArtworkDataUri(up.planId || up.id, up.durationMinutes ? 'turbo' : 'normal'));
+        const finalTitle = matchingPlan ? matchingPlan.title : up.title;
         return {
           ...up,
           id,
-          imageUrl: (matchingPlan && (isOldUnsplash || !up.imageUrl)) ? matchingPlan.imageUrl : (up.imageUrl || matchingPlan?.imageUrl)
+          title: finalTitle,
+          imageUrl: finalImageUrl
         };
       });
     } catch {
@@ -510,6 +603,17 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       return INITIAL_CHECKINS;
     } catch {
       return INITIAL_CHECKINS;
+    }
+  });
+
+  // Lucky Spin Modal & Records State
+  const [isLuckySpinOpen, setIsLuckySpinOpen] = useState(false);
+  const [luckySpinRecords, setLuckySpinRecords] = useState<LuckySpinRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('akm_lucky_spins');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
     }
   });
 
@@ -547,9 +651,18 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       const saved = localStorage.getItem('akm_admin_settings') || localStorage.getItem('bkt_admin_settings');
       if (saved) {
         const parsed = JSON.parse(saved);
+        const gatewayUrl = (parsed.gatewayApiUrl && !parsed.gatewayApiUrl.includes('watchglb.com'))
+          ? parsed.gatewayApiUrl
+          : 'https://api.wataiglobal.com/pay/web';
+        const lgpayUrl = (parsed.lgpayGatewayUrl && !parsed.lgpayGatewayUrl.includes('watchglb.com'))
+          ? parsed.lgpayGatewayUrl
+          : 'https://api.wataiglobal.com/pay/web';
         return {
           ...INITIAL_ADMIN_SETTINGS,
           ...parsed,
+          maxRecharge: parsed.maxRecharge ? Math.min(parsed.maxRecharge, 50000) : 50000,
+          gatewayApiUrl: gatewayUrl,
+          lgpayGatewayUrl: lgpayUrl,
           paymentOpenMode: parsed.paymentOpenMode || 'in_app',
           defaultGateway: parsed.defaultGateway || 'watchpay'
         };
@@ -636,26 +749,73 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     localStorage.setItem('akm_audit_logs', JSON.stringify(auditLogs));
   }, [auditLogs]);
 
-  const addAuditLog = (
+  const recordAuditLog = useCallback((params: {
+    actionCategory: AuditActionCategory;
+    type?: AuditLog['type'];
+    title: string;
+    details: string;
+    targetUserId?: number;
+    targetUserPhone?: string;
+    oldValue?: string | number;
+    newValue?: string | number;
+    amount?: number;
+    status?: AuditLog['status'];
+    adminId?: number | string;
+    adminName?: string;
+    ipAddress?: string;
+  }) => {
+    const now = new Date();
+    const formattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}`;
+
+    const currentAdminId = params.adminId ?? (user.isAdmin || user.role === 'admin' ? user.id : 60);
+    const currentAdminName = params.adminName ?? (user.isAdmin || user.role === 'admin' ? (user.name || `Admin_${user.phone.slice(-4)}`) : 'Super Admin (60)');
+    const currentAdminPhone = user.isAdmin || user.role === 'admin' ? user.phone : '+91 6203369638';
+
+    const newLog: AuditLog = {
+      id: generateUniqueId('audit'),
+      timestamp: formattedDate,
+      isoTimestamp: now.toISOString(),
+      adminId: currentAdminId,
+      adminName: currentAdminName,
+      adminPhone: currentAdminPhone,
+      actionCategory: params.actionCategory,
+      type: params.type || (params.actionCategory === 'deposit_action' ? 'deposit' : params.actionCategory === 'payout_action' ? 'withdrawal' : params.actionCategory === 'plan_mutation' ? 'plan' : 'system'),
+      title: params.title,
+      details: params.details,
+      targetUserId: params.targetUserId,
+      targetUserPhone: params.targetUserPhone,
+      oldValue: params.oldValue,
+      newValue: params.newValue,
+      amount: params.amount,
+      ipAddress: params.ipAddress || '103.21.244.18 (Admin Console)',
+      status: params.status || 'info'
+    };
+
+    setAuditLogs((prev) => [newLog, ...prev.slice(0, 199)]);
+  }, [user]);
+
+  const addAuditLog = useCallback((
     type: AuditLog['type'],
     title: string,
     details: string,
     amount?: number,
     status: AuditLog['status'] = 'info'
   ) => {
-    const now = new Date();
-    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-    const newLog: AuditLog = {
-      id: generateUniqueId('log'),
-      timestamp: timeStr,
+    let actionCategory: AuditActionCategory = 'system';
+    if (type === 'deposit') actionCategory = 'deposit_action';
+    else if (type === 'withdrawal') actionCategory = 'payout_action';
+    else if (type === 'plan') actionCategory = 'plan_mutation';
+    else if (type === 'settlement') actionCategory = 'system';
+
+    recordAuditLog({
+      actionCategory,
       type,
       title,
       details,
       amount,
       status
-    };
-    setAuditLogs((prev) => [newLog, ...prev.slice(0, 79)]);
-  };
+    });
+  }, [recordAuditLog]);
 
   const clearAuditLogs = () => {
     setAuditLogs([]);
@@ -753,6 +913,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
   const [toast, setToast] = useState<{ text: string; type: 'error' | 'success' | 'info' } | null>(null);
   const [isAnnouncementOpen, setIsAnnouncementOpen] = useState<boolean>(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState<boolean>(false);
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState<boolean>(false);
 
   const clearToast = () => {
     setToast(null);
@@ -823,6 +984,35 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   const toggleNotificationSound = (enabled?: boolean) => {
     setIsNotificationSoundEnabled((prev) => (typeof enabled === 'boolean' ? enabled : !prev));
+  };
+
+  // User-configurable Tactile Haptic Vibration Feedback
+  const [isHapticEnabled, setIsHapticEnabled] = useState<boolean>(() => getHapticEnabled());
+
+  useEffect(() => {
+    const handleHapticChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ enabled: boolean }>;
+      if (customEvent.detail && typeof customEvent.detail.enabled === 'boolean') {
+        setIsHapticEnabled(customEvent.detail.enabled);
+      }
+    };
+    window.addEventListener('akm:haptic-preference-changed', handleHapticChange);
+    return () => {
+      window.removeEventListener('akm:haptic-preference-changed', handleHapticChange);
+    };
+  }, []);
+
+  const toggleHapticFeedback = (enabled?: boolean) => {
+    const next = typeof enabled === 'boolean' ? enabled : !isHapticEnabled;
+    setIsHapticEnabled(next);
+    setHapticEnabled(next);
+    if (next) {
+      // Immediate tactile buzz confirmation so user physically feels it turning on
+      triggerHaptic([25, 45, 30], true);
+      showToast('Tactile vibration enabled 📳', 'success');
+    } else {
+      showToast('Tactile vibration disabled 🔕', 'info');
+    }
   };
 
   const requestBrowserNotificationPermission = async () => {
@@ -926,6 +1116,149 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
+  // ---------------------------------------------------------------------------
+  // Contact Support & Investor Inquiries
+  // ---------------------------------------------------------------------------
+  const [supportMessages, setSupportMessages] = useState<SupportMessage[]>(() => {
+    const saved = localStorage.getItem('akm_support_messages');
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('akm_support_messages', JSON.stringify(supportMessages));
+    } catch {}
+  }, [supportMessages]);
+
+  // Real-time listener for support messages from Firestore
+  useEffect(() => {
+    if (!isDatabaseOnline()) return;
+    let unsub: (() => void) | undefined;
+    const isUserAdmin = user.role === 'admin' || user.isAdmin;
+    if (isUserAdmin) {
+      unsub = subscribeToAllSupportMessages((msgs) => {
+        if (!msgs || msgs.length === 0) return;
+        setSupportMessages(msgs);
+      });
+    } else if (user.id) {
+      unsub = subscribeToUserSupportMessages(user.id, (msgs) => {
+        if (!msgs || msgs.length === 0) return;
+        setSupportMessages(msgs);
+      });
+    }
+    return () => {
+      if (unsub) unsub();
+    };
+  }, [user.id, user.role, user.isAdmin]);
+
+  const sendSupportMessage = async (data: {
+    category: SupportCategory;
+    subject: string;
+    message: string;
+    planTitle?: string;
+    planId?: string;
+    priority?: SupportPriority;
+  }): Promise<{ success: boolean; message: string; ticketId?: string }> => {
+    if (!data.message || !data.message.trim()) {
+      showToast('Please type your inquiry message', 'error');
+      return { success: false, message: 'Message is required' };
+    }
+
+    const ticketId = generateUniqueId('tkt');
+    const newMsg: SupportMessage = {
+      id: ticketId,
+      userId: user.id || 1001,
+      userPhone: user.phone || '9876543210',
+      userName: user.name || `Investor ${user.phone ? user.phone.slice(-4) : 'User'}`,
+      category: data.category || 'investment',
+      subject: data.subject || (data.planTitle ? `Inquiry: ${data.planTitle}` : 'Investment Inquiry'),
+      message: data.message.trim(),
+      planTitle: data.planTitle,
+      planId: data.planId,
+      priority: data.priority || 'normal',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    setSupportMessages((prev) => [newMsg, ...prev.filter((m) => m.id !== newMsg.id)]);
+
+    if (isDatabaseOnline()) {
+      try {
+        await syncSupportMessageToFirestore(newMsg);
+      } catch (err) {
+        console.warn('[Support] Firestore sync notice:', err);
+      }
+    }
+
+    sendLocalNotification({
+      userId: user.id,
+      type: 'system',
+      title: 'Support Ticket Submitted 💬',
+      body: `Ticket #${ticketId} about "${newMsg.subject}" was sent to Admin. Expected response: 5-15 mins.`,
+      status: 'success'
+    });
+
+    sfx.playSuccess();
+    triggerCelebrationConfetti('purchase');
+    showToast(`Support Ticket #${ticketId} submitted! Admin will respond shortly.`, 'success');
+
+    return {
+      success: true,
+      message: 'Support ticket submitted successfully',
+      ticketId
+    };
+  };
+
+  const replySupportMessage = async (messageId: string, reply: string) => {
+    if (!reply.trim()) return;
+    setSupportMessages((prev) =>
+      prev.map((m) => {
+        if (m.id === messageId) {
+          const updated: SupportMessage = {
+            ...m,
+            adminReply: reply.trim(),
+            status: 'resolved',
+            repliedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          if (isDatabaseOnline()) {
+            syncSupportMessageToFirestore(updated).catch(console.warn);
+          }
+          return updated;
+        }
+        return m;
+      })
+    );
+    showToast('Reply dispatched to user successfully', 'success');
+  };
+
+  const resolveSupportMessage = async (messageId: string) => {
+    setSupportMessages((prev) =>
+      prev.map((m) => {
+        if (m.id === messageId) {
+          const updated: SupportMessage = {
+            ...m,
+            status: 'resolved',
+            updatedAt: new Date().toISOString()
+          };
+          if (isDatabaseOnline()) {
+            syncSupportMessageToFirestore(updated).catch(console.warn);
+          }
+          return updated;
+        }
+        return m;
+      })
+    );
+    showToast('Ticket marked as resolved', 'info');
+  };
+
   // Automated Watcher: Detects status transitions on user's withdrawals from external sources (e.g. Firestore, Admin panel)
   const prevWithdrawalStatusesRef = useRef<Map<string, string>>(new Map());
   useEffect(() => {
@@ -1027,9 +1360,26 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
             (remotePlans) => {
               if (!isMounted || !remotePlans || remotePlans.length === 0) return;
               setPlans((prev) => {
-                const combined = [...remotePlans];
+                const deletedIds: string[] = (() => {
+                  try {
+                    return JSON.parse(localStorage.getItem('akm_deleted_plan_ids') || '[]');
+                  } catch {
+                    return [];
+                  }
+                })();
+
+                const activeRemote = remotePlans.filter((rp) => !deletedIds.includes(rp.id));
+                const combined = activeRemote.map((rp) => {
+                  // If local prev has an admin edit on this plan, keep it
+                  const localMatch = prev.find((lp) => lp.id === rp.id);
+                  if (localMatch) {
+                    return { ...rp, ...localMatch };
+                  }
+                  return rp;
+                });
+
                 INITIAL_PLANS.forEach((ip) => {
-                  if (!combined.some((cp) => cp.id === ip.id)) {
+                  if (!combined.some((cp) => cp.id === ip.id) && !deletedIds.includes(ip.id)) {
                     combined.push(ip);
                   }
                 });
@@ -1243,10 +1593,23 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     localStorage.setItem('akm_claimed_team_milestones', JSON.stringify(claimedTeamMilestones));
   }, [claimedTeamMilestones]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('akm_lucky_spins', JSON.stringify(luckySpinRecords));
+    } catch {}
+  }, [luckySpinRecords]);
+
   // Today's Date String (YYYY-MM-DD)
   const todayStr = new Date().toISOString().split('T')[0];
   const userCheckIns = checkIns.filter((c) => c.userId === user.id);
   const hasCheckedInToday = userCheckIns.some((c) => c.dateStr === todayStr);
+
+  // Lucky Spin Derived Status for Current User
+  const userSpinRecords = luckySpinRecords.filter((r) => r.userId === user.id);
+  const lastUserSpin = userSpinRecords[0] || null;
+  const lastSpinDate = user.lastSpinDate || (lastUserSpin ? lastUserSpin.dateStr : null);
+  const hasSpunToday = (lastSpinDate === todayStr) || userSpinRecords.some((r) => r.dateStr === todayStr);
+  const totalSpinEarned = userSpinRecords.reduce((sum, r) => sum + r.amount, 0);
 
   // Session Daily Interest Reminder: Remind users if they have pending interest to claim today
   useEffect(() => {
@@ -1632,10 +1995,23 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     setRegisteredUsers(updated);
     localStorage.setItem('akm_registered_users', JSON.stringify(updated));
     syncUserToFirestore(created).catch(() => {});
+
+    recordAuditLog({
+      actionCategory: 'user_status',
+      type: 'user',
+      title: 'New User Account Enrolled',
+      details: `Admin provisioned user #${created.id} (${created.phone}, Name: ${created.name}, Initial Balance: ₹${created.balance})`,
+      targetUserId: created.id,
+      targetUserPhone: created.phone,
+      newValue: created.status,
+      status: 'success'
+    });
+
     showToast(`Created user ${created.name} (${created.phone})!`, 'success');
   };
 
   const adminUpdateUser = (userId: number, updates: Partial<User>) => {
+    const oldUser = registeredUsers.find((u) => u.id === userId);
     let targetMerged: User | null = null;
     const updated = deduplicateUsers(registeredUsers.map((u) => {
       if (u.id === userId) {
@@ -1653,6 +2029,27 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     if (targetMerged) {
       syncUserToFirestore(targetMerged).catch(() => {});
     }
+
+    const changedFields = Object.keys(updates);
+    const isStatusChange = updates.status !== undefined && updates.status !== oldUser?.status;
+    const isBalanceChange = updates.balance !== undefined && updates.balance !== oldUser?.balance;
+
+    recordAuditLog({
+      actionCategory: isBalanceChange ? 'balance_adjust' : isStatusChange ? 'user_status' : 'user_status',
+      type: 'user',
+      title: isStatusChange
+        ? `User Status Changed to ${updates.status?.toUpperCase()}`
+        : isBalanceChange
+        ? `Manual Balance Adjustment for User #${userId}`
+        : `User Profile Updated (${changedFields.join(', ')})`,
+      details: `Admin modified User #${userId} (${oldUser?.phone || updates.phone || ''}). Attributes: [${changedFields.join(', ')}]`,
+      targetUserId: userId,
+      targetUserPhone: oldUser?.phone || updates.phone,
+      oldValue: isBalanceChange ? oldUser?.balance : isStatusChange ? oldUser?.status : undefined,
+      newValue: isBalanceChange ? updates.balance : isStatusChange ? updates.status : undefined,
+      status: isStatusChange && updates.status === 'suspended' ? 'critical' : 'success'
+    });
+
     showToast('User profile updated successfully!', 'success');
   };
 
@@ -1661,12 +2058,24 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       showToast('Cannot delete the last remaining user', 'error');
       return;
     }
+    const target = registeredUsers.find((u) => u.id === userId);
     const updated = registeredUsers.filter((u) => u.id !== userId);
     setRegisteredUsers(updated);
     localStorage.setItem('akm_registered_users', JSON.stringify(updated));
     if (user.id === userId) {
       setUser(updated[0]);
     }
+
+    recordAuditLog({
+      actionCategory: 'user_status',
+      type: 'user',
+      title: 'User Account Permanently Deleted',
+      details: `Admin deleted User #${userId} (${target?.phone || ''}, Name: ${target?.name || ''}) from the system`,
+      targetUserId: userId,
+      targetUserPhone: target?.phone,
+      status: 'critical'
+    });
+
     showToast('User removed from registry', 'info');
   };
 
@@ -1732,16 +2141,10 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     setCheckIns((prev) => [newRecord, ...prev]);
     setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
     syncTransactionToFirestore(newTx).catch(() => {});
-    updateUserBalance(reward, 'Daily Check-in');
-
-    confetti({
-      particleCount: 90,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-
     const newStreak = currentStreak + 1;
     const is7DayStreak = newStreak === 7 || (newStreak > 0 && newStreak % 7 === 0);
+
+    triggerDailyCheckInConfetti(is7DayStreak);
 
     showToast(`Day ${nextStreakDay} Check-in Bonus +${formatINR(reward, { decimals: 0 })} Credited!`, 'success');
     return {
@@ -1806,6 +2209,93 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
     showToast(`+${formatINR(reward, { decimals: 0 })} ${days}-Day Streak Reward Claimed!`, 'success');
     return { success: true, amount: reward, message: 'Milestone claimed successfully!' };
+  };
+
+  // Spin Lucky Wheel (1x Daily)
+  const spinLuckyWheel = async (forcedTargetIndex?: number): Promise<{
+    success: boolean;
+    amount: number;
+    segmentIndex: number;
+    message: string;
+    isJackpot?: boolean;
+  }> => {
+    if (!user.id || user.id <= 0) {
+      openAuthModal('login');
+      return { success: false, amount: 0, segmentIndex: 0, message: 'Please log in to spin the wheel.' };
+    }
+
+    if (hasSpunToday) {
+      showToast('You have already claimed today\'s Lucky Spin! Next spin tomorrow.', 'info');
+      return { success: false, amount: 0, segmentIndex: 0, message: 'Already claimed today' };
+    }
+
+    const lockKey = `spin_${user.id}_${todayStr}`;
+    if (!acquireLock(lockKey)) {
+      return { success: false, amount: 0, segmentIndex: 0, message: 'Spin already in progress...' };
+    }
+
+    // Determine target segment based on weights
+    let targetIndex = 0;
+    if (typeof forcedTargetIndex === 'number' && forcedTargetIndex >= 0 && forcedTargetIndex < LUCKY_SPIN_SEGMENTS.length) {
+      targetIndex = forcedTargetIndex;
+    } else {
+      const totalWeight = LUCKY_SPIN_SEGMENTS.reduce((sum, s) => sum + s.probability, 0);
+      let rand = Math.random() * totalWeight;
+      for (let i = 0; i < LUCKY_SPIN_SEGMENTS.length; i++) {
+        if (rand < LUCKY_SPIN_SEGMENTS[i].probability) {
+          targetIndex = i;
+          break;
+        }
+        rand -= LUCKY_SPIN_SEGMENTS[i].probability;
+      }
+    }
+
+    const winningSegment = LUCKY_SPIN_SEGMENTS[targetIndex];
+    const reward = winningSegment.amount;
+
+    const now = new Date();
+    const formatted = `${String(now.getDate()).padStart(2, '0')} ${now.toLocaleString('en-US', { month: 'short' })} ${now.getFullYear()} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
+
+    const newRecord: LuckySpinRecord = {
+      id: generateUniqueId('spin'),
+      userId: user.id,
+      dateStr: todayStr,
+      timestamp: formatted,
+      amount: reward,
+      segmentLabel: winningSegment.label
+    };
+
+    const newTx: Transaction = {
+      id: generateUniqueId('tx-spin'),
+      userId: user.id,
+      type: 'lucky_spin',
+      title: `Daily Lucky Spin Reward (${winningSegment.label})`,
+      method: 'Lucky Spin Wheel',
+      orderId: generateUniqueId('ORD-SPIN'),
+      amount: reward,
+      finalAmount: reward,
+      status: 'success',
+      createdAt: formatted
+    };
+
+    setLuckySpinRecords((prev) => [newRecord, ...prev]);
+    setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
+    syncTransactionToFirestore(newTx).catch(() => {});
+    updateUserBalance(reward, `Lucky Spin ${winningSegment.label}`);
+
+    setUser((prev) => ({
+      ...prev,
+      lastSpinDate: todayStr,
+      totalRevenue: Math.round((prev.totalRevenue + reward) * 100) / 100
+    }));
+
+    return {
+      success: true,
+      amount: reward,
+      segmentIndex: targetIndex,
+      message: `Congratulations! Won ${winningSegment.label}`,
+      isJackpot: winningSegment.isJackpot
+    };
   };
 
   // Claim Team Milestone Quest
@@ -1971,6 +2461,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     }
 
     showToast(`Successfully purchased ${plan.title}!`, 'success');
+    triggerInvestmentPurchaseConfetti();
     return { success: true, message: 'Plan activated successfully!', userPlan: newUserPlan };
   };
 
@@ -2161,71 +2652,10 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     return { count: claimable.length, total: totalAmount };
   };
 
-  // Return / refund a plan cycle early or on request
-  const returnPlanCycle = (userPlanId: string) => {
-    if (!user.id || user.id <= 0) {
-      openAuthModal('login');
-      return { success: false, message: 'Kripya login karein' };
-    }
-
-    const target = userPlans.find((p) => p.id === userPlanId && p.userId === user.id);
-    if (!target) {
-      showToast('Plan not found!', 'error');
-      return { success: false, message: 'Plan not found' };
-    }
-    if (target.status !== 'active') {
-      showToast('Only active plans can be returned!', 'info');
-      return { success: false, message: 'Plan is already completed or returned' };
-    }
-
-    const refundAmount = target.depositAmount;
-
-    const updatedTarget: UserPlan = {
-      ...target,
-      status: 'returned' as const
-    };
-
-    setUserPlans((prev) =>
-      prev.map((p) => (p.id === userPlanId ? updatedTarget : p))
-    );
-    syncUserPlanToFirestore(updatedTarget).catch(() => {});
-
-    const now = new Date();
-    const formatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} - ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
-
-    const newTx: Transaction = {
-      id: generateUniqueId(`tx-ret-${userPlanId}`),
-      userId: user.id,
-      type: 'daily_income',
-      title: `Plan Returned: ${target.title}`,
-      method: 'Deposit Refund',
-      orderId: generateUniqueId('PLN-RET'),
-      amount: refundAmount,
-      finalAmount: refundAmount,
-      status: 'success',
-      createdAt: formatted
-    };
-
-    setTransactions((prev) => sanitizeTransactions([newTx, ...prev]));
-    syncTransactionToFirestore(newTx).catch(() => {});
-    updateUserBalance(refundAmount, `Plan Returned & Deposit Refunded: ${target.title}`);
-
-    addAuditLog(
-      'system',
-      'Plan Return & Refund',
-      `Investment plan for "${target.title}" was returned. Full deposit of ${formatINR(refundAmount, { decimals: 0 })} was refunded to wallet.`,
-      refundAmount,
-      'success'
-    );
-
-    confetti({
-      particleCount: 60,
-      spread: 60,
-      origin: { y: 0.6 }
-    });
-
-    showToast(`Plan Returned! +${formatINR(refundAmount, { decimals: 0 })} refunded to wallet.`, 'success');
-    return { success: true, message: `Plan returned successfully!`, refundAmount };
+  // Return / refund a plan cycle early (Refund system removed per user instruction)
+  const returnPlanCycle = (_userPlanId: string) => {
+    showToast('Plan refunds are disabled.', 'info');
+    return { success: false, message: 'Refund system is disabled.' };
   };
 
   // Automated Turbo Settlement background worker
@@ -2250,6 +2680,137 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
     return () => clearInterval(checkInterval);
   }, [adminSettings.turboAutoSettlement, userPlans, user.id]);
+
+  // --------------------------------------------------------------------------
+  // 30-Second Wallet Balance Polling & Real-Time Daily Income Accrual Engine
+  // Periodically polls the user's wallet balance every 30 seconds and compounds
+  // live daily returns from active investment plans in real time.
+  // --------------------------------------------------------------------------
+  const [isBalanceRefreshing, setIsBalanceRefreshing] = useState<boolean>(false);
+  const [lastBalanceRefreshedAt, setLastBalanceRefreshedAt] = useState<Date | null>(null);
+  const fractionalAccrualRef = useRef<number>(0);
+  const isRefreshingInProgressRef = useRef<boolean>(false);
+
+  const refreshUserBalance = useCallback(async (isPolling: boolean = false) => {
+    if (!user.id || user.id <= 0 || isRefreshingInProgressRef.current) return;
+
+    isRefreshingInProgressRef.current = true;
+    setIsBalanceRefreshing(true);
+
+    try {
+      // 1. Authoritative Firestore check: sync any remote balance changes (approvals, admin edits)
+      if (db) {
+        const userDocRef = doc(db, 'users', String(user.id));
+        const snap = await getDoc(userDocRef);
+        if (snap.exists()) {
+          const remoteData = snap.data() as Partial<User>;
+          if (typeof remoteData.balance === 'number' && remoteData.balance !== user.balance) {
+            isRemoteUserSyncRef.current = true;
+            setUser((prev) => ({
+              ...prev,
+              balance: remoteData.balance!,
+              totalRecharge: typeof remoteData.totalRecharge === 'number' ? remoteData.totalRecharge : prev.totalRecharge,
+              totalWithdraw: typeof remoteData.totalWithdraw === 'number' ? remoteData.totalWithdraw : prev.totalWithdraw,
+              totalRevenue: typeof remoteData.totalRevenue === 'number' ? remoteData.totalRevenue : prev.totalRevenue,
+            }));
+          }
+        }
+      }
+
+      // 2. Real-time Daily Income Accrual Calculation (Continuous 30-second compound)
+      // Active plans generate daily income continuously over 24 hours (86,400s / 30s = 2,880 increments/day)
+      const activePlans = userPlans.filter((up) => up.userId === user.id && up.status === 'active');
+      const standardActivePlans = activePlans.filter((up) => !up.durationMinutes);
+      const totalDailyRate = standardActivePlans.reduce((sum, p) => sum + p.dailyIncome, 0);
+
+      if (totalDailyRate > 0) {
+        // Increment accrued in 30 seconds: dailyRate / 2880
+        const intervalYield = totalDailyRate / 2880;
+        fractionalAccrualRef.current += intervalYield;
+
+        // When fractional accrual accumulates to at least 1 paisa (₹0.01), credit to wallet
+        if (fractionalAccrualRef.current >= 0.01) {
+          const creditAmount = Math.floor(fractionalAccrualRef.current * 100) / 100;
+          fractionalAccrualRef.current = Math.max(0, Math.round((fractionalAccrualRef.current - creditAmount) * 1000) / 1000);
+
+          setUser((prev) => {
+            const newBal = Math.round((prev.balance + creditAmount) * 100) / 100;
+            const newRev = Math.round((prev.totalRevenue + creditAmount) * 100) / 100;
+
+            // Sync updated balance to Firestore in background
+            if (db) {
+              setDoc(doc(db, 'users', String(prev.id)), {
+                balance: newBal,
+                totalRevenue: newRev,
+                updatedAt: new Date().toISOString()
+              }, { merge: true }).catch(() => {});
+            }
+
+            return {
+              ...prev,
+              balance: newBal,
+              totalRevenue: newRev
+            };
+          });
+        }
+      }
+
+      // 3. Automated Turbo Plan check (1-minute or flash plans that have matured)
+      const now = Date.now();
+      const matureTurboPlan = activePlans.find(
+        (up) =>
+          Boolean(up.durationMinutes) &&
+          Boolean(up.nextClaimTime) &&
+          now >= (up.nextClaimTime || 0)
+      );
+      if (matureTurboPlan) {
+        claimPlanProfit(matureTurboPlan.id);
+      }
+
+      setLastBalanceRefreshedAt(new Date());
+
+      if (!isPolling) {
+        showToast('Wallet balance refreshed with live earnings!', 'success');
+      }
+    } catch (err) {
+      console.warn('[Wallet Polling] Refresh error:', err);
+      if (!isPolling) {
+        showToast('Could not refresh balance at this moment', 'error');
+      }
+    } finally {
+      setIsBalanceRefreshing(false);
+      isRefreshingInProgressRef.current = false;
+    }
+  }, [user.id, user.balance, userPlans, claimPlanProfit, showToast]);
+
+  const refreshAppData = useCallback(async (): Promise<void> => {
+    try {
+      await refreshUserBalance(false);
+      sfx.playTap();
+    } catch (e) {
+      console.warn('Error during app refresh:', e);
+    }
+  }, [refreshUserBalance]);
+
+  // Periodic polling interval: executes every 30 seconds
+  useEffect(() => {
+    if (!user.id || user.id <= 0) return;
+
+    // Small delay on mount before first background poll
+    const initialTimer = setTimeout(() => {
+      refreshUserBalance(true);
+    }, 2500);
+
+    // Exact 30-second recurring polling interval
+    const pollInterval = setInterval(() => {
+      refreshUserBalance(true);
+    }, 30000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(pollInterval);
+    };
+  }, [user.id, refreshUserBalance]);
 
   // Initiate Recharge
   const initiateRecharge = (amount: number, channel: string, openModal: boolean = false, customOrderId?: string) => {
@@ -2654,6 +3215,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       txId: newTx.id
     });
 
+    triggerCelebrationConfetti('withdrawal');
     return { success: true, message: 'Withdrawal request submitted successfully.' };
   };
 
@@ -2723,8 +3285,15 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     if (newSettings.activeThemeId) {
       applyTheme(newSettings.activeThemeId);
     }
+    const modifiedKeys = Object.keys(newSettings).join(', ');
     setAdminSettings((prev) => ({ ...prev, ...newSettings }));
-    addAuditLog('system', 'System Settings Updated', 'Admin modified platform configuration', undefined, 'info');
+    recordAuditLog({
+      actionCategory: 'settings_update',
+      type: 'config',
+      title: 'Platform Settings Modified',
+      details: `Admin modified configuration parameters: [${modifiedKeys}]. Changes synced to platform runtime.`,
+      status: newSettings.maintenanceMode || newSettings.freezeDeposits || newSettings.freezeWithdrawals ? 'warning' : 'info'
+    });
     showToast('Admin settings updated!', 'success');
   };
 
@@ -3202,27 +3771,148 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
   };
 
   const addNewPlan = (planData: Omit<Plan, 'id'>) => {
+    const newId = generateUniqueId('plan-custom');
     const newPlan: Plan = {
       ...planData,
-      id: generateUniqueId('plan-custom')
+      id: newId,
+      imageUrl: planData.imageUrl || getProductArtworkDataUri(newId, planData.category)
     };
-    setPlans((prev) => [...prev, newPlan]);
-    addAuditLog('plan', 'New Plan Created', `Created plan "${planData.title}" (₹${planData.depositAmount})`, planData.depositAmount, 'info');
-    showToast(`New plan "${planData.title}" created!`, 'success');
+    setPlans((prev) => {
+      const next = [newPlan, ...prev];
+      localStorage.setItem('akm_plans', JSON.stringify(next));
+      return next;
+    });
+
+    try {
+      const deletedIds: string[] = JSON.parse(localStorage.getItem('akm_deleted_plan_ids') || '[]');
+      const filtered = deletedIds.filter((d) => d !== newId);
+      localStorage.setItem('akm_deleted_plan_ids', JSON.stringify(filtered));
+    } catch {}
+
+    syncPlanToFirestore(newPlan).catch(() => {});
+    recordAuditLog({
+      actionCategory: 'plan_mutation',
+      type: 'plan',
+      title: 'New Investment Plan Created',
+      details: `Admin added plan "${newPlan.title}" (Deposit: ₹${newPlan.depositAmount}, Daily: ₹${newPlan.dailyIncome}, Return: ₹${newPlan.totalReturn})`,
+      amount: newPlan.depositAmount,
+      newValue: `Deposit: ₹${newPlan.depositAmount}`,
+      status: 'success'
+    });
+    showToast(`New plan "${newPlan.title}" created & published!`, 'success');
   };
 
   const updatePlan = (id: string, updated: Partial<Plan>) => {
-    setPlans((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...updated } : p))
-    );
-    addAuditLog('plan', 'Plan Updated', `Modified parameters for plan ID ${id}`, undefined, 'info');
-    showToast('Plan updated!', 'success');
+    let targetTitle = id;
+    setPlans((prev) => {
+      const next = prev.map((p) => {
+        if (p.id === id) {
+          const merged = { ...p, ...updated };
+          targetTitle = merged.title;
+          syncPlanToFirestore(merged).catch(() => {});
+          return merged;
+        }
+        return p;
+      });
+      localStorage.setItem('akm_plans', JSON.stringify(next));
+      return next;
+    });
+
+    recordAuditLog({
+      actionCategory: 'plan_mutation',
+      type: 'plan',
+      title: 'Investment Plan Modified',
+      details: `Admin updated plan "${targetTitle}". Modified fields: [${Object.keys(updated).join(', ')}]`,
+      newValue: updated.depositAmount ? `Deposit: ₹${updated.depositAmount}` : undefined,
+      status: 'info'
+    });
+    showToast(`Plan "${targetTitle}" successfully updated!`, 'success');
   };
 
   const deletePlan = (id: string) => {
-    setPlans((prev) => prev.filter((p) => p.id !== id));
-    addAuditLog('plan', 'Plan Deleted', `Removed plan ID ${id} from catalog`, undefined, 'warning');
-    showToast('Plan removed!', 'info');
+    let deletedTitle = id;
+    setPlans((prev) => {
+      const target = prev.find((p) => p.id === id);
+      if (target) deletedTitle = target.title;
+      const next = prev.filter((p) => p.id !== id);
+      localStorage.setItem('akm_plans', JSON.stringify(next));
+      return next;
+    });
+
+    try {
+      const deletedIds: string[] = JSON.parse(localStorage.getItem('akm_deleted_plan_ids') || '[]');
+      if (!deletedIds.includes(id)) {
+        deletedIds.push(id);
+        localStorage.setItem('akm_deleted_plan_ids', JSON.stringify(deletedIds));
+      }
+    } catch {}
+
+    deletePlanFromFirestore(id).catch(() => {});
+
+    recordAuditLog({
+      actionCategory: 'plan_mutation',
+      type: 'plan',
+      title: 'Investment Plan Removed',
+      details: `Admin permanently removed plan "${deletedTitle}" from active catalog`,
+      status: 'warning'
+    });
+    showToast(`Plan "${deletedTitle}" permanently deleted!`, 'info');
+  };
+
+  const clonePlan = (sourcePlanId: string) => {
+    const source = plans.find((p) => p.id === sourcePlanId);
+    if (!source) {
+      showToast('Plan not found for duplication', 'error');
+      return;
+    }
+    const newId = generateUniqueId('plan-clone');
+    const cloned: Plan = {
+      ...source,
+      id: newId,
+      title: `${source.title} (Copy)`,
+      badge: source.badge ? `${source.badge} • Clone` : '⚡ Quick Clone',
+      isActive: false
+    };
+
+    setPlans((prev) => {
+      const next = [cloned, ...prev];
+      localStorage.setItem('akm_plans', JSON.stringify(next));
+      return next;
+    });
+
+    syncPlanToFirestore(cloned).catch(() => {});
+    recordAuditLog({
+      actionCategory: 'plan_mutation',
+      type: 'plan',
+      title: 'Plan Duplicated',
+      details: `Admin cloned plan "${source.title}" into "${cloned.title}"`,
+      status: 'info'
+    });
+    showToast(`Plan cloned successfully! (Saved as hidden)`, 'info');
+  };
+
+  const togglePlanActive = (id: string) => {
+    const target = plans.find((p) => p.id === id);
+    if (!target) return;
+    const nextState = !target.isActive;
+    updatePlan(id, { isActive: nextState });
+  };
+
+  const restoreDefaultPlans = () => {
+    localStorage.removeItem('akm_deleted_plan_ids');
+    setPlans(INITIAL_PLANS);
+    localStorage.setItem('akm_plans', JSON.stringify(INITIAL_PLANS));
+    INITIAL_PLANS.forEach((p) => {
+      syncPlanToFirestore(p).catch(() => {});
+    });
+    recordAuditLog({
+      actionCategory: 'plan_mutation',
+      type: 'system',
+      title: 'Default Blade Plans Restored',
+      details: 'Admin restored default 22 precision blade product plans catalog',
+      status: 'info'
+    });
+    showToast('Default 22 Blade Plans restored successfully!', 'success');
   };
 
   // Advanced User Management
@@ -3235,28 +3925,57 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       showToast(`User balance is only ${formatINR(user.balance)}, cannot debit ${formatINR(amount)}`, 'error');
       return false;
     }
+    const oldBal = user.balance;
+    const newBal = Math.max(0, Math.round((oldBal - amount) * 100) / 100);
     updateUserBalance(-amount, reason);
-    addAuditLog('system', 'Admin Balance Debit', `Debited ${formatINR(amount)} from ${user.phone}. Reason: ${reason}`, amount, 'warning');
+    recordAuditLog({
+      actionCategory: 'balance_adjust',
+      type: 'system',
+      title: 'Manual Admin Balance Debit',
+      details: `Debited ${formatINR(amount)} from User #${user.id} (${user.phone}). Reason: ${reason}`,
+      targetUserId: user.id,
+      targetUserPhone: user.phone,
+      amount,
+      oldValue: `₹${oldBal}`,
+      newValue: `₹${newBal}`,
+      status: 'warning'
+    });
     showToast(`Successfully debited ${formatINR(amount)} from user wallet!`, 'info');
     return true;
   };
 
   const toggleUserStatus = () => {
     const nextStatus = user.status === 'active' ? 'suspended' : 'active';
+    const oldStatus = user.status;
     setUser((prev) => ({ ...prev, status: nextStatus }));
-    addAuditLog(
-      'system',
-      'User Account Status Updated',
-      `User ${user.phone} account marked as ${nextStatus.toUpperCase()}`,
-      undefined,
-      nextStatus === 'suspended' ? 'warning' : 'success'
-    );
+    recordAuditLog({
+      actionCategory: 'user_status',
+      type: 'user',
+      title: `User Account Marked as ${nextStatus.toUpperCase()}`,
+      details: `Admin switched account status for User #${user.id} (${user.phone}) from ${oldStatus} to ${nextStatus.toUpperCase()}`,
+      targetUserId: user.id,
+      targetUserPhone: user.phone,
+      oldValue: oldStatus,
+      newValue: nextStatus,
+      status: nextStatus === 'suspended' ? 'critical' : 'success'
+    });
     showToast(`User account status: ${nextStatus.toUpperCase()}!`, nextStatus === 'suspended' ? 'error' : 'success');
   };
 
   const updateUserVipLevel = (level: string) => {
+    const oldLevel = user.memberLevel;
     setUser((prev) => ({ ...prev, memberLevel: level }));
-    addAuditLog('system', 'VIP Tier Changed', `User ${user.phone} updated to tier: ${level}`, undefined, 'info');
+    recordAuditLog({
+      actionCategory: 'user_status',
+      type: 'user',
+      title: 'User VIP Level Adjusted',
+      details: `Admin promoted/adjusted VIP tier for User #${user.id} (${user.phone}) to ${level}`,
+      targetUserId: user.id,
+      targetUserPhone: user.phone,
+      oldValue: oldLevel,
+      newValue: level,
+      status: 'info'
+    });
     showToast(`User tier updated to ${level}!`, 'success');
   };
 
@@ -3341,7 +4060,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
   };
 
   const resetAllData = () => {
-    ['akm_user', 'akm_plans', 'akm_user_plans', 'akm_checkins', 'akm_transactions', 'akm_team', 'akm_admin_settings', 'akm_audit_logs', 'akm_claimed_streak_milestones', 'akm_claimed_team_milestones', 'akm_security_alerts',
+    ['akm_user', 'akm_plans', 'akm_user_plans', 'akm_checkins', 'akm_transactions', 'akm_team', 'akm_admin_settings', 'akm_audit_logs', 'akm_claimed_streak_milestones', 'akm_claimed_team_milestones', 'akm_security_alerts', 'akm_lucky_spins',
      'bkt_user', 'bkt_plans', 'bkt_user_plans', 'bkt_checkins', 'bkt_transactions', 'bkt_team', 'bkt_admin_settings', 'bkt_audit_logs', 'bkt_claimed_streak_milestones', 'bkt_claimed_team_milestones', 'bkt_security_alerts'
     ].forEach((key) => localStorage.removeItem(key));
 
@@ -3349,6 +4068,7 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     setPlans(INITIAL_PLANS);
     setUserPlans([]);
     setCheckIns(INITIAL_CHECKINS);
+    setLuckySpinRecords([]);
     setTransactions(INITIAL_TRANSACTIONS);
     setTeamMembers(INITIAL_TEAM_MEMBERS);
     setAdminSettings(INITIAL_ADMIN_SETTINGS);
@@ -3394,6 +4114,9 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         adminDeleteUser,
         updateUserBalance,
         updateBankAccount,
+        refreshUserBalance,
+        isBalanceRefreshing,
+        lastBalanceRefreshedAt,
         plans,
         userPlans,
         selectedCategory,
@@ -3410,6 +4133,14 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         totalCheckInEarned,
         claimedStreakMilestones,
         claimStreakMilestone,
+        isLuckySpinOpen,
+        setIsLuckySpinOpen,
+        hasSpunToday,
+        lastSpinDate,
+        luckySpinSegments: LUCKY_SPIN_SEGMENTS,
+        spinLuckyWheel,
+        luckySpinRecords,
+        totalSpinEarned,
         transactions,
         initiateRecharge,
         confirmDepositPayment,
@@ -3430,8 +4161,12 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         addNewPlan,
         updatePlan,
         deletePlan,
+        clonePlan,
+        togglePlanActive,
+        restoreDefaultPlans,
         resetAllData,
         auditLogs,
+        recordAuditLog,
         addAuditLog,
         clearAuditLogs,
         approveAllPendingDeposits,
@@ -3467,13 +4202,23 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         requestBrowserNotificationPermission,
         isNotificationSoundEnabled,
         toggleNotificationSound,
+        isHapticEnabled,
+        toggleHapticFeedback,
+        isHapticSupported: isHapticSupported(),
         activeCheckoutModal,
         setActiveCheckoutModal,
         activePayment,
         setActivePayment,
         openPaymentPage,
+        supportMessages,
+        sendSupportMessage,
+        replySupportMessage,
+        resolveSupportMessage,
+        isSupportModalOpen,
+        setIsSupportModalOpen,
         dbConnectionStatus,
-        isDbConnected
+        isDbConnected,
+        refreshAppData
       }}
     >
       {children}

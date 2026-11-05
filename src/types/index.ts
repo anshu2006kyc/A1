@@ -65,8 +65,27 @@ export interface UserPlan {
   purchasedAt: string;
 }
 
-export type TransactionType = 'recharge' | 'withdraw' | 'checkin' | 'daily_income' | 'referral_commission' | 'plan_purchase';
+export type TransactionType = 'recharge' | 'withdraw' | 'checkin' | 'daily_income' | 'referral_commission' | 'plan_purchase' | 'lucky_spin';
 export type TransactionStatus = 'success' | 'pending' | 'failed';
+
+export interface LuckySpinSegment {
+  id: string;
+  label: string;
+  amount: number;
+  color: string;
+  textColor: string;
+  probability: number;
+  isJackpot?: boolean;
+}
+
+export interface LuckySpinRecord {
+  id: string;
+  userId: number;
+  dateStr: string;
+  timestamp: string;
+  amount: number;
+  segmentLabel: string;
+}
 
 export interface Transaction {
   id: string;
@@ -113,14 +132,33 @@ export interface StreakRewardConfig {
   label: string;
 }
 
+export type AuditActionCategory =
+  | 'balance_adjust'
+  | 'user_status'
+  | 'settings_update'
+  | 'plan_mutation'
+  | 'payout_action'
+  | 'deposit_action'
+  | 'system';
+
 export interface AuditLog {
   id: string;
   timestamp: string;
-  type: 'deposit' | 'withdrawal' | 'settlement' | 'bonus' | 'plan' | 'system';
+  isoTimestamp?: string;
+  adminId: number | string;
+  adminName?: string;
+  adminPhone?: string;
+  actionCategory: AuditActionCategory;
+  type: 'deposit' | 'withdrawal' | 'settlement' | 'bonus' | 'plan' | 'system' | 'security' | 'user' | 'config';
   title: string;
   details: string;
+  targetUserId?: number;
+  targetUserPhone?: string;
+  oldValue?: string | number;
+  newValue?: string | number;
   amount?: number;
-  status: 'success' | 'warning' | 'info' | 'error';
+  ipAddress?: string;
+  status: 'success' | 'warning' | 'info' | 'error' | 'critical';
 }
 
 export interface SecurityAlert {
@@ -170,6 +208,7 @@ export interface AdminSettings {
   
   // Platform limits & fees
   minRecharge: number;
+  maxRecharge: number;
   minWithdraw: number;
   maxWithdraw: number;
   withdrawFeePercent: number;
@@ -233,4 +272,26 @@ export interface AppNotification {
   txId?: string;
   planId?: string;
   utrNumber?: string;
+}
+
+export type SupportCategory = 'investment' | 'recharge' | 'withdraw' | 'vip' | 'general';
+export type SupportPriority = 'normal' | 'urgent' | 'high_value';
+export type SupportStatus = 'pending' | 'in_progress' | 'resolved';
+
+export interface SupportMessage {
+  id: string;
+  userId: number;
+  userPhone: string;
+  userName?: string;
+  category: SupportCategory;
+  planTitle?: string;
+  planId?: string;
+  subject: string;
+  message: string;
+  priority: SupportPriority;
+  status: SupportStatus;
+  adminReply?: string;
+  repliedAt?: string;
+  createdAt: string;
+  updatedAt?: string;
 }

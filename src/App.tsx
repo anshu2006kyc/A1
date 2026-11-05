@@ -26,6 +26,11 @@ import { NotificationModal } from './components/notifications/NotificationModal'
 import { AuthModal } from './components/AuthModal';
 import { AdminAuthModal } from './components/AdminAuthModal';
 import { MobileAuthGate } from './components/MobileAuthGate';
+import { LuckySpinModal } from './components/LuckySpinModal';
+import { FloatingChatButton } from './components/support/FloatingChatButton';
+import { ContactSupportModal } from './components/support/ContactSupportModal';
+import { PullToRefresh } from './components/PullToRefresh';
+import { initGlobalHapticListener } from './utils/haptics';
 import { Lock, ShieldAlert, Wrench } from 'lucide-react';
 
 const ViewLoadingFallback = () => (
@@ -48,9 +53,16 @@ const MainAppContent: React.FC = () => {
     isAuthModalOpen,
     setIsAuthModalOpen,
     authModalInitialMode,
-    openPaymentPage
+    openPaymentPage,
+    refreshAppData
   } = useApp();
   const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
+
+  // Initialize tactile mobile haptic feedback on all button clicks
+  useEffect(() => {
+    const cleanup = initGlobalHapticListener();
+    return cleanup;
+  }, []);
 
   // Intercept payment cashier deep links (e.g. /pay/watchpay-redirect?order_id=...&amount=...)
   useEffect(() => {
@@ -174,23 +186,25 @@ const MainAppContent: React.FC = () => {
     <div className="min-h-screen bg-neutral-900 flex justify-center selection:bg-emerald-500 selection:text-white">
       {/* Mobile-sized container with high-end app layout */}
       <div className="w-full max-w-md bg-white min-h-screen shadow-2xl relative flex flex-col">
-        {/* Dynamic View Component with smooth view transitions */}
-        <main className="flex-1 overflow-x-hidden flex flex-col">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentView}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
-              className="flex-1 flex flex-col"
-            >
-              <Suspense fallback={<ViewLoadingFallback />}>
-                {renderView()}
-              </Suspense>
-            </motion.div>
-          </AnimatePresence>
-        </main>
+        {/* Dynamic View Component with smooth view transitions & global pull-to-refresh on all pages */}
+        <PullToRefresh onRefresh={refreshAppData}>
+          <main className="flex-1 overflow-x-hidden flex flex-col">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentView}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="flex-1 flex flex-col"
+              >
+                <Suspense fallback={<ViewLoadingFallback />}>
+                  {renderView()}
+                </Suspense>
+              </motion.div>
+            </AnimatePresence>
+          </main>
+        </PullToRefresh>
 
         {/* Global Modals & Notifications */}
         <AuthModal
@@ -205,6 +219,9 @@ const MainAppContent: React.FC = () => {
         <GatewaySimulatorModal />
         <AnnouncementModal />
         <NotificationModal />
+        <LuckySpinModal />
+        <FloatingChatButton />
+        <ContactSupportModal />
         <Toast />
 
         {/* Bottom Navigation */}

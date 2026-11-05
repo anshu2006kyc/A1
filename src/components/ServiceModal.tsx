@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { sfx } from '../utils/sound';
-import { WhatsAppIcon, TelegramIcon } from './BrandIcons';
+import { WhatsAppIcon, TelegramIcon, RealSupportHeadsetIcon } from './BrandIcons';
 
 interface ServiceModalProps {
   onClose?: () => void;
@@ -103,25 +103,25 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
         </button>
 
         <div className="flex flex-col items-center text-center">
-          <div className="w-13 h-13 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2 shadow-inner border border-emerald-100">
-            <Headphones className="w-6 h-6 stroke-[2.4]" />
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-1.5 shadow-inner border border-emerald-100">
+            <RealSupportHeadsetIcon className="w-6 h-6" size={24} />
           </div>
-          <h3 className="text-base font-black text-gray-900 tracking-tight">
+          <h3 className="text-sm font-black text-gray-900 tracking-tight">
             AKM 24/7 Customer Service Desk
           </h3>
-          <p className="text-[11px] text-gray-500 mt-0.5 max-w-[250px]">
+          <p className="text-[10px] text-gray-500 mt-0.5 max-w-[250px] leading-tight">
             Dedicated instant support for Recharge, Withdrawal & Account inquiries.
           </p>
 
           {/* Quick Filter Tabs: All, Recharge Service, Withdrawal Service */}
-          <div className="mt-3.5 grid grid-cols-3 gap-1.5 w-full bg-gray-100 p-1 rounded-xl">
+          <div className="mt-3 grid grid-cols-3 gap-1 w-full bg-gray-100 p-1 rounded-xl text-[10.5px]">
             <button
               type="button"
               onClick={() => {
                 sfx.playTap();
                 setActiveTab('all');
               }}
-              className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`py-1 rounded-lg font-bold transition-all cursor-pointer ${
                 activeTab === 'all'
                   ? 'btn-chamkila text-white shadow-xs'
                   : 'text-gray-500 hover:text-gray-900'
@@ -135,7 +135,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                 sfx.playTap();
                 setActiveTab('recharge');
               }}
-              className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center space-x-1 ${
+              className={`py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center justify-center space-x-1 ${
                 activeTab === 'recharge'
                   ? 'btn-chamkila text-white shadow-xs'
                   : 'text-emerald-700 hover:text-emerald-900'
@@ -150,7 +150,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                 sfx.playTap();
                 setActiveTab('withdraw');
               }}
-              className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center space-x-1 ${
+              className={`py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center justify-center space-x-1 ${
                 activeTab === 'withdraw'
                   ? 'btn-chamkila-dark text-white shadow-xs'
                   : 'text-teal-700 hover:text-teal-900'
@@ -175,18 +175,18 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                       <CreditCard className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-xs font-extrabold text-gray-900 flex items-center space-x-1">
+                      <div className="text-[11px] font-extrabold text-gray-900 flex items-center space-x-1">
                         <span>Recharge Service Desk</span>
-                        <span className="text-[9px] bg-emerald-200/80 text-emerald-800 px-1.5 py-0.2 rounded font-bold">Fast</span>
+                        <span className="text-[8.5px] bg-emerald-200/80 text-emerald-800 px-1 py-0.2 rounded font-bold">Fast</span>
                       </div>
-                      <div className="text-[10px] text-emerald-700 font-medium">
+                      <div className="text-[9.5px] text-emerald-700 font-medium">
                         Missing deposit & payment verification help
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-2.5 pt-2 border-t border-emerald-200/60 flex items-center justify-between text-[11px]">
+                <div className="mt-2 pt-1.5 border-t border-emerald-200/60 flex items-center justify-between text-[10px]">
                   <a
                     href={activeSupportUrl}
                     target="_blank"
@@ -194,7 +194,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                     className="inline-flex items-center space-x-1 font-bold text-emerald-800 hover:underline"
                   >
                     <span>Contact Recharge Agent</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-2.5 h-2.5" />
                   </a>
 
                   {onOpenRecharge && (
@@ -204,7 +204,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                         handleClose();
                         onOpenRecharge();
                       }}
-                      className="px-2.5 py-1 btn-chamkila text-white font-bold text-[10.5px] rounded-lg shadow-xs cursor-pointer"
+                      className="px-2 py-0.5 btn-chamkila text-white font-bold text-[9.5px] rounded-lg shadow-xs cursor-pointer"
                     >
                       Open Recharge
                     </button>
@@ -222,18 +222,18 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                       <Banknote className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-xs font-extrabold text-gray-900 flex items-center space-x-1">
+                      <div className="text-[11px] font-extrabold text-gray-900 flex items-center space-x-1">
                         <span>Withdrawal Service Desk</span>
-                        <span className="text-[9px] bg-teal-200/80 text-teal-800 px-1.5 py-0.2 rounded font-bold">IMPS</span>
+                        <span className="text-[8.5px] bg-teal-200/80 text-teal-800 px-1 py-0.2 rounded font-bold">IMPS</span>
                       </div>
-                      <div className="text-[10px] text-teal-700 font-medium">
+                      <div className="text-[9.5px] text-teal-700 font-medium">
                         Delayed payouts, bank modification & clearance
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-2.5 pt-2 border-t border-teal-200/60 flex items-center justify-between text-[11px]">
+                <div className="mt-2 pt-1.5 border-t border-teal-200/60 flex items-center justify-between text-[10px]">
                   <a
                     href={activeSupportUrl}
                     target="_blank"
@@ -241,7 +241,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                     className="inline-flex items-center space-x-1 font-bold text-teal-800 hover:underline"
                   >
                     <span>Contact Payout Agent</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-2.5 h-2.5" />
                   </a>
 
                   {onOpenWithdraw && (
@@ -251,7 +251,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                         handleClose();
                         onOpenWithdraw();
                       }}
-                      className="px-2.5 py-1 btn-chamkila-dark text-white font-bold text-[10.5px] rounded-lg shadow-xs cursor-pointer"
+                      className="px-2 py-0.5 btn-chamkila-dark text-white font-bold text-[9.5px] rounded-lg shadow-xs cursor-pointer"
                     >
                       Open Withdraw
                     </button>
@@ -273,55 +273,55 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                     <TelegramIcon animated={true} className="w-4 h-4 fill-white" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold">Official Telegram Representative</div>
-                    <div className="text-[10px] text-sky-600 font-medium">@akm_official_support · Live 24/7</div>
+                    <div className="text-[10.5px] font-bold">Official Telegram Representative</div>
+                    <div className="text-[9px] text-sky-600 font-medium">@akm_official_support · Live 24/7</div>
                   </div>
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 text-sky-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                <ExternalLink className="w-3 h-3 text-sky-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
               </a>
 
               <a
                 href={activeChannelUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between p-2.5 bg-sky-50/80 hover:bg-sky-100/90 rounded-2xl border border-sky-200 text-sky-900 transition-colors group"
+                className="flex items-center justify-between p-2 bg-sky-50/80 hover:bg-sky-100/90 rounded-2xl border border-sky-200 text-sky-900 transition-colors group"
               >
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0088cc] to-[#24A1DE] text-white flex items-center justify-center shadow-xs shrink-0 group-hover:scale-105 transition-transform">
-                    <TelegramIcon animated={true} className="w-4 h-4 fill-white" />
+                  <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-[#0088cc] to-[#24A1DE] text-white flex items-center justify-center shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                    <TelegramIcon animated={true} className="w-3.5 h-3.5 fill-white" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold">Official Telegram Channel</div>
-                    <div className="text-[10px] text-sky-600 font-medium">Daily Updates & Notice Board</div>
+                    <div className="text-[10.5px] font-bold">Official Telegram Channel</div>
+                    <div className="text-[9px] text-sky-600 font-medium">Daily Updates & Notice Board</div>
                   </div>
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 text-sky-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                <ExternalLink className="w-3 h-3 text-sky-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
               </a>
 
               <a
                 href={activeWhatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between p-2.5 bg-emerald-50 hover:bg-emerald-100 rounded-2xl border border-emerald-100 text-emerald-900 transition-colors group"
+                className="flex items-center justify-between p-2 bg-emerald-50 hover:bg-emerald-100 rounded-2xl border border-emerald-100 text-emerald-900 transition-colors group"
               >
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-[#25D366] text-white flex items-center justify-center shadow-xs shrink-0">
-                    <WhatsAppIcon className="w-4 h-4 fill-white" />
+                  <div className="w-7 h-7 rounded-xl bg-[#25D366] text-white flex items-center justify-center shadow-xs shrink-0">
+                    <WhatsAppIcon className="w-3.5 h-3.5 fill-white" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold">WhatsApp Direct Helpline</div>
-                    <div className="text-[10px] text-emerald-600 font-medium">Customer Help Agent Desk</div>
+                    <div className="text-[10.5px] font-bold">WhatsApp Direct Helpline</div>
+                    <div className="text-[9px] text-emerald-600 font-medium">Customer Help Agent Desk</div>
                   </div>
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 text-emerald-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                <ExternalLink className="w-3 h-3 text-emerald-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
               </a>
             </div>
           </div>
 
           {/* Instant Self-Help FAQ Accordion */}
-          <div className="w-full mt-3.5 pt-3 border-t border-gray-100 text-left">
-            <div className="flex items-center space-x-1.5 text-xs font-extrabold text-gray-800 mb-2">
-              <HelpCircle className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="w-full mt-3 pt-2.5 border-t border-gray-100 text-left">
+            <div className="flex items-center space-x-1.5 text-[11px] font-extrabold text-gray-800 mb-1.5">
+              <HelpCircle className="w-3 h-3 text-emerald-600" />
               <span>Instant Self-Help & FAQs</span>
             </div>
 
@@ -334,18 +334,18 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                   <button
                     type="button"
                     onClick={() => toggleFaq(idx)}
-                    className="w-full p-2.5 flex items-center justify-between text-left text-xs font-bold text-gray-800 hover:bg-gray-100/80 transition-colors cursor-pointer"
+                    className="w-full p-2 flex items-center justify-between text-left text-[10.5px] font-bold text-gray-800 hover:bg-gray-100/80 transition-colors cursor-pointer"
                   >
                     <span>{faq.q}</span>
                     {selectedFaq === idx ? (
-                      <ChevronUp className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                      <ChevronUp className="w-3 h-3 text-gray-400 shrink-0" />
                     ) : (
-                      <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                      <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
                     )}
                   </button>
 
                   {selectedFaq === idx && (
-                    <div className="p-2.5 pt-0 text-[11px] text-gray-600 leading-relaxed border-t border-gray-100/60 bg-white">
+                    <div className="p-2 pt-0 text-[9.5px] text-gray-600 leading-relaxed border-t border-gray-100/60 bg-white">
                       {faq.a}
                     </div>
                   )}

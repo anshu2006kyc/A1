@@ -15,7 +15,7 @@ import {
   Wallet,
   X
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { triggerCelebrationConfetti } from '../utils/confetti';
 import { useApp } from '../context/AppContext';
 import { sfx } from '../utils/sound';
 import { formatINR } from '../utils/currency';
@@ -113,11 +113,7 @@ export const WithdrawView: React.FC = () => {
       const res = requestWithdrawal(numAmount, 'bank');
       if (res.success) {
         sfx.playSuccess();
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.5 }
-        });
+        triggerCelebrationConfetti('withdrawal');
         setWithdrawAmount('');
         navigateToTransactions('withdraw');
       } else {

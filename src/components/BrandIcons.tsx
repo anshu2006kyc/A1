@@ -84,3 +84,148 @@ export const TelegramIcon: React.FC<BrandIconProps> = ({
 export const TelegramBadge: React.FC<BrandIconProps> = (props) => (
   <TelegramIcon {...props} withCircle={true} className={`${props.className || 'w-10 h-10'} text-white`} />
 );
+
+/**
+ * Real Customer Support Headset Vector Icon with microphone boom and acoustic feedback
+ */
+export const RealSupportHeadsetIcon: React.FC<BrandIconProps> = ({
+  className = 'w-6 h-6',
+  size = 24
+}) => (
+  <svg
+    viewBox="0 0 24 24"
+    width={size}
+    height={size}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    role="img"
+    aria-label="Customer Support"
+  >
+    {/* Headset Arch / Headband */}
+    <path
+      d="M3 13V11C3 6.02944 7.02944 2 12 2C16.9706 2 21 6.02944 21 11V13"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+    />
+    {/* Headband comfort cushion strip */}
+    <path
+      d="M8 3.5C9.25 3 10.6 2.8 12 2.8C13.4 2.8 14.75 3 16 3.5"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      opacity="0.8"
+    />
+    {/* Left Earcup */}
+    <rect
+      x="2"
+      y="11"
+      width="4.5"
+      height="8"
+      rx="2.25"
+      fill="currentColor"
+      fillOpacity="0.25"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    />
+    {/* Right Earcup */}
+    <rect
+      x="17.5"
+      y="11"
+      width="4.5"
+      height="8"
+      rx="2.25"
+      fill="currentColor"
+      fillOpacity="0.25"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    />
+    {/* Flexible Microphone Boom from Right Cup curving forward */}
+    <path
+      d="M19.5 18V19C19.5 20.6569 18.1569 22 16.5 22H13"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    {/* Capsule Microphone Tip with sound pickup grille */}
+    <rect
+      x="10"
+      y="20.5"
+      width="3.5"
+      height="3"
+      rx="1.2"
+      fill="currentColor"
+      stroke="currentColor"
+      strokeWidth="0.8"
+    />
+    {/* Acoustic Voice Wave indicators */}
+    <path
+      d="M7 21C6.2 21 5.5 20.3 5.5 19.5"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      opacity="0.75"
+    />
+  </svg>
+);
+
+/**
+ * Real 24/7 Live Support Operator Avatar Icon
+ */
+export const RealSupportAgentIcon: React.FC<BrandIconProps> = ({
+  className = 'w-6 h-6',
+  size = 24
+}) => (
+  <svg
+    viewBox="0 0 24 24"
+    width={size}
+    height={size}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    role="img"
+    aria-label="Support Agent"
+  >
+    {/* Agent Head */}
+    <circle
+      cx="12"
+      cy="8"
+      r="4"
+      fill="currentColor"
+      fillOpacity="0.2"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    />
+    {/* Headset Arc over Head */}
+    <path
+      d="M6.5 8.5C6.5 5.46 8.96 3 12 3C15.04 3 17.5 5.46 17.5 8.5"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    {/* Left Earpad */}
+    <rect x="5.5" y="7.5" width="2" height="4" rx="1" fill="currentColor" />
+    {/* Right Earpad */}
+    <rect x="16.5" y="7.5" width="2" height="4" rx="1" fill="currentColor" />
+    {/* Mic Boom */}
+    <path
+      d="M17.5 11C17.5 12.8 16 14 14 14H13"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+    <circle cx="12" cy="14" r="1" fill="currentColor" />
+    {/* Agent Shoulders / Torso */}
+    <path
+      d="M5 20C5 16.6863 7.68629 14 11 14H13C16.3137 14 19 16.6863 19 20V21H5V20Z"
+      fill="currentColor"
+      fillOpacity="0.15"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+

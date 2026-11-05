@@ -11,6 +11,8 @@ import {
   User
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { sfx } from '../utils/sound';
+import { hapticSuccess } from '../utils/haptics';
 
 export const BankView: React.FC = () => {
   const { user, goBack, updateBankAccount, showToast, isLoggedIn, openAuthModal } = useApp();
@@ -62,6 +64,8 @@ export const BankView: React.FC = () => {
       updatedAt: new Date().toISOString()
     });
 
+    sfx.playSuccess();
+    hapticSuccess();
     showToast('Withdrawal account details saved successfully!', 'success');
     goBack();
   };

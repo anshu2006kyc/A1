@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { WhatsAppIcon, TelegramIcon } from '../components/BrandIcons';
+import { sfx } from '../utils/sound';
+import { hapticSuccess, hapticTap } from '../utils/haptics';
 
 export const ShareView: React.FC = () => {
   const { user, showToast } = useApp();
@@ -18,6 +20,8 @@ export const ShareView: React.FC = () => {
   const shareUrl = `${window.location.origin}?ref=${inviteCode}`;
 
   const handleCopyCode = () => {
+    sfx.playSuccess();
+    hapticSuccess();
     navigator.clipboard.writeText(inviteCode);
     setCopiedCode(true);
     showToast('Invite code copied!', 'info');
@@ -25,6 +29,8 @@ export const ShareView: React.FC = () => {
   };
 
   const handleCopyLink = () => {
+    sfx.playSuccess();
+    hapticSuccess();
     navigator.clipboard.writeText(shareUrl);
     setCopiedLink(true);
     showToast('Referral link copied to clipboard!', 'info');
@@ -32,6 +38,8 @@ export const ShareView: React.FC = () => {
   };
 
   const handleShare = (platform: string) => {
+    sfx.playTap();
+    hapticTap();
     const text = `Join AKM ENTERPRISES & earn daily profits! Use my invite code: ${inviteCode}`;
     let targetUrl = '';
     if (platform === 'whatsapp') {

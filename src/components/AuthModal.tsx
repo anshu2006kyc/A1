@@ -95,7 +95,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     return () => clearInterval(interval);
   }, [otpTimer]);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined' || !document.body) return null;
 
   // Carrier badge helper based on Indian mobile prefix
   const getCarrierBadge = (p: string) => {

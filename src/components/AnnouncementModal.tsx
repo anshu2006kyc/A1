@@ -6,18 +6,25 @@ import { formatINR } from '../utils/currency';
 
 export const AnnouncementModal: React.FC = () => {
   const { isAnnouncementOpen, setIsAnnouncementOpen, adminSettings } = useApp();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Prevent background scrolling while modal is open
   useEffect(() => {
-    if (!isAnnouncementOpen) return;
+    if (!isAnnouncementOpen || !mounted || typeof document === 'undefined' || !document.body) return;
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = originalStyle;
+      if (typeof document !== 'undefined' && document.body) {
+        document.body.style.overflow = originalStyle;
+      }
     };
-  }, [isAnnouncementOpen]);
+  }, [isAnnouncementOpen, mounted]);
 
-  if (!isAnnouncementOpen) return null;
+  if (!mounted || !isAnnouncementOpen || typeof document === 'undefined' || !document.body) return null;
 
   return createPortal(
     <div

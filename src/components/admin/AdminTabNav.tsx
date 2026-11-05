@@ -14,7 +14,10 @@ import {
   Terminal,
   Users,
   Wallet,
-  Zap
+  Zap,
+  Gift,
+  Share2,
+  Headphones
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -24,8 +27,11 @@ export type AdminTabId =
   | 'users'
   | 'deposits'
   | 'withdrawals'
+  | 'support'
   | 'plans'
   | 'engine'
+  | 'luckyspin'
+  | 'affiliates'
   | 'theme'
   | 'risk'
   | 'broadcast'
@@ -39,7 +45,7 @@ interface AdminTabNavProps {
 }
 
 export const AdminTabNav: React.FC<AdminTabNavProps> = ({ activeTab, onSelectTab }) => {
-  const { transactions, securityAlerts } = useApp();
+  const { transactions, securityAlerts, supportMessages } = useApp();
 
   const pendingDepositsCount = transactions.filter(
     (t) => t.type === 'recharge' && t.status === 'pending'
@@ -47,6 +53,10 @@ export const AdminTabNav: React.FC<AdminTabNavProps> = ({ activeTab, onSelectTab
 
   const pendingWithdrawalsCount = transactions.filter(
     (t) => t.type === 'withdraw' && t.status === 'pending'
+  ).length;
+
+  const pendingSupportCount = (supportMessages || []).filter(
+    (t) => t.status === 'pending'
   ).length;
 
   const unresolvedAlertsCount = securityAlerts.filter((a) => !a.resolved).length;
@@ -69,8 +79,17 @@ export const AdminTabNav: React.FC<AdminTabNavProps> = ({ activeTab, onSelectTab
       badge: pendingWithdrawalsCount,
       badgeColor: 'bg-amber-400 text-slate-950'
     },
+    {
+      id: 'support',
+      label: 'Support Tickets',
+      icon: Headphones,
+      badge: pendingSupportCount,
+      badgeColor: 'bg-teal-400 text-slate-950'
+    },
     { id: 'plans', label: 'Products', icon: Layers },
     { id: 'engine', label: 'Turbo Engine', icon: Zap },
+    { id: 'luckyspin', label: 'Lucky Spin', icon: Gift },
+    { id: 'affiliates', label: 'Referrals & VIP', icon: Share2 },
     { id: 'theme', label: 'Theme & Colors', icon: Palette },
     {
       id: 'risk',

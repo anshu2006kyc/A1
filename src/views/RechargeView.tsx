@@ -30,7 +30,7 @@ export const RechargeView: React.FC = () => {
     openAuthModal
   } = useApp();
 
-  const quickAmounts = [285, 520, 720, 1000, 2000, 5000];
+  const quickAmounts = [285, 1000, 5000, 15000, 25000, 50000];
   const initialAmount = rechargePrefillAmount && rechargePrefillAmount > 0 ? rechargePrefillAmount : 720;
 
   // Read default gateway preference configured by Admin
@@ -82,8 +82,15 @@ export const RechargeView: React.FC = () => {
 
   const handleCustomInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/\D/g, '');
-    setCustomInput(val);
+    const maxAllowed = adminSettings.maxRecharge || 50000;
     const parsed = parseInt(val, 10);
+    if (!isNaN(parsed) && parsed > maxAllowed) {
+      setCustomInput(String(maxAllowed));
+      setAmount(maxAllowed);
+      showToast(`Maximum deposit limit is ₹${maxAllowed.toLocaleString('en-IN')}`, 'info');
+      return;
+    }
+    setCustomInput(val);
     if (!isNaN(parsed) && parsed > 0) {
       setAmount(parsed);
     }
@@ -99,6 +106,12 @@ export const RechargeView: React.FC = () => {
 
     if (amount < adminSettings.minRecharge) {
       showToast(`Minimum deposit is ₹${adminSettings.minRecharge}`, 'error');
+      return;
+    }
+
+    const maxAllowed = adminSettings.maxRecharge || 50000;
+    if (amount > maxAllowed) {
+      showToast(`Maximum deposit limit is ₹${maxAllowed.toLocaleString('en-IN')}`, 'error');
       return;
     }
 
@@ -283,7 +296,7 @@ export const RechargeView: React.FC = () => {
           </div>
 
           <div className="text-[10px] text-gray-500 flex items-center justify-between pt-0.5">
-            <span>Min: ₹{adminSettings.minRecharge || 285}</span>
+            <span>Min: ₹{adminSettings.minRecharge || 285} • Max: ₹{(adminSettings.maxRecharge || 50000).toLocaleString('en-IN')}</span>
             <span className="font-bold" style={{ color: 'var(--brand-secondary)' }}>Transfer Fee: ₹0</span>
           </div>
         </div>
@@ -424,10 +437,10 @@ export const RechargeView: React.FC = () => {
       <div className="p-3 bg-white border-t border-gray-100 shrink-0 shadow-lg">
         <button
           id="recharge-submit-btn"
-          disabled={isProcessing || amount < adminSettings.minRecharge}
+          disabled={isProcessing || amount < adminSettings.minRecharge || amount > (adminSettings.maxRecharge || 50000)}
           onClick={handleLaunchPayment}
           className={`w-full py-3.5 rounded-xl text-white font-black text-sm flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer shadow-md ${
-            isProcessing || amount < adminSettings.minRecharge
+            isProcessing || amount < adminSettings.minRecharge || amount > (adminSettings.maxRecharge || 50000)
               ? 'bg-gray-300 cursor-not-allowed opacity-60 shadow-none'
               : 'btn-chamkila shadow-lg shadow-emerald-500/25 hover:brightness-110'
           }`}

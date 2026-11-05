@@ -1,4 +1,4 @@
-import { AdminSettings, CheckInRecord, Plan, SecurityAlert, TeamMember, Transaction, User } from '../types';
+import { AdminSettings, CheckInRecord, LuckySpinSegment, Plan, SecurityAlert, TeamMember, Transaction, User } from '../types';
 import { getProductArtworkDataUri } from '../components/ProductArtwork';
 
 export const INITIAL_USER: User = {
@@ -47,7 +47,7 @@ export const INITIAL_USERS: User[] = [
 export const INITIAL_PLANS: Plan[] = [
   {
     id: "plan-turbo-1m",
-    title: "1 Minute Flash Express",
+    title: "White Ceramic Razor Blade",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -55,13 +55,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 200,
     dailyIncome: 250,
     totalReturn: 250,
-    badge: "⚡ 1 Minute",
+    badge: "⚡ 1 Min • 125% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-1m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-3m",
-    title: "3 Minutes Turbo Speed",
+    title: "Obsidian DLC Black Blade",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -69,13 +69,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 500,
     dailyIncome: 660,
     totalReturn: 660,
-    badge: "⚡ 3 Minutes",
+    badge: "⚡ 3 Min • 132% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-3m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-5m",
-    title: "5 Minutes Quick Harvest",
+    title: "Feather Hair Styling Comb Blade",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -83,13 +83,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 1000,
     dailyIncome: 1400,
     totalReturn: 1400,
-    badge: "🔥 5 Minutes",
+    badge: "🔥 5 Min • 140% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-5m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-10m",
-    title: "10 Minutes Rapid Growth",
+    title: "Single-Edge GEM Scraper Blade",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -97,13 +97,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 2000,
     dailyIncome: 3000,
     totalReturn: 3000,
-    badge: "⚡ 10 Minutes",
+    badge: "⚡ 10 Min • 150% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-10m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-15m",
-    title: "15 Minutes Power Wheel",
+    title: "18mm Snap-Off Segment Blade",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -111,13 +111,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 3500,
     dailyIncome: 5600,
     totalReturn: 5600,
-    badge: "🚀 15 Minutes",
+    badge: "🚀 15 Min • 160% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-15m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-30m",
-    title: "30 Minutes Super Charge",
+    title: "Dual-Talon Hook Utility Blade",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -125,13 +125,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 5000,
     dailyIncome: 8500,
     totalReturn: 8500,
-    badge: "💎 30 Minutes",
+    badge: "💎 30 Min • 170% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-30m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-45m",
-    title: "45 Minutes Elite Accelerator",
+    title: "Barber Straight Razor Blade",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -139,13 +139,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 7500,
     dailyIncome: 13500,
     totalReturn: 13500,
-    badge: "👑 45 Minutes",
+    badge: "👑 45 Min • 180% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-45m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-60m",
-    title: "60 Minutes (1 Hour) Titan Master",
+    title: "Guillotine Industrial Shear Blade",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -153,112 +153,191 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 10000,
     dailyIncome: 19000,
     totalReturn: 19000,
-    badge: "⚡ 1 Hour",
+    badge: "⚡ 1 Hour • 190% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-60m", "turbo"),
     isActive: true
   },
   {
     id: "plan-special-1",
-    title: "Special Offer Plan",
+    title: "24K Gold Mirror Razor Blade",
     category: "normal",
     limit: 10,
     returnDays: 2,
     depositAmount: 720,
     dailyIncome: 4354,
     totalReturn: 8708,
-    badge: "Limit 10",
+    badge: "🔥 2-Day • 1,209% Return",
     imageUrl: getProductArtworkDataUri("plan-special-1", "normal"),
     isActive: true
   },
   {
     id: "plan-product-1",
-    title: "Product 1 - BKT Agrimax Radial Agri Tire",
+    title: "Swedish Platinum DE Razor Blade",
     category: "normal",
     limit: 10,
     returnDays: 30,
     depositAmount: 285,
     dailyIncome: 245,
     totalReturn: 7350,
-    badge: "Limit 10",
+    badge: "Limit 10 • ₹245/Day",
     imageUrl: getProductArtworkDataUri("plan-product-1", "normal"),
     isActive: true
   },
   {
     id: "plan-product-2",
-    title: "Product 2 - AKM Apex Premium Mining Radial",
+    title: "5-Blade Matrix Shaving Cartridge Blade",
     category: "normal",
     limit: 10,
     returnDays: 35,
     depositAmount: 520,
     dailyIncome: 480,
     totalReturn: 16800,
-    badge: "Limit 10",
+    badge: "Limit 10 • ₹480/Day",
     imageUrl: getProductArtworkDataUri("plan-product-2", "normal"),
     isActive: true
   },
   {
     id: "plan-product-3",
-    title: "Product 3 - AKM Sovereign Elite Tire Autoclave",
+    title: "Titanium Heavy-Duty Utility Blade",
     category: "normal",
     limit: 10,
     returnDays: 40,
     depositAmount: 1000,
     dailyIncome: 960,
     totalReturn: 38400,
-    badge: "Limit 10",
+    badge: "Limit 10 • ₹960/Day",
     imageUrl: getProductArtworkDataUri("plan-product-3", "normal"),
     isActive: true
   },
   {
     id: "plan-product-4",
-    title: "Product 4 - AKM Capital Prime Heavy Hauler Fleet",
+    title: "No. 11 Surgical Scalpel Blade",
     category: "normal",
     limit: 5,
     returnDays: 45,
     depositAmount: 2000,
     dailyIncome: 2100,
     totalReturn: 94500,
-    badge: "Limit 5",
+    badge: "Limit 5 • ₹2,100/Day",
     imageUrl: getProductArtworkDataUri("plan-product-4", "normal"),
     isActive: true
   },
   {
     id: "plan-product-5",
-    title: "Product 5 - AKM Pinnacle Fund Tire Extruder",
+    title: "Tungsten Industrial Rotary Slitter Blade",
     category: "normal",
     limit: 5,
     returnDays: 50,
     depositAmount: 4785,
     dailyIncome: 5500,
     totalReturn: 275000,
-    badge: "Limit 5",
+    badge: "Limit 5 • ₹5,500/Day",
     imageUrl: getProductArtworkDataUri("plan-product-5", "normal"),
     isActive: true
   },
   {
     id: "plan-vip-1",
-    title: "VIP 1 - AKM Wealth Matrix",
+    title: "VIP 1 Damascus Wave Steel Blade",
     category: "vip",
     limit: 5,
     returnDays: 1,
+    durationMinutes: 1440,
     depositAmount: 1500,
     dailyIncome: 2200,
     totalReturn: 2200,
-    badge: "VIP 1 Exclusive",
+    badge: "VIP 1 • 146% Return",
     imageUrl: getProductArtworkDataUri("plan-vip-1", "vip"),
     isActive: true
   },
   {
+    id: "plan-vip-1b",
+    title: "VIP 1 Neo-Chrome Rainbow Blade",
+    category: "vip",
+    limit: 5,
+    returnDays: 2,
+    depositAmount: 2500,
+    dailyIncome: 2100,
+    totalReturn: 4200,
+    badge: "VIP 1 • 168% Return",
+    imageUrl: getProductArtworkDataUri("plan-vip-1b", "vip"),
+    isActive: true
+  },
+  {
     id: "plan-vip-2",
-    title: "VIP 2 - AKM Sovereign Ultra",
+    title: "VIP 2 Cryo Frost Platinum Blade",
     category: "vip",
     limit: 3,
     returnDays: 3,
     depositAmount: 5000,
-    dailyIncome: 8500,
-    totalReturn: 25500,
-    badge: "VIP 2 Exclusive",
+    dailyIncome: 4200,
+    totalReturn: 12600,
+    badge: "VIP 2 • 252% Return",
     imageUrl: getProductArtworkDataUri("plan-vip-2", "vip"),
+    isActive: true
+  },
+  {
+    id: "plan-vip-2b",
+    title: "VIP 2 Hex Carbide Blade",
+    category: "vip",
+    limit: 3,
+    returnDays: 4,
+    depositAmount: 8000,
+    dailyIncome: 5000,
+    totalReturn: 20000,
+    badge: "VIP 2 • 250% Return",
+    imageUrl: getProductArtworkDataUri("plan-vip-2b", "vip"),
+    isActive: true
+  },
+  {
+    id: "plan-vip-3",
+    title: "VIP 3 Sapphire Cobalt PVD Blade",
+    category: "vip",
+    limit: 3,
+    returnDays: 5,
+    depositAmount: 15000,
+    dailyIncome: 10500,
+    totalReturn: 52500,
+    badge: "VIP 3 • 350% Return",
+    imageUrl: getProductArtworkDataUri("plan-vip-3", "vip"),
+    isActive: true
+  },
+  {
+    id: "plan-vip-3b",
+    title: "VIP 3 Crimson Ruby Laser Blade",
+    category: "vip",
+    limit: 2,
+    returnDays: 7,
+    depositAmount: 25000,
+    dailyIncome: 15000,
+    totalReturn: 105000,
+    badge: "VIP 3 • 420% Return",
+    imageUrl: getProductArtworkDataUri("plan-vip-3b", "vip"),
+    isActive: true
+  },
+  {
+    id: "plan-vip-4",
+    title: "VIP 4 18K Rose Gold Filigree Blade",
+    category: "vip",
+    limit: 2,
+    returnDays: 8,
+    depositAmount: 35000,
+    dailyIncome: 18000,
+    totalReturn: 144000,
+    badge: "VIP 4 • 411% Return",
+    imageUrl: getProductArtworkDataUri("plan-vip-4", "vip"),
+    isActive: true
+  },
+  {
+    id: "plan-vip-5",
+    title: "VIP 5 Sovereign Diamond Obsidian Blade",
+    category: "vip",
+    limit: 1,
+    returnDays: 10,
+    depositAmount: 50000,
+    dailyIncome: 28000,
+    totalReturn: 280000,
+    badge: "VIP 5 • 560% Return",
+    imageUrl: getProductArtworkDataUri("plan-vip-5", "vip"),
     isActive: true
   }
 ];
@@ -276,7 +355,7 @@ export const INITIAL_ADMIN_SETTINGS: AdminSettings = {
   mchId: "100666859",
   notifyUrl: "/api/lgpay/notify",
   pageUrl: "/pay/success",
-  gatewayApiUrl: "https://api.watchglb.com/pay/web",
+  gatewayApiUrl: "https://api.wataiglobal.com/pay/web",
   payType: "101",
   gatewayMode: "live", // Live automated gateway
   upiId: "akmpayments@okaxis",
@@ -284,7 +363,7 @@ export const INITIAL_ADMIN_SETTINGS: AdminSettings = {
   lgpayEnabled: true,
   lgpayMerchantId: "100666859",
   lgpayMerchantKey: "4abd8ad7b8a44bfcbeaa8ad8e30dae30",
-  lgpayGatewayUrl: "https://api.watchglb.com/pay/web",
+  lgpayGatewayUrl: "https://api.wataiglobal.com/pay/web",
   lgpayPayType: "101",
 
   // Sunpays Gateway Integration
@@ -300,6 +379,7 @@ export const INITIAL_ADMIN_SETTINGS: AdminSettings = {
   paymentOpenMode: "in_app",
 
   minRecharge: 285,
+  maxRecharge: 50000,
   minWithdraw: 150,
   maxWithdraw: 50000,
   withdrawFeePercent: 0, // 0% as standard or 5%
@@ -372,6 +452,9 @@ export const INITIAL_AUDIT_LOGS = [
   {
     id: "log-1",
     timestamp: "Just now",
+    adminId: 60,
+    adminName: "Super Admin",
+    actionCategory: "system" as const,
     type: "system" as const,
     title: "Income Engine Booted",
     details: "Automated cron listener active on port 3000 with Instant UPI channel.",
@@ -380,6 +463,9 @@ export const INITIAL_AUDIT_LOGS = [
   {
     id: "log-2",
     timestamp: "10 mins ago",
+    adminId: 60,
+    adminName: "Super Admin",
+    actionCategory: "system" as const,
     type: "settlement" as const,
     title: "Daily Profit Auto-Settled",
     details: "Dispatched ₹50.00 daily dividend to active subscriber.",
@@ -389,6 +475,9 @@ export const INITIAL_AUDIT_LOGS = [
   {
     id: "log-3",
     timestamp: "28 mins ago",
+    adminId: 60,
+    adminName: "Super Admin",
+    actionCategory: "deposit_action" as const,
     type: "deposit" as const,
     title: "UPI Recharge Verified",
     details: "Automated callback verified transaction ORD17220800007892.",
@@ -398,6 +487,9 @@ export const INITIAL_AUDIT_LOGS = [
   {
     id: "log-4",
     timestamp: "1 hour ago",
+    adminId: 60,
+    adminName: "Super Admin",
+    actionCategory: "system" as const,
     type: "bonus" as const,
     title: "3-Tier Commission Credited",
     details: "Level 1 referral bonus of ₹180.00 credited to sponsor account.",
@@ -405,3 +497,26 @@ export const INITIAL_AUDIT_LOGS = [
     status: "info" as const
   }
 ];
+
+export const LUCKY_SPIN_SEGMENTS: LuckySpinSegment[] = [
+  { id: 'spin-1', label: '₹10', amount: 10, color: '#059669', textColor: '#ffffff', probability: 30 },
+  { id: 'spin-2', label: '₹25', amount: 25, color: '#0284c7', textColor: '#ffffff', probability: 15 },
+  { id: 'spin-3', label: '₹5', amount: 5, color: '#d97706', textColor: '#ffffff', probability: 25 },
+  { id: 'spin-4', label: '₹100', amount: 100, color: '#7c3aed', textColor: '#ffffff', probability: 4 },
+  { id: 'spin-5', label: '₹15', amount: 15, color: '#0d9488', textColor: '#ffffff', probability: 15 },
+  { id: 'spin-6', label: '₹50', amount: 50, color: '#4f46e5', textColor: '#ffffff', probability: 8 },
+  { id: 'spin-7', label: '₹20', amount: 20, color: '#ea580c', textColor: '#ffffff', probability: 12 },
+  { id: 'spin-8', label: '₹500', amount: 500, color: '#eab308', textColor: '#0f172a', probability: 1, isJackpot: true }
+];
+
+export const DEMO_SPIN_WINNERS = [
+  { phone: '98****3210', amount: 500, time: '2 mins ago', isJackpot: true },
+  { phone: '87****1192', amount: 100, time: '4 mins ago' },
+  { phone: '91****7834', amount: 50, time: '7 mins ago' },
+  { phone: '70****4519', amount: 25, time: '9 mins ago' },
+  { phone: '99****8821', amount: 100, time: '12 mins ago' },
+  { phone: '88****6540', amount: 500, time: '15 mins ago', isJackpot: true },
+  { phone: '96****2015', amount: 20, time: '18 mins ago' },
+  { phone: '78****9302', amount: 50, time: '21 mins ago' }
+];
+

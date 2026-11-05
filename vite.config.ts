@@ -7,9 +7,13 @@ export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
+      dedupe: ['react', 'react-dom'],
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
+    },
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'react-is', 'recharts'],
     },
     build: {
       target: 'es2020',
@@ -20,8 +24,16 @@ export default defineConfig(() => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              if (id.includes('react') || id.includes('react-dom') || id.includes('motion')) {
+              if (
+                id.includes('/react/') ||
+                id.includes('/react-dom/') ||
+                id.includes('/react-is/') ||
+                id.includes('/motion/')
+              ) {
                 return 'vendor-framework';
+              }
+              if (id.includes('/recharts/')) {
+                return 'vendor-charts';
               }
               if (id.includes('firebase')) {
                 return 'vendor-firebase';

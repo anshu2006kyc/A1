@@ -7,7 +7,6 @@ import {
   Flame,
   Gift,
   Lock,
-  Sparkles,
   Trophy,
   X,
   Zap,
@@ -230,7 +229,7 @@ export const StreakCalendarTracker: React.FC<StreakCalendarTrackerProps> = ({
               className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 text-[10px] font-black flex items-center space-x-1 shadow-sm active:scale-95 transition-all cursor-pointer ring-1 ring-amber-300"
               title="Replay Satisfying 7-Day Celebration"
             >
-              <Sparkles className="w-3 h-3 fill-slate-950" />
+              <Flame className="w-3 h-3 fill-slate-950" />
               <span>Celebrate!</span>
             </button>
           ) : (
@@ -303,7 +302,7 @@ export const StreakCalendarTracker: React.FC<StreakCalendarTrackerProps> = ({
         {/* Motivational Streak Footer */}
         <div className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between text-[10.5px]">
           <div className="flex items-center space-x-1.5 text-gray-600">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <Zap className="w-3.5 h-3.5 text-amber-500" />
             <span>Hitting Day 7 activates the <strong>Mega Jackpot Multiplier</strong></span>
           </div>
           {currentCycleProgress === 7 && is7DayStreakChampion && (
@@ -566,7 +565,7 @@ export const StreakCalendarTracker: React.FC<StreakCalendarTrackerProps> = ({
 
             {/* Badge Title */}
             <div className="inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-xs font-black uppercase tracking-wider mb-2 shadow-md">
-              <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
+              <Trophy className="w-3.5 h-3.5 fill-slate-950" />
               <span>7-Day Continuous Streak!</span>
             </div>
 
@@ -605,7 +604,7 @@ export const StreakCalendarTracker: React.FC<StreakCalendarTrackerProps> = ({
                 }}
                 className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black text-xs shadow-lg shadow-amber-400/30 flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
+                <Flame className="w-3.5 h-3.5 fill-slate-950" />
                 <span>Replay Confetti & Fireworks 🎆</span>
               </button>
 

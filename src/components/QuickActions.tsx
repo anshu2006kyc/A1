@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Banknote, Headphones, CreditCard } from 'lucide-react';
+import { Banknote, CreditCard } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { sfx } from '../utils/sound';
 import { ServiceModal } from './ServiceModal';
-import { TelegramIcon } from './BrandIcons';
+import { TelegramIcon, RealSupportHeadsetIcon } from './BrandIcons';
 
 export const QuickActions: React.FC = () => {
   const { setCurrentView, adminSettings } = useApp();
@@ -58,7 +58,7 @@ export const QuickActions: React.FC = () => {
           className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white shadow-xs border border-gray-100 hover:border-amber-400 transition-all active:scale-95 cursor-pointer group hover:shadow-sm"
         >
           <div className="w-12 h-12 rounded-2xl btn-chamkila-gold shadow-md shadow-amber-500/30 flex items-center justify-center text-slate-900 group-hover:scale-105 transition-transform">
-            <Headphones className="w-6 h-6 stroke-[2.4] drop-shadow-xs" />
+            <RealSupportHeadsetIcon className="w-6 h-6 drop-shadow-xs" size={24} />
           </div>
           <span className="text-xs font-bold text-gray-800 mt-1.5">Service</span>
         </button>

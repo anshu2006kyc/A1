@@ -171,8 +171,8 @@ $sign_str .= "key=" . $merchant_key;
 $sign = md5($sign_str);
 $data["sign"] = $sign;
 
-// Send to WatchGLB Gateway
-$ch = curl_init("https://api.watchglb.com/pay/web");
+// Send to WataiGlobal (WatchPay) Gateway
+$ch = curl_init("https://api.wataiglobal.com/pay/web");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
@@ -555,7 +555,7 @@ app.post('/api/sunpays/webhook', (req, res) => {
                   type="text"
                   value={form.lgpayPayinUrl}
                   onChange={(e) => setForm({ ...form, lgpayPayinUrl: e.target.value })}
-                  placeholder="https://api.watchglb.com/pay/web"
+                  placeholder="https://api.wataiglobal.com/pay/web"
                   className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
                 />
               </div>
@@ -591,11 +591,11 @@ app.post('/api/sunpays/webhook', (req, res) => {
               <div className="flex items-center space-x-2">
                 <Zap className="w-4 h-4 text-amber-400" />
                 <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                  Live WatchGLB Pay-in Tester & URL Generator
+                  Live WataiGlobal Pay-in Tester & URL Generator
                 </h4>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                api.watchglb.com/pay/web
+                api.wataiglobal.com/pay/web
               </span>
             </div>
 
@@ -1027,7 +1027,7 @@ app.post('/api/sunpays/webhook', (req, res) => {
             </div>
 
             <p className="text-xs text-slate-400">
-              Exact WatchGLB (LGPay) integration script with sorted key MD5 signing (ksort + merchant key) pointing to https://api.watchglb.com/pay/web.
+              Exact WataiGlobal / WatchPay integration script with sorted key MD5 signing (ksort + merchant key) pointing to https://api.wataiglobal.com/pay/web.
             </p>
 
             <pre className="p-3 bg-slate-950 rounded-2xl border border-slate-800 font-mono text-xs text-slate-300 overflow-x-auto max-h-56">

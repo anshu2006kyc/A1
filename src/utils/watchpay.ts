@@ -1,7 +1,7 @@
 /**
- * WATCHPAY (WatchGLB Gateway) Integration Utility
- * Production-ready TypeScript module for WatchGLB payment gateway.
- * Endpoint: https://api.watchglb.com/pay/web with MD5 signature.
+ * WATCHPAY / WATAI (WataiGlobal Gateway) Integration Utility
+ * Production-ready TypeScript module for WataiGlobal / WatchPay gateway.
+ * Endpoint: https://api.wataiglobal.com/pay/web with MD5 signature.
  */
 import { md5 } from './md5';
 

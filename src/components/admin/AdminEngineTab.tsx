@@ -10,7 +10,6 @@ import {
   Flame,
   Percent,
   Play,
-  RotateCcw,
   Sliders,
   Terminal,
   Zap
@@ -24,7 +23,6 @@ export const AdminEngineTab: React.FC = () => {
     updateAdminSettings,
     userPlans,
     runDailySettlement,
-    returnPlanCycle,
     showToast
   } = useApp();
 
@@ -215,18 +213,6 @@ export const AdminEngineTab: React.FC = () => {
                       <span>Claimed: {up.daysClaimed} / {up.returnDays}</span>
                       <span>{progress}% Completed</span>
                     </div>
-                  </div>
-
-                  <div className="pt-1">
-                    <button
-                      id={`admin-return-plan-btn-${up.id}`}
-                      type="button"
-                      onClick={() => returnPlanCycle(up.id)}
-                      className="w-full py-1.5 px-2 bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-800/60 rounded-xl text-[10px] font-bold flex items-center justify-center space-x-1.5 transition-all cursor-pointer"
-                    >
-                      <RotateCcw className="w-3 h-3 text-rose-400" />
-                      <span>Return Plan & Refund Deposit ({formatINR(up.depositAmount)})</span>
-                    </button>
                   </div>
                 </div>
               );

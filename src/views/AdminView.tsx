@@ -30,7 +30,9 @@ import {
   Users,
   Wallet,
   X,
-  Zap
+  Zap,
+  Gift,
+  Share2
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { AdminTabId, AdminTabNav } from '../components/admin/AdminTabNav';
@@ -39,8 +41,11 @@ import { AdminAnalyticsTab } from '../components/admin/AdminAnalyticsTab';
 import { AdminUsersTab } from '../components/admin/AdminUsersTab';
 import { AdminDepositsTab } from '../components/admin/AdminDepositsTab';
 import { AdminWithdrawalsTab } from '../components/admin/AdminWithdrawalsTab';
+import { AdminSupportTab } from '../components/admin/AdminSupportTab';
 import { AdminPlansTab } from '../components/admin/AdminPlansTab';
 import { AdminEngineTab } from '../components/admin/AdminEngineTab';
+import { AdminLuckySpinTab } from '../components/admin/AdminLuckySpinTab';
+import { AdminAffiliatesTab } from '../components/admin/AdminAffiliatesTab';
 import { AdminThemeTab } from '../components/admin/AdminThemeTab';
 import { AdminRiskTab } from '../components/admin/AdminRiskTab';
 import { AdminBroadcastTab } from '../components/admin/AdminBroadcastTab';
@@ -132,6 +137,13 @@ export const AdminView: React.FC = () => {
         { id: 'plans', label: 'Products Portfolio', icon: Layers },
         { id: 'engine', label: 'Turbo Engine', icon: Zap },
         { id: 'gateway', label: 'Payment Gateways', icon: CreditCard }
+      ]
+    },
+    {
+      category: 'Growth & Rewards',
+      items: [
+        { id: 'luckyspin', label: 'Lucky Spin Hub', icon: Gift },
+        { id: 'affiliates', label: 'Referrals & VIP', icon: Share2 }
       ]
     },
     {
@@ -512,8 +524,11 @@ export const AdminView: React.FC = () => {
           {activeTab === 'users' && <AdminUsersTab />}
           {activeTab === 'deposits' && <AdminDepositsTab />}
           {activeTab === 'withdrawals' && <AdminWithdrawalsTab />}
+          {activeTab === 'support' && <AdminSupportTab />}
           {activeTab === 'plans' && <AdminPlansTab />}
           {activeTab === 'engine' && <AdminEngineTab />}
+          {activeTab === 'luckyspin' && <AdminLuckySpinTab />}
+          {activeTab === 'affiliates' && <AdminAffiliatesTab />}
           {activeTab === 'theme' && <AdminThemeTab />}
           {activeTab === 'risk' && <AdminRiskTab />}
           {activeTab === 'broadcast' && <AdminBroadcastTab />}

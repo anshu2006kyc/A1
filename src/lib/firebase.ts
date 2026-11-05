@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import {
+  initializeFirestore,
   getFirestore,
   doc,
   getDoc,
@@ -14,14 +15,30 @@ import {
   limit,
   onSnapshot,
   Unsubscribe,
-  increment
+  increment,
+  deleteDoc
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
-import { AdminSettings, Plan, Transaction, User, UserPlan } from '../types';
+import { AdminSettings, Plan, SupportMessage, Transaction, User, UserPlan } from '../types';
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || undefined);
+
+// Initialize Firestore with auto-detect long polling enabled to prevent 10s backend unreachable errors in web runner
+export const db = (() => {
+  try {
+    return initializeFirestore(
+      app,
+      {
+        experimentalAutoDetectLongPolling: true,
+        ignoreUndefinedProperties: true
+      },
+      firebaseConfig.firestoreDatabaseId || undefined
+    );
+  } catch {
+    return getFirestore(app, firebaseConfig.firestoreDatabaseId || undefined);
+  }
+})();
 
 // OperationType enum per Firebase skill guidelines
 export enum OperationType {
@@ -81,24 +98,24 @@ export function isDatabaseOnline(): boolean {
 // Validate connection to Firestore on initialization per Firebase skill directives
 export async function testFirestoreConnection(): Promise<boolean> {
   try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
+    const fetchPromise = getDoc(doc(db, 'test', 'connection'));
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Connection check timeout')), 3500)
+    );
+    await Promise.race([fetchPromise, timeoutPromise]);
     _isDbOnline = true;
     console.log('[Firebase] Firestore connected successfully to database:', firebaseConfig.firestoreDatabaseId);
     return true;
   } catch (error) {
     if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn('[Firebase] Firestore client is offline, retrying...');
+      console.warn('[Firebase] Firestore operating in offline-first mode.');
       _isDbOnline = false;
     } else {
       _isDbOnline = true;
-      console.log('[Firebase] Firestore handshake active.');
     }
     return _isDbOnline;
   }
 }
-
-// Auto-run connection test
-testFirestoreConnection();
 
 /**
  * Recursively strips undefined values from an object or array to ensure
@@ -247,6 +264,15 @@ export async function syncPlanToFirestore(plan: Plan): Promise<void> {
     await setDoc(doc(db, 'plans', String(plan.id)), data, { merge: true });
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, path);
+  }
+}
+
+export async function deletePlanFromFirestore(planId: string): Promise<void> {
+  const path = `plans/${planId}`;
+  try {
+    await deleteDoc(doc(db, 'plans', String(planId)));
+  } catch (err) {
+    handleFirestoreError(err, OperationType.DELETE, path);
   }
 }
 
@@ -422,6 +448,70 @@ export function subscribeToRegisteredUsers(
     },
     (err) => {
       handleFirestoreError(err, OperationType.LIST, 'users');
+      if (onError) onError(err);
+    }
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Support Messages & Inquiries
+// ---------------------------------------------------------------------------
+
+export async function syncSupportMessageToFirestore(message: SupportMessage): Promise<void> {
+  const ref = doc(db, 'supportMessages', message.id);
+  try {
+    const cleanData = sanitizeFirestoreData(message);
+    await setDoc(ref, cleanData, { merge: true });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `supportMessages/${message.id}`);
+  }
+}
+
+export function subscribeToUserSupportMessages(
+  userId: number,
+  onUpdate: (messages: SupportMessage[]) => void,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  const q = query(
+    collection(db, 'supportMessages'),
+    where('userId', '==', userId),
+    limit(100)
+  );
+  return onSnapshot(
+    q,
+    (snap) => {
+      const items: SupportMessage[] = [];
+      snap.forEach((d) => {
+        items.push(d.data() as SupportMessage);
+      });
+      items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      onUpdate(items);
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'supportMessages');
+      if (onError) onError(err);
+    }
+  );
+}
+
+export function subscribeToAllSupportMessages(
+  onUpdate: (messages: SupportMessage[]) => void,
+  maxCount: number = 250,
+  onError?: (err: unknown) => void
+): Unsubscribe {
+  const q = query(collection(db, 'supportMessages'), limit(maxCount));
+  return onSnapshot(
+    q,
+    (snap) => {
+      const items: SupportMessage[] = [];
+      snap.forEach((d) => {
+        items.push(d.data() as SupportMessage);
+      });
+      items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      onUpdate(items);
+    },
+    (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'supportMessages');
       if (onError) onError(err);
     }
   );

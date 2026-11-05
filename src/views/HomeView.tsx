@@ -4,6 +4,7 @@ import { BuyModal } from '../components/BuyModal';
 import { HeaderBanner } from '../components/HeaderBanner';
 import { PlanCard } from '../components/PlanCard';
 import { QuickActions } from '../components/QuickActions';
+import { LuckySpinBanner } from '../components/LuckySpinBanner';
 import { useApp } from '../context/AppContext';
 import { Plan } from '../types';
 import { sfx } from '../utils/sound';
@@ -48,6 +49,36 @@ export const HomeView: React.FC = () => {
 
       {/* Quick 4 Actions (Recharge, Withdraw, Service, Channel) */}
       <QuickActions />
+
+      {/* Lucky Spin Daily Wheel Banner */}
+      <LuckySpinBanner />
+
+      {/* Precision Blade Manufacturing Corporate Trust Banner */}
+      <div className="px-3.5 mb-3">
+        <div className="rounded-2xl p-2.5 bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 border border-emerald-500/35 flex items-center justify-between shadow-xs">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-800 flex items-center justify-center text-white shrink-0 shadow-sm border border-emerald-300/30">
+              <span className="font-mono font-black text-xs tracking-tighter">AKM</span>
+            </div>
+            <div>
+              <div className="text-[9.5px] font-bold text-white flex items-center gap-1.5 leading-tight">
+                <span>Precision Blade Manufacturing Assets</span>
+                <span className="text-[7.5px] font-black bg-emerald-500/20 text-emerald-300 px-1 py-0.2 rounded border border-emerald-400/40">
+                  LIVE
+                </span>
+              </div>
+              <div className="text-[7.5px] text-slate-400 mt-0.5 leading-snug">
+                Swedish cryo steel &amp; platinum coated razor products • Daily automated returns
+              </div>
+            </div>
+          </div>
+          <div className="text-right shrink-0 pl-1">
+            <span className="text-[7.5px] font-mono font-bold text-emerald-300 bg-emerald-900/60 px-1.5 py-0.5 rounded-md border border-emerald-400/30 block">
+              100% SECURE
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Category Tabs (Matches Video: ★ Normal, ⚡ Turbo, 👑 VIP) */}
       <div className="px-3.5 mb-3">

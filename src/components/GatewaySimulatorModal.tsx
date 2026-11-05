@@ -4,6 +4,7 @@ import { CheckCircle2, Clock, Copy, Loader2, QrCode, ShieldCheck, Zap } from 'lu
 import { useApp } from '../context/AppContext';
 import { formatINR } from '../utils/currency';
 import { sfx } from '../utils/sound';
+import { hapticHeavy, hapticSuccess } from '../utils/haptics';
 
 export const GatewaySimulatorModal: React.FC = () => {
   const {
@@ -19,22 +20,31 @@ export const GatewaySimulatorModal: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Prevent background scrolling while modal is open
   useEffect(() => {
-    if (!activeCheckoutModal) return;
+    if (!activeCheckoutModal || !mounted || typeof document === 'undefined' || !document.body) return;
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = originalStyle;
+      if (typeof document !== 'undefined' && document.body) {
+        document.body.style.overflow = originalStyle;
+      }
     };
-  }, [activeCheckoutModal]);
+  }, [activeCheckoutModal, mounted]);
 
-  if (!activeCheckoutModal) return null;
+  if (!mounted || !activeCheckoutModal || typeof document === 'undefined' || !document.body) return null;
 
   const { orderId, amount, channel } = activeCheckoutModal;
 
   const handleCopyUpi = () => {
+    sfx.playSuccess();
+    hapticSuccess();
     navigator.clipboard.writeText(adminSettings.upiId);
     setCopiedUpi(true);
     showToast('UPI ID copied to clipboard!', 'info');
@@ -42,6 +52,8 @@ export const GatewaySimulatorModal: React.FC = () => {
   };
 
   const handleCopyOrder = () => {
+    sfx.playSuccess();
+    hapticSuccess();
     navigator.clipboard.writeText(orderId);
     setCopiedOrder(true);
     showToast('Order ID copied!', 'info');
@@ -52,11 +64,14 @@ export const GatewaySimulatorModal: React.FC = () => {
   const handleAutoConfirmPayment = () => {
     if (isProcessing || isSuccess) return;
     setIsProcessing(true);
-    sfx.playTap();
+    sfx.playGatewayLaunch();
+    hapticHeavy();
 
     setTimeout(() => {
       setIsProcessing(false);
       setIsSuccess(true);
+      sfx.playSuccess();
+      hapticSuccess();
       confirmDepositPayment(orderId);
       setTimeout(() => {
         setActiveCheckoutModal(null);

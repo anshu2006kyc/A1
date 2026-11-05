@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertCircle, CheckCircle2, ChevronRight, Loader2, Package, ShieldCheck, Wallet, X } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { triggerCelebrationConfetti, triggerInvestmentPurchaseConfetti } from '../utils/confetti';
 import { Plan } from '../types';
 import { formatINR } from '../utils/currency';
 import { sfx } from '../utils/sound';
@@ -33,17 +33,25 @@ export const BuyModal: React.FC<BuyModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Prevent background scrolling while modal is open
   useEffect(() => {
+    if (!plan || !mounted || typeof document === 'undefined' || !document.body) return;
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = originalStyle;
+      if (typeof document !== 'undefined' && document.body) {
+        document.body.style.overflow = originalStyle;
+      }
     };
-  }, []);
+  }, [plan, mounted]);
 
-  if (!plan) return null;
+  if (!mounted || !plan || typeof document === 'undefined' || !document.body) return null;
 
   // Strict check: Bina deposit ke koi plan purchase na kar sake
   const isZeroDeposit = hasDeposited === false || (typeof userTotalRecharge === 'number' && userTotalRecharge <= 0);
@@ -65,11 +73,7 @@ export const BuyModal: React.FC<BuyModalProps> = ({
       const res = await onConfirm();
       if (res && res.success) {
         sfx.playSuccess();
-        confetti({
-          particleCount: 60,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
+        triggerInvestmentPurchaseConfetti();
         setPurchaseSuccess(true);
       } else if (res && !res.success) {
         sfx.playTap();
@@ -181,10 +185,16 @@ export const BuyModal: React.FC<BuyModalProps> = ({
             >
               <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-emerald-300/60 bg-zinc-950 shadow-xs">
                 <img
-                  src={(!plan.imageUrl || plan.imageUrl.includes('unsplash.com')) ? getProductArtworkDataUri(plan.id, plan.category) : plan.imageUrl}
+                  src={plan.imageUrl || getProductArtworkDataUri(plan.id, plan.category)}
                   alt={plan.title}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const fallback = getProductArtworkDataUri(plan.id, plan.category);
+                    if (e.currentTarget.src !== fallback) {
+                      e.currentTarget.src = fallback;
+                    }
+                  }}
                 />
                 <div className="absolute bottom-0 inset-x-0 bg-black/70 backdrop-blur-xs text-[7px] font-black text-emerald-300 text-center py-0.5 flex items-center justify-center space-x-0.5">
                   <ShieldCheck className="w-2 h-2 text-emerald-400 shrink-0" />

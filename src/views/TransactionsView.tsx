@@ -104,7 +104,7 @@ export const TransactionsView: React.FC = () => {
 
   const incomeRecords = useMemo(() => {
     return userTransactions.filter((t) =>
-      ['checkin', 'daily_income', 'referral_commission'].includes(t.type)
+      ['checkin', 'daily_income', 'referral_commission', 'lucky_spin'].includes(t.type)
     );
   }, [userTransactions]);
 
@@ -725,7 +725,7 @@ export const TransactionsView: React.FC = () => {
                   {/* DEBIT & CREDIT CARDS FEED */}
                   <div className="space-y-3.5">
                     {txsInMonth.map((tx, idx) => {
-                      const isIncome = ['checkin', 'daily_income', 'referral_commission'].includes(tx.type);
+                      const isIncome = ['checkin', 'daily_income', 'referral_commission', 'lucky_spin'].includes(tx.type);
                       const isRecharge = tx.type === 'recharge';
                       const isWithdraw = tx.type === 'withdraw';
                       const isCredit = isIncome || isRecharge;

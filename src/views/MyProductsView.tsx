@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { createPortal } from 'react-dom';
 import {
-  AlertTriangle,
   ArrowLeft,
   Bell,
   Calendar,
@@ -13,7 +11,7 @@ import {
   IndianRupee,
   Layers,
   LogIn,
-  RotateCcw,
+  RotateCw,
   ShieldCheck,
   Timer,
   TrendingUp,
@@ -36,17 +34,17 @@ export const MyProductsView: React.FC = () => {
     goBack,
     claimPlanProfit,
     claimAllPlanProfits,
-    returnPlanCycle,
     showToast,
     isLoggedIn,
     openAuthModal,
     navigateToTransactions,
     isNotificationModalOpen,
     setIsNotificationModalOpen,
-    unreadNotificationCount
+    unreadNotificationCount,
+    refreshUserBalance,
+    isBalanceRefreshing
   } = useApp();
 
-  const [planToReturn, setPlanToReturn] = useState<UserPlan | null>(null);
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>('active');
 
   // STRICT REQUIREMENT: Scoped strictly to current user and sorted with NEWEST on top & OLDEST at bottom
@@ -277,9 +275,24 @@ export const MyProductsView: React.FC = () => {
                   <span>Live Income Accrual Today</span>
                 </span>
               </div>
-              <span className="text-[10px] font-mono font-bold text-emerald-200">
-                Run-Rate: +{formatINR(hourlyRunRate)}/hr
-              </span>
+              <div className="flex items-center space-x-1.5">
+                <span className="text-[10px] font-mono font-bold text-emerald-200">
+                  Run-Rate: +{formatINR(hourlyRunRate)}/hr
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    sfx.playTap();
+                    refreshUserBalance(false);
+                  }}
+                  className={`p-1 rounded-full text-emerald-200 hover:text-white transition-all active:scale-90 cursor-pointer ${
+                    isBalanceRefreshing ? 'animate-spin text-amber-300' : ''
+                  }`}
+                  title="Poll balance & refresh live daily earnings (Auto-polls every 30s)"
+                >
+                  <RotateCw className="w-3 h-3" />
+                </button>
+              </div>
             </div>
             <div className="flex items-baseline justify-between mt-1">
               <div className="text-xl font-black font-mono text-white tracking-tight tabular-nums">
@@ -425,15 +438,19 @@ export const MyProductsView: React.FC = () => {
                   <div className="flex justify-between items-start">
                     <div className="flex items-center space-x-2.5">
                       {(() => {
-                        const img = (!up.imageUrl || up.imageUrl.includes('unsplash.com'))
-                          ? getProductArtworkDataUri(up.planId || up.id, up.durationMinutes ? 'turbo' : 'normal')
-                          : up.imageUrl;
+                        const img = up.imageUrl || getProductArtworkDataUri(up.planId || up.id, up.durationMinutes ? 'turbo' : 'normal');
                         return (
                           <img
                             src={img}
                             alt={up.title}
                             referrerPolicy="no-referrer"
                             className="w-11 h-11 rounded-2xl object-cover shrink-0 border border-emerald-300/60 bg-zinc-950 shadow-xs"
+                            onError={(e) => {
+                              const fallback = getProductArtworkDataUri(up.planId || up.id, up.durationMinutes ? 'turbo' : 'normal');
+                              if (e.currentTarget.src !== fallback) {
+                                e.currentTarget.src = fallback;
+                              }
+                            }}
                           />
                         );
                       })()}
@@ -533,13 +550,13 @@ export const MyProductsView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleClaimSingle(up.id, profitAmount)}
-                          className="flex-1 py-2 px-3 rounded-xl btn-chamkila text-white font-black text-xs shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center space-x-1.5"
+                          className="w-full py-2 px-3 rounded-xl btn-chamkila text-white font-black text-xs shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center space-x-1.5"
                         >
                           <Coins className="w-4 h-4" />
                           <span>Collect Profit ({formatINR(profitAmount)})</span>
                         </button>
                       ) : (
-                        <div className="flex-1 py-2 px-3 rounded-xl bg-gray-100 text-gray-500 text-xs font-bold text-center flex items-center justify-center space-x-1.5">
+                        <div className="w-full py-2 px-3 rounded-xl bg-gray-100 text-gray-500 text-xs font-bold text-center flex items-center justify-center space-x-1.5">
                           <Clock className="w-3.5 h-3.5 text-gray-400" />
                           <span>
                             {isTurbo
@@ -550,17 +567,6 @@ export const MyProductsView: React.FC = () => {
                           </span>
                         </div>
                       )}
-
-                      {/* Early Return / Refund Option */}
-                      <button
-                        type="button"
-                        onClick={() => setPlanToReturn(up)}
-                        title="Early Capital Refund"
-                        className="py-2 px-2.5 rounded-xl border border-gray-200 text-gray-500 hover:text-rose-600 hover:border-rose-300 text-[11px] font-bold transition-all active:scale-95 cursor-pointer flex items-center space-x-1"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>Refund</span>
-                      </button>
                     </div>
                   )}
                 </div>
@@ -569,54 +575,6 @@ export const MyProductsView: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Early Return Confirmation Modal */}
-      {planToReturn && createPortal(
-        <div
-          onClick={() => setPlanToReturn(null)}
-          className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-gray-100 space-y-3.5 text-center"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-100">
-              <AlertTriangle className="w-6 h-6" />
-            </div>
-
-            <h3 className="text-base font-black text-gray-900">
-              Return Plan Early?
-            </h3>
-
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Are you sure you want to exit <strong>{planToReturn.title}</strong>? Your principal capital of{' '}
-              <strong className="text-gray-900 font-mono">{formatINR(planToReturn.depositAmount)}</strong> will be credited back to your balance immediately, and future daily dividends will stop.
-            </p>
-
-            <div className="grid grid-cols-2 gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setPlanToReturn(null)}
-                className="py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs cursor-pointer active:scale-95 transition-all"
-              >
-                Keep Earning
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  returnPlanCycle(planToReturn.id);
-                  setPlanToReturn(null);
-                }}
-                className="py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs cursor-pointer active:scale-95 transition-all shadow-sm"
-              >
-                Confirm Exit
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   );
 };

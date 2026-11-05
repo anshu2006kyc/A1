@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { formatINR } from '../utils/currency';
 
+import { getBladeBannerDataUri } from './BannerArtwork';
+
 interface BannerSlide {
   id: string;
   title: string;
@@ -17,41 +19,41 @@ interface BannerSlide {
 
 const SLIDES: BannerSlide[] = [
   {
-    id: 'akm-wealth-prime',
-    title: 'SMART DIGITAL ASSETS',
-    subtitle: 'AKM CAPITAL & WEALTH',
-    badge: 'OFFICIAL PORTAL',
-    imageUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80',
-    tagline: 'High-frequency compounding with daily automated returns',
-    statLabel: 'Active Profit Rate',
-    statValue: 'Up to 600% Return Time'
+    id: 'blade-factory-master',
+    title: 'PRECISION BLADES PLANT',
+    subtitle: 'AKM RAZOR BLADE DIVISION',
+    badge: 'OFFICIAL BLADES PLANT',
+    imageUrl: getBladeBannerDataUri('blade-factory-master'),
+    tagline: 'Automated high-speed precision blade manufacturing with daily returns',
+    statLabel: 'Production Speed',
+    statValue: '12,000 Blades/Min'
   },
   {
-    id: 'akm-special-return',
-    title: 'SPECIAL 2-DAY FAST RETURN',
-    subtitle: 'HIGH RETURN PORTFOLIO',
-    badge: 'EXCLUSIVE ALLOCATION',
-    imageUrl: 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?auto=format&fit=crop&w=1200&q=80',
+    id: 'blade-cartridge-matrix',
+    title: '5-BLADE COMFORT MATRIX',
+    subtitle: 'PRECISION SHAVING SYSTEM',
+    badge: '2-DAY TURBO RETURN',
+    imageUrl: getBladeBannerDataUri('blade-cartridge-matrix'),
     tagline: 'Deposit ₹720 & earn ₹8,708 in just 48 hours Return Time',
     statLabel: 'Settlement Window',
     statValue: 'Instant Bank IMPS'
   },
   {
-    id: 'akm-turbo-ultra',
-    title: 'PREMIUM TURBO FUNDS',
-    subtitle: 'ULTRA SPEED DIVIDENDS',
-    badge: 'VIP PRIORITY',
-    imageUrl: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?auto=format&fit=crop&w=1200&q=80',
-    tagline: 'Minute-level turbo harvests with 24/7 liquidity clearance',
+    id: 'blade-titanium-cutters',
+    title: 'TITANIUM INDUSTRIAL CUTTERS',
+    subtitle: 'HEAVY-DUTY DIAMOND COATING',
+    badge: 'TITANIUM NITRIDE (TiN)',
+    imageUrl: getBladeBannerDataUri('blade-titanium-cutters'),
+    tagline: 'Heavy-duty industrial razor cutters for continuous compound dividends',
     statLabel: 'Security Level',
     statValue: '256-Bit Vault'
   },
   {
-    id: 'akm-fintech-growth',
-    title: 'DIRECT FAST SETTLEMENT',
-    subtitle: 'INSTANT UPI & IMPS',
-    badge: 'VERIFIED SYSTEM',
-    imageUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80',
+    id: 'blade-cryogenic-strip',
+    title: 'SWEDISH CRYO RAZOR STRIPS',
+    subtitle: 'HIGH-FREQUENCY ROLLING MILL',
+    badge: '0.10mm CRYO STEEL',
+    imageUrl: getBladeBannerDataUri('blade-cryogenic-strip'),
     tagline: 'Zero surcharge deposits and real-time IMPS direct banking',
     statLabel: 'Clearance Speed',
     statValue: '0.8s Ultra Fast'

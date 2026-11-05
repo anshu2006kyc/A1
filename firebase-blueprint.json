@@ -83,6 +83,25 @@
         "withdrawFeePercent": { "type": "number" },
         "upiId": { "type": "string" }
       }
+    },
+    "supportMessages": {
+      "title": "SupportMessage",
+      "description": "Investor inquiries and admin support communication",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "number" },
+        "userPhone": { "type": "string" },
+        "userName": { "type": "string" },
+        "category": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "priority": { "type": "string" },
+        "status": { "type": "string" },
+        "adminReply": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userId", "subject", "message"]
     }
   },
   "firestore": {
@@ -105,6 +124,10 @@
     "/adminSettings/global": {
       "schema": "adminSettings",
       "description": "Global administrative flags and controls"
+    },
+    "/supportMessages/{messageId}": {
+      "schema": "supportMessages",
+      "description": "Investor inquiries and support tickets"
     }
   }
 }

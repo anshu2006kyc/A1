@@ -13,6 +13,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { AboutFaqAccordion } from '../components/AboutFaqAccordion';
 
 export const AboutView: React.FC = () => {
   const { goBack } = useApp();
@@ -200,6 +201,9 @@ export const AboutView: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Collapsible FAQ Section */}
+        <AboutFaqAccordion />
 
         {/* Mission Statement */}
         <div

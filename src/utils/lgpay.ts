@@ -1,7 +1,7 @@
 /**
- * LGPay / ZXPay (WatchGLB Gateway) Integration Utility
+ * LGPay / ZXPay (WataiGlobal / WatchPay Gateway) Integration Utility
  * Clean, production-grade implementation with insecure/redundant code removed.
- * Connects to endpoint https://api.watchglb.com/pay/web with MD5 signature.
+ * Connects to endpoint https://api.wataiglobal.com/pay/web with MD5 signature.
  */
 
 export interface LgPayPayinParams {

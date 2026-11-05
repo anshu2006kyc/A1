@@ -1,4 +1,13 @@
 // Lightweight Web Audio API synthesizer for crisp, premium mobile haptics & sound feedback
+import {
+  hapticTap,
+  hapticTick,
+  hapticSuccess,
+  hapticCelebration,
+  hapticHeavy,
+  hapticError,
+  hapticWarning
+} from './haptics';
 
 class SoundEffects {
   private ctx: AudioContext | null = null;
@@ -25,8 +34,9 @@ class SoundEffects {
     }
   }
 
-  // Soft subtle tap sound
+  // Soft subtle tap sound with tactile haptic vibration
   playTap() {
+    hapticTap();
     try {
       const ctx = this.getContext();
       if (!ctx) return;
@@ -50,8 +60,33 @@ class SoundEffects {
     }
   }
 
+  // Crisp mechanical wheel flapper tick sound for Lucky Wheel
+  playWheelTick(pitch = 850) {
+    hapticTick();
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(pitch, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(320, ctx.currentTime + 0.035);
+
+      gain.gain.setValueAtTime(0.09, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.035);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.035);
+    } catch {}
+  }
+
   // Celebratory coin/credit chime
   playSuccess() {
+    hapticSuccess();
     try {
       const ctx = this.getContext();
       if (!ctx) return;
@@ -83,6 +118,7 @@ class SoundEffects {
 
   // Grand celebratory fanfare for 7-day streaks & milestones
   playFanfare() {
+    hapticCelebration();
     try {
       const ctx = this.getContext();
       if (!ctx) return;
@@ -120,6 +156,7 @@ class SoundEffects {
 
   // Gateway initiation futuristic sound
   playGatewayLaunch() {
+    hapticHeavy();
     try {
       const ctx = this.getContext();
       if (!ctx) return;
@@ -143,6 +180,7 @@ class SoundEffects {
 
   // Error buzz sound
   playError() {
+    hapticError();
     try {
       const ctx = this.getContext();
       if (!ctx) return;
@@ -166,6 +204,7 @@ class SoundEffects {
 
   // Warning tone
   playWarning() {
+    hapticWarning();
     try {
       const ctx = this.getContext();
       if (!ctx) return;
@@ -189,6 +228,7 @@ class SoundEffects {
 
   // Crisp, double bell chime for local alerts and push reminders
   playNotification() {
+    hapticSuccess();
     try {
       const ctx = this.getContext();
       if (!ctx) return;
