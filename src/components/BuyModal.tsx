@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertCircle, CheckCircle2, ChevronRight, Loader2, Package, ShieldCheck, Wallet, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ChevronRight, Loader2, Package, Wallet, X } from 'lucide-react';
 import { triggerCelebrationConfetti, triggerInvestmentPurchaseConfetti } from '../utils/confetti';
 import { Plan } from '../types';
 import { formatINR } from '../utils/currency';
@@ -184,22 +184,28 @@ export const BuyModal: React.FC<BuyModalProps> = ({
               }}
             >
               <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-emerald-300/60 bg-zinc-950 shadow-xs">
-                <img
-                  src={plan.imageUrl || getProductArtworkDataUri(plan.id, plan.category)}
-                  alt={plan.title}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const fallback = getProductArtworkDataUri(plan.id, plan.category);
-                    if (e.currentTarget.src !== fallback) {
-                      e.currentTarget.src = fallback;
-                    }
-                  }}
-                />
-                <div className="absolute bottom-0 inset-x-0 bg-black/70 backdrop-blur-xs text-[7px] font-black text-emerald-300 text-center py-0.5 flex items-center justify-center space-x-0.5">
-                  <ShieldCheck className="w-2 h-2 text-emerald-400 shrink-0" />
-                  <span>SECURE</span>
-                </div>
+                {(() => {
+                  const isCustom = Boolean(
+                    plan.imageUrl &&
+                    !plan.imageUrl.includes('unsplash.com') &&
+                    (plan.imageUrl.startsWith('http://') || plan.imageUrl.startsWith('https://') || plan.imageUrl.startsWith('data:image'))
+                  );
+                  const img = isCustom ? plan.imageUrl : getProductArtworkDataUri(plan.id, plan.category);
+                  return (
+                    <img
+                      src={img}
+                      alt={plan.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const fallback = getProductArtworkDataUri(plan.id, plan.category);
+                        if (e.currentTarget.src !== fallback) {
+                          e.currentTarget.src = fallback;
+                        }
+                      }}
+                    />
+                  );
+                })()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-gray-900 truncate flex items-center space-x-1">

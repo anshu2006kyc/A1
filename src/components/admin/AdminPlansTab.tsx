@@ -18,7 +18,6 @@ import {
   AlertTriangle,
   RotateCcw,
   Shield,
-  Sparkles,
   CheckSquare,
   Square,
   X,
@@ -33,28 +32,28 @@ import { getProductArtworkDataUri } from '../ProductArtwork';
 
 // 22 Authentic AKM Precision Blade Artwork Presets
 export const BLADE_ARTWORK_PRESETS = [
-  { id: 'plan-product-1', category: 'normal', name: 'Swedish Platinum DE' },
-  { id: 'plan-product-2', category: 'normal', name: '5-Blade Matrix Cartridge' },
-  { id: 'plan-product-3', category: 'normal', name: 'Titanium Utility Blade' },
-  { id: 'plan-product-4', category: 'normal', name: 'No. 11 Surgical Scalpel' },
-  { id: 'plan-product-5', category: 'normal', name: 'Tungsten Rotary Slitter' },
-  { id: 'plan-special-1', category: 'normal', name: '24K Gold Mirror Razor' },
-  { id: 'plan-turbo-1m', category: 'turbo', name: 'White Ceramic Zirconia' },
-  { id: 'plan-turbo-3m', category: 'turbo', name: 'Obsidian DLC Black Blade' },
-  { id: 'plan-turbo-5m', category: 'turbo', name: 'Feather Styling Comb Blade' },
-  { id: 'plan-turbo-10m', category: 'turbo', name: 'Single-Edge GEM Scraper' },
-  { id: 'plan-turbo-15m', category: 'turbo', name: '18mm Snap-Off Segment' },
-  { id: 'plan-turbo-30m', category: 'turbo', name: 'Dual-Talon Hook Blade' },
-  { id: 'plan-turbo-45m', category: 'turbo', name: 'Barber Straight Razor' },
-  { id: 'plan-turbo-60m', category: 'turbo', name: 'Guillotine Shear Blade' },
-  { id: 'plan-vip-1', category: 'vip', name: 'Damascus Wave Steel' },
-  { id: 'plan-vip-1b', category: 'vip', name: 'Neo-Chrome Rainbow Ion' },
-  { id: 'plan-vip-2', category: 'vip', name: 'Cryo-Frost Platinum' },
-  { id: 'plan-vip-2b', category: 'vip', name: 'Hex Aviation Carbide' },
-  { id: 'plan-vip-3', category: 'vip', name: 'Sapphire Cobalt PVD' },
-  { id: 'plan-vip-3b', category: 'vip', name: 'Crimson Ruby Photonic' },
-  { id: 'plan-vip-4', category: 'vip', name: '18K Rose Gold Filigree' },
-  { id: 'plan-vip-5', category: 'vip', name: 'Sovereign Diamond Crown' }
+  { id: 'plan-product-1', category: 'normal', name: 'Swedish' },
+  { id: 'plan-product-2', category: 'normal', name: 'Matrix' },
+  { id: 'plan-product-3', category: 'normal', name: 'Titanium' },
+  { id: 'plan-product-4', category: 'normal', name: 'Scalpel' },
+  { id: 'plan-product-5', category: 'normal', name: 'Rotary' },
+  { id: 'plan-special-1', category: 'normal', name: 'Gold' },
+  { id: 'plan-turbo-1m', category: 'turbo', name: 'Ceramic' },
+  { id: 'plan-turbo-3m', category: 'turbo', name: 'Obsidian' },
+  { id: 'plan-turbo-5m', category: 'turbo', name: 'Comb' },
+  { id: 'plan-turbo-10m', category: 'turbo', name: 'Scraper' },
+  { id: 'plan-turbo-15m', category: 'turbo', name: 'Snap-Off' },
+  { id: 'plan-turbo-30m', category: 'turbo', name: 'Hook' },
+  { id: 'plan-turbo-45m', category: 'turbo', name: 'Straight' },
+  { id: 'plan-turbo-60m', category: 'turbo', name: 'Shear' },
+  { id: 'plan-vip-1', category: 'vip', name: 'Damascus' },
+  { id: 'plan-vip-1b', category: 'vip', name: 'Chrome' },
+  { id: 'plan-vip-2', category: 'vip', name: 'Cryo' },
+  { id: 'plan-vip-2b', category: 'vip', name: 'Carbide' },
+  { id: 'plan-vip-3', category: 'vip', name: 'Cobalt' },
+  { id: 'plan-vip-3b', category: 'vip', name: 'Laser' },
+  { id: 'plan-vip-4', category: 'vip', name: 'Rose Gold' },
+  { id: 'plan-vip-5', category: 'vip', name: 'Diamond' }
 ];
 
 export const AdminPlansTab: React.FC = () => {
@@ -460,7 +459,11 @@ export const AdminPlansTab: React.FC = () => {
               {/* Card Image Banner */}
               <div className="relative h-32 w-full bg-slate-950 overflow-hidden">
                 <img
-                  src={plan.imageUrl || getProductArtworkDataUri(plan.id, plan.category)}
+                  src={
+                    plan.imageUrl && !plan.imageUrl.includes('unsplash.com')
+                      ? plan.imageUrl
+                      : getProductArtworkDataUri(plan.id, plan.category)
+                  }
                   alt={plan.title}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
@@ -688,7 +691,7 @@ export const AdminPlansTab: React.FC = () => {
                     className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500"
                   >
                     <option value="turbo">⚡ Turbo (Minutes)</option>
-                    <option value="normal">★ Normal (Days)</option>
+                    <option value="normal">Classic (Days)</option>
                     <option value="vip">👑 VIP (Days)</option>
                   </select>
                 </div>
@@ -945,7 +948,7 @@ export const AdminPlansTab: React.FC = () => {
                     className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500"
                   >
                     <option value="turbo">⚡ Turbo</option>
-                    <option value="normal">★ Normal</option>
+                    <option value="normal">Classic</option>
                     <option value="vip">👑 VIP</option>
                   </select>
                 </div>

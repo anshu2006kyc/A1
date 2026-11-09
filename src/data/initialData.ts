@@ -47,7 +47,7 @@ export const INITIAL_USERS: User[] = [
 export const INITIAL_PLANS: Plan[] = [
   {
     id: "plan-turbo-1m",
-    title: "White Ceramic Razor Blade",
+    title: "Ceramic",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -55,13 +55,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 200,
     dailyIncome: 250,
     totalReturn: 250,
-    badge: "⚡ 1 Min • 125% Return",
+    badge: "⚡ 1 Minute • 125% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-1m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-3m",
-    title: "Obsidian DLC Black Blade",
+    title: "Obsidian",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -69,13 +69,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 500,
     dailyIncome: 660,
     totalReturn: 660,
-    badge: "⚡ 3 Min • 132% Return",
+    badge: "⚡ 3 Minutes • 132% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-3m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-5m",
-    title: "Feather Hair Styling Comb Blade",
+    title: "Comb",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -83,13 +83,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 1000,
     dailyIncome: 1400,
     totalReturn: 1400,
-    badge: "🔥 5 Min • 140% Return",
+    badge: "🔥 5 Minutes • 140% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-5m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-10m",
-    title: "Single-Edge GEM Scraper Blade",
+    title: "Scraper",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -97,13 +97,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 2000,
     dailyIncome: 3000,
     totalReturn: 3000,
-    badge: "⚡ 10 Min • 150% Return",
+    badge: "⚡ 10 Minutes • 150% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-10m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-15m",
-    title: "18mm Snap-Off Segment Blade",
+    title: "Snap-Off",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -111,13 +111,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 3500,
     dailyIncome: 5600,
     totalReturn: 5600,
-    badge: "🚀 15 Min • 160% Return",
+    badge: "🚀 15 Minutes • 160% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-15m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-30m",
-    title: "Dual-Talon Hook Utility Blade",
+    title: "Hook",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -125,13 +125,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 5000,
     dailyIncome: 8500,
     totalReturn: 8500,
-    badge: "💎 30 Min • 170% Return",
+    badge: "💎 30 Minutes • 170% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-30m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-45m",
-    title: "Barber Straight Razor Blade",
+    title: "Straight",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -139,13 +139,13 @@ export const INITIAL_PLANS: Plan[] = [
     depositAmount: 7500,
     dailyIncome: 13500,
     totalReturn: 13500,
-    badge: "👑 45 Min • 180% Return",
+    badge: "👑 45 Minutes • 180% Return",
     imageUrl: getProductArtworkDataUri("plan-turbo-45m", "turbo"),
     isActive: true
   },
   {
     id: "plan-turbo-60m",
-    title: "Guillotine Industrial Shear Blade",
+    title: "Shear",
     category: "turbo",
     limit: 10,
     returnDays: 1,
@@ -159,7 +159,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-special-1",
-    title: "24K Gold Mirror Razor Blade",
+    title: "Gold",
     category: "normal",
     limit: 10,
     returnDays: 2,
@@ -172,7 +172,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-product-1",
-    title: "Swedish Platinum DE Razor Blade",
+    title: "Swedish",
     category: "normal",
     limit: 10,
     returnDays: 30,
@@ -185,7 +185,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-product-2",
-    title: "5-Blade Matrix Shaving Cartridge Blade",
+    title: "Matrix",
     category: "normal",
     limit: 10,
     returnDays: 35,
@@ -198,7 +198,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-product-3",
-    title: "Titanium Heavy-Duty Utility Blade",
+    title: "Titanium",
     category: "normal",
     limit: 10,
     returnDays: 40,
@@ -211,7 +211,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-product-4",
-    title: "No. 11 Surgical Scalpel Blade",
+    title: "Scalpel",
     category: "normal",
     limit: 5,
     returnDays: 45,
@@ -224,7 +224,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-product-5",
-    title: "Tungsten Industrial Rotary Slitter Blade",
+    title: "Rotary",
     category: "normal",
     limit: 5,
     returnDays: 50,
@@ -237,7 +237,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-vip-1",
-    title: "VIP 1 Damascus Wave Steel Blade",
+    title: "Damascus",
     category: "vip",
     limit: 5,
     returnDays: 1,
@@ -251,7 +251,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-vip-1b",
-    title: "VIP 1 Neo-Chrome Rainbow Blade",
+    title: "Chrome",
     category: "vip",
     limit: 5,
     returnDays: 2,
@@ -264,7 +264,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-vip-2",
-    title: "VIP 2 Cryo Frost Platinum Blade",
+    title: "Cryo",
     category: "vip",
     limit: 3,
     returnDays: 3,
@@ -277,7 +277,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-vip-2b",
-    title: "VIP 2 Hex Carbide Blade",
+    title: "Carbide",
     category: "vip",
     limit: 3,
     returnDays: 4,
@@ -290,7 +290,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-vip-3",
-    title: "VIP 3 Sapphire Cobalt PVD Blade",
+    title: "Cobalt",
     category: "vip",
     limit: 3,
     returnDays: 5,
@@ -303,7 +303,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-vip-3b",
-    title: "VIP 3 Crimson Ruby Laser Blade",
+    title: "Laser",
     category: "vip",
     limit: 2,
     returnDays: 7,
@@ -316,7 +316,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-vip-4",
-    title: "VIP 4 18K Rose Gold Filigree Blade",
+    title: "Rose Gold",
     category: "vip",
     limit: 2,
     returnDays: 8,
@@ -329,7 +329,7 @@ export const INITIAL_PLANS: Plan[] = [
   },
   {
     id: "plan-vip-5",
-    title: "VIP 5 Sovereign Diamond Obsidian Blade",
+    title: "Diamond",
     category: "vip",
     limit: 1,
     returnDays: 10,

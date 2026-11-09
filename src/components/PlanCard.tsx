@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, ShieldCheck } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { Plan } from '../types';
 import { formatINR } from '../utils/currency';
 import { getProductArtworkDataUri } from './ProductArtwork';
@@ -19,14 +19,20 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
     setImageError(false);
   }, [plan.imageUrl]);
 
-  // Real photographic asset with graceful SVG fallback on load failure
-  const reliableImageSrc = !imageError && plan.imageUrl ? plan.imageUrl : getProductArtworkDataUri(plan.id, plan.category);
+  // Prioritize distinct, high-contrast blade artwork and ignore stale Unsplash image links
+  const isCustomUploadedImage = Boolean(
+    plan.imageUrl &&
+    !plan.imageUrl.includes('unsplash.com') &&
+    (plan.imageUrl.startsWith('http://') || plan.imageUrl.startsWith('https://') || plan.imageUrl.startsWith('data:image'))
+  );
+  const reliableImageSrc = isCustomUploadedImage && !imageError
+    ? plan.imageUrl
+    : getProductArtworkDataUri(plan.id, plan.category);
 
   return (
     <div className="relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between group">
-      {/* Product Image Section */}
+      {/* Product Image Section - Clean, Unobstructed Blade Visual */}
       <div className="relative h-32 bg-zinc-950 overflow-hidden flex items-center justify-center">
-        {/* Machine / Equipment / Bullion High-Trust Artwork */}
         <img
           src={reliableImageSrc}
           alt={plan.title}
@@ -36,57 +42,32 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
           onError={() => setImageError(true)}
         />
 
-        {/* Subtle Vignette Gradient for Depth */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/30 pointer-events-none" />
-
-        {/* Floating Brand Pill (Bottom-Left) - Sleek Ultra-Micro Branding Text */}
-        <div className="absolute bottom-1.5 left-1.5 z-10 flex items-center space-x-0.5 bg-black/85 backdrop-blur-md px-1 py-0.5 rounded-full border border-white/20 shadow-xs">
-          <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: 'var(--brand-primary)' }} />
-          <span className="text-[5px] sm:text-[5.5px] font-black tracking-wider text-white/95 uppercase leading-none">
-            AKM ENTERPRISES
-          </span>
-        </div>
-
-        {/* Official Capital Security Seal (Bottom-Right) - Sleek Ultra-Micro Text */}
-        <div className="absolute bottom-1.5 right-1.5 z-10 flex items-center space-x-0.5 bg-black/85 backdrop-blur-md px-1 py-0.5 rounded-full border border-emerald-400/40 shadow-xs">
-          <ShieldCheck className="w-1.5 h-1.5 text-emerald-400 shrink-0" />
-          <span className="text-[5px] sm:text-[5.5px] font-black text-emerald-300 tracking-wider leading-none">100% SECURE</span>
-        </div>
-
-        {/* Floating Price Tag with Paise (Top-Left) - Ultra-Micro Compact Text Size */}
-        <div className="absolute top-1.5 left-1.5 z-10 flex items-center space-x-0.5 bg-black/85 backdrop-blur-md px-1 py-0.5 rounded-full border border-emerald-400/30 shadow-xs">
-          <span className="w-0.5 h-0.5 rounded-full bg-emerald-400" />
-          <span className="text-[5px] sm:text-[5.5px] font-black font-mono text-emerald-300 tracking-tight leading-none">
-            {formatINR(plan.depositAmount)}
-          </span>
-        </div>
-
-        {/* Limit or Turbo Badge (Top-Right) - Sleek Compact Corner Tag */}
-        <div
-          className={`absolute top-0 right-0 z-10 text-[6.5px] sm:text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg border-l border-b backdrop-blur-xs max-w-[120px] truncate text-white leading-none ${
-            plan.durationMinutes
-              ? 'bg-amber-400 text-amber-950 border-amber-300 font-black shadow-xs'
-              : ''
-          }`}
-          style={!plan.durationMinutes ? { backgroundColor: 'var(--brand-primary)', borderColor: 'var(--brand-primary)' } : undefined}
-        >
-          {plan.durationMinutes === 1
-            ? '⏱️ 1 Min'
-            : plan.durationMinutes === 60
-            ? '⏱️ 1 Hour'
-            : plan.badge || (plan.durationMinutes ? `⚡ ${plan.durationMinutes}m` : `Limit ${plan.limit || 10}`)}
-        </div>
+        {/* Subtle Depth Highlight */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-black/10 pointer-events-none" />
       </div>
 
-      {/* Plan Title Banner - Short One Line */}
+      {/* Plan Title Banner - Clean Compact Single Line */}
       <div
-        className={`text-white text-center py-1 px-1.5 text-[9.5px] font-bold tracking-tight truncate whitespace-nowrap overflow-hidden text-ellipsis ${
-          plan.durationMinutes ? 'bg-black/85 border-b border-amber-400/30 text-amber-300' : ''
+        className={`text-white text-center py-1 px-2 text-[9px] sm:text-[9.5px] font-bold tracking-tight truncate whitespace-nowrap overflow-hidden text-ellipsis flex items-center justify-center space-x-1.5 ${
+          plan.durationMinutes ? 'bg-black/90 border-b border-amber-400/40 text-amber-300' : ''
         }`}
         style={!plan.durationMinutes ? { background: 'var(--brand-dark-gradient, #064e3b)' } : undefined}
         title={plan.title}
       >
-        {plan.title.replace(/\s*•\s*.*$/, '').trim()}
+        <span className="truncate">{plan.title.replace(/\s*•\s*.*$/, '').trim()}</span>
+        {plan.durationMinutes ? (
+          <span className="text-[7px] sm:text-[7.5px] bg-amber-400 text-amber-950 font-black px-1.5 py-0.2 rounded-full shrink-0 shadow-xs">
+            {plan.durationMinutes === 1
+              ? '1 Minute'
+              : plan.durationMinutes === 60
+              ? '1 Hour'
+              : `${plan.durationMinutes} Minutes`}
+          </span>
+        ) : plan.badge ? (
+          <span className="text-[7px] bg-white/20 text-white font-bold px-1.5 py-0.2 rounded-full shrink-0">
+            {plan.badge}
+          </span>
+        ) : null}
       </div>
 
       {/* Metrics 4-Grid: Return Time, Deposit, Daily Return, Est. Total */}

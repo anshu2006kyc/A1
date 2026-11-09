@@ -171,18 +171,18 @@ export const MyProductsView: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#f8f9fa] pb-28 animate-fade-in font-sans">
       {/* Top Header */}
-      <div className="bg-white px-4 py-3.5 flex items-center justify-between border-b border-gray-100 sticky top-0 z-20 shadow-2xs">
+      <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-100 sticky top-0 z-20 shadow-2xs">
         <button
           id="products-back-btn"
           onClick={goBack}
-          className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer"
+          className="w-7.5 h-7.5 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-3.5 h-3.5" />
         </button>
 
         <div className="flex items-center space-x-1.5">
-          <TrendingUp className="w-4 h-4 text-emerald-600" />
-          <h1 className="text-base font-bold text-gray-900 tracking-tight">
+          <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+          <h1 className="text-xs font-bold text-gray-900 tracking-tight">
             Automated Income Engine
           </h1>
         </div>
@@ -194,11 +194,11 @@ export const MyProductsView: React.FC = () => {
               setIsNotificationModalOpen(true);
             }}
             title="Interest & Payout Alerts"
-            className="w-8 h-8 rounded-full bg-amber-50 text-amber-700 hover:bg-amber-100 flex items-center justify-center active:scale-95 transition-all cursor-pointer border border-amber-200/60 relative"
+            className="w-7.5 h-7.5 rounded-full bg-amber-50 text-amber-700 hover:bg-amber-100 flex items-center justify-center active:scale-95 transition-all cursor-pointer border border-amber-200/60 relative"
           >
-            <Bell className="w-3.5 h-3.5" />
+            <Bell className="w-3 h-3" />
             {unreadNotificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-950 font-black text-[8px] rounded-full flex items-center justify-center ring-1 ring-white shadow-xs animate-pulse">
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-950 font-black text-[7.5px] rounded-full flex items-center justify-center ring-1 ring-white shadow-xs animate-pulse">
                 {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
               </span>
             )}
@@ -207,28 +207,28 @@ export const MyProductsView: React.FC = () => {
           <button
             onClick={() => navigateToTransactions('revenue')}
             title="Income Records"
-            className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 flex items-center justify-center active:scale-95 transition-all cursor-pointer border border-emerald-200/60"
+            className="w-7.5 h-7.5 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 flex items-center justify-center active:scale-95 transition-all cursor-pointer border border-emerald-200/60"
           >
-            <History className="w-3.5 h-3.5" />
+            <History className="w-3 h-3" />
           </button>
         </div>
       </div>
 
-      <div className="p-3.5 space-y-3.5">
+      <div className="p-3.5 space-y-3">
         {!isLoggedIn && (
-          <div className="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-3 flex items-center justify-between">
-            <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
-                <LogIn className="w-4 h-4" />
+          <div className="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-2.5 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-7 h-7 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                <LogIn className="w-3.5 h-3.5" />
               </div>
               <div>
-                <div className="text-xs font-bold text-gray-900">Guest Mode (Logged Out)</div>
-                <div className="text-[10px] text-gray-500">Sign in to view your real-time machine income & claim dividends.</div>
+                <div className="text-[10.5px] font-bold text-gray-900">Guest Mode (Logged Out)</div>
+                <div className="text-[8.5px] text-gray-500">Sign in to view your real-time machine income & claim dividends.</div>
               </div>
             </div>
             <button
               onClick={() => openAuthModal('login')}
-              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs active:scale-95 transition-all"
+              className="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] shrink-0 cursor-pointer shadow-xs active:scale-95 transition-all"
             >
               Sign In
             </button>
@@ -237,7 +237,7 @@ export const MyProductsView: React.FC = () => {
 
         {/* Chamkila Master Income Overview Card */}
         <div
-          className="text-white p-5 rounded-3xl shadow-lg relative overflow-hidden"
+          className="text-white p-4 rounded-3xl shadow-lg relative overflow-hidden"
           style={{
             background: 'var(--brand-card-gradient, linear-gradient(135deg, #008f4c 0%, #00a859 50%, #0a6634 100%))'
           }}
@@ -245,38 +245,38 @@ export const MyProductsView: React.FC = () => {
           {/* Top Row: Total Invested & Next Settlement Countdown */}
           <div className="flex justify-between items-start relative z-10">
             <div>
-              <span className="text-[11px] font-bold text-emerald-100 uppercase tracking-wider flex items-center space-x-1">
-                <Wallet className="w-3.5 h-3.5 text-emerald-200" />
+              <span className="text-[9.5px] font-bold text-emerald-100 uppercase tracking-wider flex items-center space-x-1">
+                <Wallet className="w-3 h-3 text-emerald-200" />
                 <span>Active Capital Invested</span>
               </span>
-              <div className="text-3xl font-black mt-1 tracking-tight tabular-nums font-mono">
+              <div className="text-2xl font-black mt-0.5 tracking-tight tabular-nums font-mono">
                 {formatINR(totalInvested)}
               </div>
             </div>
 
             {/* Next Automated Settlement Countdown */}
-            <div className="bg-black/25 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-white/10 text-right">
-              <div className="flex items-center space-x-1 text-[9.5px] text-emerald-200 justify-end font-bold">
-                <Timer className="w-3 h-3 text-emerald-300" />
-                <span>Next Dividend Settlement</span>
+            <div className="bg-black/25 backdrop-blur-md px-2.5 py-1 rounded-xl border border-white/10 text-right">
+              <div className="flex items-center space-x-1 text-[8.5px] text-emerald-200 justify-end font-bold">
+                <Timer className="w-2.5 h-2.5 text-emerald-300" />
+                <span>Next Settlement</span>
               </div>
-              <div className="font-mono font-black text-xs text-white tracking-widest mt-0.5">
+              <div className="font-mono font-bold text-[11px] text-white tracking-wider mt-0.5">
                 {String(timeLeft.h).padStart(2, '0')}:{String(timeLeft.m).padStart(2, '0')}:{String(timeLeft.s).padStart(2, '0')}
               </div>
             </div>
           </div>
 
           {/* Real-time Continuous Accrual Counter */}
-          <div className="mt-4 bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/15 relative z-10">
+          <div className="mt-3 bg-white/10 backdrop-blur-md p-2.5 rounded-2xl border border-white/15 relative z-10">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
-                <span className="text-[10.5px] font-black uppercase tracking-wider text-emerald-100 flex items-center gap-1">
+              <div className="flex items-center space-x-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-ping" />
+                <span className="text-[9.5px] font-black uppercase tracking-wider text-emerald-100 flex items-center gap-1">
                   <span>Live Income Accrual Today</span>
                 </span>
               </div>
-              <div className="flex items-center space-x-1.5">
-                <span className="text-[10px] font-mono font-bold text-emerald-200">
+              <div className="flex items-center space-x-1">
+                <span className="text-[9px] font-mono font-bold text-emerald-200">
                   Run-Rate: +{formatINR(hourlyRunRate)}/hr
                 </span>
                 <button
@@ -285,44 +285,44 @@ export const MyProductsView: React.FC = () => {
                     sfx.playTap();
                     refreshUserBalance(false);
                   }}
-                  className={`p-1 rounded-full text-emerald-200 hover:text-white transition-all active:scale-90 cursor-pointer ${
+                  className={`p-0.5 rounded-full text-emerald-200 hover:text-white transition-all active:scale-90 cursor-pointer ${
                     isBalanceRefreshing ? 'animate-spin text-amber-300' : ''
                   }`}
                   title="Poll balance & refresh live daily earnings (Auto-polls every 30s)"
                 >
-                  <RotateCw className="w-3 h-3" />
+                  <RotateCw className="w-2.5 h-2.5" />
                 </button>
               </div>
             </div>
-            <div className="flex items-baseline justify-between mt-1">
-              <div className="text-xl font-black font-mono text-white tracking-tight tabular-nums">
+            <div className="flex items-baseline justify-between mt-0.5">
+              <div className="text-[17px] font-black font-mono text-white tracking-tight tabular-nums">
                 +{formatINR(liveAccruedSeed, { decimals: 2 })}
               </div>
-              <span className="text-[10px] font-medium text-emerald-200">
+              <span className="text-[9px] font-medium text-emerald-200">
                 Guaranteed: +{formatINR(dailyIncomeTotal)}/day
               </span>
             </div>
           </div>
 
           {/* 3 Metrics Bottom Grid */}
-          <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-emerald-400/30 text-center relative z-10">
+          <div className="grid grid-cols-3 gap-1.5 mt-2.5 pt-2.5 border-t border-emerald-400/30 text-center relative z-10">
             <div>
-              <span className="text-[9.5px] text-emerald-200 font-bold block uppercase">DAILY RUN-RATE</span>
-              <span className="text-sm font-black text-white mt-0.5 block tabular-nums font-mono">
+              <span className="text-[8px] text-emerald-200 font-bold block uppercase">DAILY RUN-RATE</span>
+              <span className="text-xs font-black text-white mt-0.5 block tabular-nums font-mono">
                 {formatINR(dailyIncomeTotal)}
               </span>
             </div>
 
             <div>
-              <span className="text-[9.5px] text-emerald-200 font-bold block uppercase">30-DAY FORECAST</span>
-              <span className="text-sm font-black text-white mt-0.5 block tabular-nums font-mono">
+              <span className="text-[8px] text-emerald-200 font-bold block uppercase">30-DAY FORECAST</span>
+              <span className="text-xs font-black text-white mt-0.5 block tabular-nums font-mono">
                 {formatINR(monthlyProjected)}
               </span>
             </div>
 
             <div>
-              <span className="text-[9.5px] text-emerald-200 font-bold block uppercase">REMAINING TARGET</span>
-              <span className="text-sm font-black text-white mt-0.5 block tabular-nums font-mono">
+              <span className="text-[8px] text-emerald-200 font-bold block uppercase">REMAINING TARGET</span>
+              <span className="text-xs font-black text-white mt-0.5 block tabular-nums font-mono">
                 {formatINR(remainingReturn)}
               </span>
             </div>
@@ -331,16 +331,16 @@ export const MyProductsView: React.FC = () => {
 
         {/* Claim All Banner Button if multiple are claimable */}
         {unclaimedPlans.length > 0 && (
-          <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-slate-950 p-3.5 rounded-2xl shadow-lg shadow-amber-500/20 flex items-center justify-between animate-scale-up border border-amber-300">
-            <div className="flex items-center space-x-2.5">
-              <div className="w-9 h-9 rounded-xl bg-white/30 flex items-center justify-center shrink-0">
-                <Coins className="w-5 h-5 text-slate-950" />
+          <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-slate-950 p-2.5 rounded-2xl shadow-lg shadow-amber-500/20 flex items-center justify-between animate-scale-up border border-amber-300">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-xl bg-white/30 flex items-center justify-center shrink-0">
+                <Coins className="w-4 h-4 text-slate-950" />
               </div>
               <div>
-                <div className="text-[11px] font-black uppercase tracking-wider text-slate-950">
+                <div className="text-[9.5px] font-black uppercase tracking-wider text-slate-950">
                   ⚡ Unclaimed Dividends Ready
                 </div>
-                <div className="text-sm font-black text-slate-950 mt-0.5 tabular-nums font-mono">
+                <div className="text-xs font-black text-slate-950 mt-0.5 tabular-nums font-mono">
                   {formatINR(claimableAmount)} Ready to Collect
                 </div>
               </div>
@@ -349,16 +349,16 @@ export const MyProductsView: React.FC = () => {
             <button
               type="button"
               onClick={handleClaimAll}
-              className="py-2 px-3.5 btn-chamkila-gold text-amber-950 font-black text-xs rounded-xl shadow-md active:scale-95 transition-all cursor-pointer flex items-center space-x-1.5"
+              className="py-1.5 px-3 btn-chamkila-gold text-amber-950 font-black text-[10.5px] rounded-xl shadow-md active:scale-95 transition-all cursor-pointer flex items-center space-x-1"
             >
-              <Zap className="w-3.5 h-3.5" />
+              <Zap className="w-3 h-3" />
               <span>Collect All</span>
             </button>
           </div>
         )}
 
         {/* Tab Filters: Active Packages, Completed, All */}
-        <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-1.5">
           <div className="flex space-x-1.5">
             {[
               { id: 'active', label: 'Active Packages', count: activePlans.length },
@@ -371,14 +371,14 @@ export const MyProductsView: React.FC = () => {
                   sfx.playTap();
                   setActiveTab(tab.id as any);
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
+                className={`px-2.5 py-1 rounded-xl text-[10.5px] font-bold transition-all cursor-pointer flex items-center space-x-1 ${
                   activeTab === tab.id
                     ? 'btn-chamkila text-white shadow-xs'
                     : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
                 }`}
               >
                 <span>{tab.label}</span>
-                <span className={`text-[9.5px] px-1.5 py-0.2 rounded-full font-mono ml-0.5 ${activeTab === tab.id ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                <span className={`text-[8.5px] px-1.5 py-0.2 rounded-full font-mono ml-0.5 ${activeTab === tab.id ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-500'}`}>
                   {tab.count}
                 </span>
               </button>
@@ -431,20 +431,24 @@ export const MyProductsView: React.FC = () => {
               return (
                 <div
                   key={`${up.id || 'up'}-${idx}`}
-                  className="bg-white p-4 rounded-3xl border border-gray-100 hover:border-gray-200 shadow-2xs space-y-3 transition-all relative"
+                  className="bg-white p-3.5 rounded-2xl border border-gray-100 hover:border-gray-200 shadow-2xs space-y-2.5 transition-all relative"
                 >
-
                   {/* Header: Title, Image, Status Badge */}
                   <div className="flex justify-between items-start">
-                    <div className="flex items-center space-x-2.5">
+                    <div className="flex items-center space-x-2">
                       {(() => {
-                        const img = up.imageUrl || getProductArtworkDataUri(up.planId || up.id, up.durationMinutes ? 'turbo' : 'normal');
+                        const isCustom = Boolean(
+                          up.imageUrl &&
+                          !up.imageUrl.includes('unsplash.com') &&
+                          (up.imageUrl.startsWith('http://') || up.imageUrl.startsWith('https://') || up.imageUrl.startsWith('data:image'))
+                        );
+                        const img = isCustom ? up.imageUrl : getProductArtworkDataUri(up.planId || up.id, up.durationMinutes ? 'turbo' : 'normal');
                         return (
                           <img
                             src={img}
                             alt={up.title}
                             referrerPolicy="no-referrer"
-                            className="w-11 h-11 rounded-2xl object-cover shrink-0 border border-emerald-300/60 bg-zinc-950 shadow-xs"
+                            className="w-9.5 h-9.5 rounded-xl object-cover shrink-0 border border-emerald-300/60 bg-zinc-950 shadow-xs"
                             onError={(e) => {
                               const fallback = getProductArtworkDataUri(up.planId || up.id, up.durationMinutes ? 'turbo' : 'normal');
                               if (e.currentTarget.src !== fallback) {
@@ -455,22 +459,22 @@ export const MyProductsView: React.FC = () => {
                         );
                       })()}
                       <div>
-                        <div className="text-xs font-bold text-gray-900 flex items-center space-x-1">
+                        <div className="text-[11px] font-bold text-gray-900 flex items-center space-x-1">
                           <span>{up.title}</span>
                           {isTurbo && (
-                            <span className="text-[9px] font-extrabold bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded border border-amber-300">
-                              ⚡ {up.durationMinutes === 60 ? '1 Hour' : `${up.durationMinutes}m`}
+                            <span className="text-[8px] font-extrabold bg-amber-100 text-amber-900 px-1 py-0.2 rounded border border-amber-300">
+                              ⚡ {up.durationMinutes === 1 ? '1 Min' : up.durationMinutes === 60 ? '1 Hr' : `${up.durationMinutes} Min`}
                             </span>
                           )}
                         </div>
-                        <span className="text-[8.5px] text-gray-400 font-mono block mt-0.5">
+                        <span className="text-[7.5px] text-gray-400 font-mono block mt-0.5">
                           Purchased: {formatRecordDateTime(up.purchasedAt)}
                         </span>
                       </div>
                     </div>
 
                     <span
-                      className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full ${
+                      className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded-full ${
                         up.status === 'active'
                           ? isTurbo
                             ? 'bg-amber-100 text-amber-900 font-extrabold border border-amber-300'
@@ -491,9 +495,9 @@ export const MyProductsView: React.FC = () => {
                   </div>
 
                   {/* Plan Return Info Bar */}
-                  <div className="flex items-center justify-between text-[11px] text-gray-500 bg-gray-50/80 px-3 py-1.5 rounded-xl border border-gray-100">
+                  <div className="flex items-center justify-between text-[9.5px] text-gray-500 bg-gray-50/80 px-2.5 py-1 rounded-xl border border-gray-100">
                     <span className="flex items-center space-x-1">
-                      <Clock className="w-3.5 h-3.5 text-emerald-700" />
+                      <Clock className="w-3 h-3 text-emerald-700" />
                       <span>Tenure:</span>
                       <strong className="text-gray-900 font-mono">
                         {isTurbo
@@ -509,30 +513,30 @@ export const MyProductsView: React.FC = () => {
                   </div>
 
                   {/* Metrics Row */}
-                  <div className="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-2xl text-center text-xs">
+                  <div className="grid grid-cols-3 gap-1.5 bg-gray-50 p-2 rounded-xl text-center text-[11px]">
                     <div>
-                      <span className="text-[9px] text-gray-400 block uppercase">Deposit</span>
-                      <span className="font-bold text-gray-800 tabular-nums font-mono">{formatINR(up.depositAmount)}</span>
+                      <span className="text-[8px] text-gray-400 block uppercase">Deposit</span>
+                      <span className="font-bold text-gray-800 tabular-nums font-mono text-[10.5px]">{formatINR(up.depositAmount)}</span>
                     </div>
                     <div>
-                      <span className="text-[9px] text-gray-400 block uppercase">
+                      <span className="text-[8px] text-gray-400 block uppercase">
                         {isTurbo ? 'Plan Return' : 'Daily Income'}
                       </span>
-                      <span className="font-extrabold text-emerald-600 tabular-nums font-mono">{formatINR(up.dailyIncome)}</span>
+                      <span className="font-extrabold text-emerald-600 tabular-nums font-mono text-[10.5px]">{formatINR(up.dailyIncome)}</span>
                     </div>
                     <div>
-                      <span className="text-[9px] text-gray-400 block uppercase">Total Return</span>
-                      <span className="font-extrabold text-emerald-700 tabular-nums font-mono">{formatINR(up.totalReturn)}</span>
+                      <span className="text-[8px] text-gray-400 block uppercase">Total Return</span>
+                      <span className="font-extrabold text-emerald-700 tabular-nums font-mono text-[10.5px]">{formatINR(up.totalReturn)}</span>
                     </div>
                   </div>
 
                   {/* Progress Bar */}
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] text-gray-500 font-mono">
+                    <div className="flex justify-between text-[9px] text-gray-500 font-mono">
                       <span>Cycle Lifecycle</span>
                       <span className="font-bold text-gray-900">{progressPct}%</span>
                     </div>
-                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-500"
                         style={{
@@ -545,19 +549,19 @@ export const MyProductsView: React.FC = () => {
 
                   {/* Action Buttons for Plan */}
                   {up.status === 'active' && (
-                    <div className="pt-1 flex items-center justify-between space-x-2">
+                    <div className="pt-0.5 flex items-center justify-between space-x-2">
                       {isReady ? (
                         <button
                           type="button"
                           onClick={() => handleClaimSingle(up.id, profitAmount)}
-                          className="w-full py-2 px-3 rounded-xl btn-chamkila text-white font-black text-xs shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center space-x-1.5"
+                          className="w-full py-1.5 px-3 rounded-xl btn-chamkila text-white font-black text-[10.5px] shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center space-x-1"
                         >
-                          <Coins className="w-4 h-4" />
+                          <Coins className="w-3.5 h-3.5" />
                           <span>Collect Profit ({formatINR(profitAmount)})</span>
                         </button>
                       ) : (
-                        <div className="w-full py-2 px-3 rounded-xl bg-gray-100 text-gray-500 text-xs font-bold text-center flex items-center justify-center space-x-1.5">
-                          <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        <div className="w-full py-1.5 px-3 rounded-xl bg-gray-100 text-gray-500 text-[10px] font-bold text-center flex items-center justify-center space-x-1">
+                          <Clock className="w-3 h-3 text-gray-400" />
                           <span>
                             {isTurbo
                               ? remainingMs > 0

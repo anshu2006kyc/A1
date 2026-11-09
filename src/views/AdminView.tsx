@@ -11,7 +11,9 @@ import {
   Clock,
   CreditCard,
   Database,
+  Download,
   ExternalLink,
+  Headphones,
   Layers,
   LayoutDashboard,
   Lock,
@@ -19,6 +21,7 @@ import {
   Megaphone,
   Menu,
   Palette,
+  Radio,
   RefreshCw,
   Search,
   Shield,
@@ -72,6 +75,7 @@ export const AdminView: React.FC = () => {
     runDailySettlement,
     approveAllPendingDeposits,
     approveAllPendingWithdrawals,
+    supportMessages,
     showToast
   } = useApp();
 
@@ -80,6 +84,41 @@ export const AdminView: React.FC = () => {
   const [showQuickActionsModal, setShowQuickActionsModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [currentTimeStr, setCurrentTimeStr] = useState<string>(() => {
+    return new Date().toLocaleTimeString('en-US', { hour12: false });
+  });
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTimeStr(new Date().toLocaleTimeString('en-US', { hour12: false }));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleExportLedgerCSV = () => {
+    sfx.playSuccess();
+    const headers = ['Transaction ID', 'User ID', 'Phone', 'Type', 'Amount', 'Status', 'Date', 'Title', 'UTR'];
+    const rows = transactions.map((t) => [
+      t.id,
+      t.userId,
+      t.userPhone || '',
+      t.type,
+      t.amount,
+      t.status,
+      `"${t.date}"`,
+      `"${(t.title || '').replace(/"/g, '""')}"`,
+      `"${t.utr || ''}"`
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `AKM_Financial_Ledger_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Financial Ledger exported to CSV successfully!', 'success');
+  };
 
   const handleManualRefresh = () => {
     sfx.playTap();
@@ -98,6 +137,7 @@ export const AdminView: React.FC = () => {
     (t) => t.type === 'withdraw' && t.status === 'pending'
   ).length;
 
+  const pendingSupportCount = (supportMessages || []).filter((s) => s.status === 'pending').length;
   const unresolvedAlertsCount = securityAlerts.filter((a) => !a.resolved).length;
 
   const tabGroups: {
@@ -140,6 +180,19 @@ export const AdminView: React.FC = () => {
       ]
     },
     {
+      category: 'Investor Helpdesk & Alerts',
+      items: [
+        {
+          id: 'support',
+          label: 'Support Desk',
+          icon: Headphones,
+          badge: pendingSupportCount,
+          badgeColor: 'bg-teal-400 text-slate-950'
+        },
+        { id: 'broadcast', label: 'Broadcast Center', icon: Megaphone }
+      ]
+    },
+    {
       category: 'Growth & Rewards',
       items: [
         { id: 'luckyspin', label: 'Lucky Spin Hub', icon: Gift },
@@ -163,7 +216,6 @@ export const AdminView: React.FC = () => {
           badge: unresolvedAlertsCount,
           badgeColor: 'bg-rose-500 text-white'
         },
-        { id: 'broadcast', label: 'Broadcast Center', icon: Megaphone },
         { id: 'logs', label: 'Audit Logs', icon: Terminal },
         { id: 'backup', label: 'Backup & Recovery', icon: Database }
       ]
@@ -445,6 +497,13 @@ export const AdminView: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-3 text-xs">
+            {/* Dual Timezone Live Clock */}
+            <div className="flex items-center space-x-2 bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-800 font-mono text-[11px]">
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-white font-bold">{currentTimeStr}</span>
+              <span className="text-[9.5px] text-amber-300 font-bold bg-amber-950/60 px-1 py-0.2 rounded border border-amber-500/30">IST</span>
+            </div>
+
             <div className="flex items-center space-x-2 bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-500/30 font-mono text-[11px]">
               <Database className="w-3.5 h-3.5 text-emerald-400" />
               <span className="text-emerald-300 font-bold">
@@ -454,12 +513,14 @@ export const AdminView: React.FC = () => {
               <span className="text-slate-400 text-[10px]">Firestore</span>
             </div>
 
-            <div className="flex items-center space-x-2 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800 font-mono text-[11px]">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span className="text-slate-300">Auto-Reconcile: ON</span>
-              <span className="text-slate-600">•</span>
-              <span className="text-emerald-400 font-bold">Port 3000 Ingress</span>
-            </div>
+            <button
+              onClick={handleExportLedgerCSV}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-xl font-bold flex items-center space-x-1.5 border border-slate-700 transition-all cursor-pointer active:scale-95"
+              title="Export complete financial ledger to CSV file"
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Export CSV</span>
+            </button>
 
             <button
               onClick={handleManualRefresh}

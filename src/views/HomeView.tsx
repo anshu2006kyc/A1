@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Crown, Sprout, Zap, Timer } from 'lucide-react';
+import { Crown, Layers, Zap, Timer } from 'lucide-react';
 import { BuyModal } from '../components/BuyModal';
 import { HeaderBanner } from '../components/HeaderBanner';
 import { PlanCard } from '../components/PlanCard';
@@ -80,7 +80,7 @@ export const HomeView: React.FC = () => {
         </div>
       </div>
 
-      {/* Category Tabs (Matches Video: ★ Normal, ⚡ Turbo, 👑 VIP) */}
+      {/* Category Tabs (Normal, Turbo, VIP) */}
       <div className="px-3.5 mb-3">
         <div className="grid grid-cols-3 gap-2">
           <button
@@ -95,7 +95,7 @@ export const HomeView: React.FC = () => {
                 : 'bg-white text-gray-700 border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/40'
             }`}
           >
-            <span className="text-amber-300 text-sm drop-shadow-xs">★</span>
+            <Layers className="w-3.5 h-3.5 drop-shadow-xs" />
             <span className="drop-shadow-xs">Normal</span>
           </button>
 

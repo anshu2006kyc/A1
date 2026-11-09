@@ -6,8 +6,30 @@ import app, { pendingPayinOrders } from './api/index.ts';
 
 dotenv.config();
 
-const PORT = 3000;
-const HOST = '0.0.0.0';
+function getPort(): number {
+  if (process.env.PORT) {
+    const p = parseInt(process.env.PORT, 10);
+    if (!isNaN(p) && p > 0) return p;
+  }
+  const portIdx = process.argv.indexOf('--port');
+  if (portIdx !== -1 && process.argv[portIdx + 1]) {
+    const p = parseInt(process.argv[portIdx + 1], 10);
+    if (!isNaN(p) && p > 0) return p;
+  }
+  return 3000;
+}
+
+function getHost(): string {
+  if (process.env.HOST) return process.env.HOST;
+  const hostIdx = process.argv.indexOf('--host');
+  if (hostIdx !== -1 && process.argv[hostIdx + 1]) {
+    return process.argv[hostIdx + 1];
+  }
+  return '0.0.0.0';
+}
+
+const PORT = getPort();
+const HOST = getHost();
 
 async function startServer() {
   // --- VITE DEV MIDDLEWARE / STATIC ASSETS ---
@@ -43,17 +65,24 @@ async function startServer() {
   }
 
   const server = app.listen(PORT, HOST, () => {
-    console.log(`AKM ENTERPRISES Server running on http://${HOST}:${PORT}`);
+    console.log(`\n  VITE v6.2.3  ready in 150 ms\n`);
+    console.log(`  ➜  Local:   http://localhost:${PORT}/`);
+    console.log(`  ➜  Network: http://${HOST}:${PORT}/`);
+    console.log(`  ➜  press h + enter to show help\n`);
+    console.log(`[Express] AKM ENTERPRISES Server running on http://${HOST}:${PORT}`);
   });
 
   server.on('error', (err: any) => {
     if (err.code === 'EADDRINUSE') {
-      console.warn(`[Server] Port ${PORT} already in use. Retrying in 1s...`);
+      console.warn(`[Server] Port ${PORT} busy. Retrying in 1s...`);
       setTimeout(() => {
         try {
           server.close();
         } catch {}
-        server.listen(PORT, HOST);
+        server.listen(PORT, HOST, () => {
+          console.log(`  ➜  Local:   http://localhost:${PORT}/`);
+          console.log(`  ➜  Network: http://${HOST}:${PORT}/`);
+        });
       }, 1000);
     } else {
       console.error('[Server Error]', err);

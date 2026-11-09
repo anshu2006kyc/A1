@@ -529,6 +529,9 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
   // Plans (Authoritative catalog preserving admin edits and deletions)
   const [plans, setPlans] = useState<Plan[]>(() => {
+    const ASSETS_VER_KEY = 'akm_plans_v2026_unique_colors';
+    const isUniqueColorsApplied = localStorage.getItem(ASSETS_VER_KEY) === 'true';
+
     const saved = localStorage.getItem('akm_plans');
     const deletedIds: string[] = (() => {
       try {
@@ -539,12 +542,14 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
     })();
 
     if (!saved) {
+      localStorage.setItem(ASSETS_VER_KEY, 'true');
       return INITIAL_PLANS.filter((p) => !deletedIds.includes(p.id));
     }
 
     try {
       const parsed: Plan[] = JSON.parse(saved);
       if (!Array.isArray(parsed) || parsed.length === 0) {
+        localStorage.setItem(ASSETS_VER_KEY, 'true');
         return INITIAL_PLANS.filter((p) => !deletedIds.includes(p.id));
       }
 
@@ -556,9 +561,29 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         (ip) => !activeParsed.some((p) => p.id === ip.id) && !deletedIds.includes(ip.id)
       );
 
-      // Return preserved plans without overwriting admin's custom edits!
-      return [...activeParsed, ...missingInitialPlans];
+      let mergedPlans = [...activeParsed, ...missingInitialPlans];
+
+      // If unique colors version not applied yet, refresh initial plan titles, badges and images
+      if (!isUniqueColorsApplied) {
+        mergedPlans = mergedPlans.map((p) => {
+          const matchingInitial = INITIAL_PLANS.find((ip) => ip.id === p.id);
+          if (matchingInitial) {
+            return {
+              ...p,
+              title: matchingInitial.title,
+              badge: matchingInitial.badge,
+              imageUrl: matchingInitial.imageUrl,
+            };
+          }
+          return p;
+        });
+        localStorage.setItem(ASSETS_VER_KEY, 'true');
+        localStorage.setItem('akm_plans', JSON.stringify(mergedPlans));
+      }
+
+      return mergedPlans;
     } catch {
+      localStorage.setItem(ASSETS_VER_KEY, 'true');
       return INITIAL_PLANS.filter((p) => !deletedIds.includes(p.id));
     }
   });
@@ -1370,17 +1395,45 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
 
                 const activeRemote = remotePlans.filter((rp) => !deletedIds.includes(rp.id));
                 const combined = activeRemote.map((rp) => {
-                  // If local prev has an admin edit on this plan, keep it
                   const localMatch = prev.find((lp) => lp.id === rp.id);
+                  const matchingInitial = INITIAL_PLANS.find((ip) => ip.id === rp.id);
+
+                  // If plan has old unsplash URL or no custom image, use our high-fidelity unique blade SVG
+                  const isCustomUploaded = Boolean(
+                    rp.imageUrl &&
+                    !rp.imageUrl.includes('unsplash.com') &&
+                    (rp.imageUrl.startsWith('http://') || rp.imageUrl.startsWith('https://') || rp.imageUrl.startsWith('data:image'))
+                  );
+                  const finalImageUrl = isCustomUploaded ? rp.imageUrl : getProductArtworkDataUri(rp.id, rp.category);
+
+                  // Keep short title and complete minutes badge from matchingInitial unless specifically edited locally
+                  const finalTitle = localMatch?.title || matchingInitial?.title || rp.title;
+                  const finalBadge = localMatch?.badge || matchingInitial?.badge || rp.badge;
+
                   if (localMatch) {
-                    return { ...rp, ...localMatch };
+                    return {
+                      ...rp,
+                      ...localMatch,
+                      imageUrl: isCustomUploaded ? (localMatch.imageUrl || finalImageUrl) : finalImageUrl,
+                      title: localMatch.title || finalTitle,
+                      badge: localMatch.badge || finalBadge
+                    };
                   }
-                  return rp;
+
+                  return {
+                    ...rp,
+                    title: matchingInitial ? matchingInitial.title : rp.title,
+                    badge: matchingInitial ? matchingInitial.badge : rp.badge,
+                    imageUrl: finalImageUrl
+                  };
                 });
 
                 INITIAL_PLANS.forEach((ip) => {
                   if (!combined.some((cp) => cp.id === ip.id) && !deletedIds.includes(ip.id)) {
-                    combined.push(ip);
+                    combined.push({
+                      ...ip,
+                      imageUrl: getProductArtworkDataUri(ip.id, ip.category)
+                    });
                   }
                 });
                 return combined;

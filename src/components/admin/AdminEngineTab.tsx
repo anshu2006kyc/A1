@@ -57,7 +57,7 @@ export const AdminEngineTab: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              Processes 1-minute turbo plans and 24-hour agricultural dividend distributions
+              Processes 1-minute turbo plans and 24-hour precision blade manufacturing dividend distributions
             </p>
           </div>
         </div>
@@ -192,7 +192,7 @@ export const AdminEngineTab: React.FC = () => {
                           : 'bg-emerald-500/20 text-emerald-400'
                       }`}
                     >
-                      {up.durationMinutes ? `${up.durationMinutes}m Turbo` : `${up.returnDays}d Term`}
+                      {up.durationMinutes ? (up.durationMinutes === 60 ? '1 Hour Turbo' : `${up.durationMinutes} Minutes Turbo`) : `${up.returnDays} Days Term`}
                     </span>
                   </div>
 

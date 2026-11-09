@@ -517,18 +517,18 @@ export const ProfileView: React.FC = () => {
             <User className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-xs font-bold text-gray-900 tracking-tight flex items-center space-x-1.5">
+            <div className="text-[11px] font-bold text-gray-900 tracking-tight flex items-center space-x-1.5">
               <span>{user.name || maskPhone(user.phone, showPhone)}</span>
               {isLoggedIn ? (
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block ring-2 ring-emerald-200" title="Online" />
               ) : (
-                <span className="text-[9px] text-gray-400 font-normal">(Guest)</span>
+                <span className="text-[8px] text-gray-400 font-normal">(Guest)</span>
               )}
             </div>
 
             {/* Masked Mobile Number with Eye Toggle & Copy */}
             <div className="flex items-center space-x-1.5 mt-0.5">
-              <span className="text-[10px] text-gray-600 font-mono font-bold tracking-tight">
+              <span className="text-[9px] text-gray-600 font-mono font-bold tracking-tight">
                 {maskPhone(user.phone, showPhone)}
               </span>
               <button
@@ -558,7 +558,7 @@ export const ProfileView: React.FC = () => {
           {!isLoggedIn && (
             <button
               onClick={() => openAuthModal('login')}
-              className="px-2.5 py-1.5 rounded-xl border text-xs font-bold active:scale-95 transition-all flex items-center space-x-1 cursor-pointer"
+              className="px-2.5 py-1.5 rounded-xl border text-[11px] font-bold active:scale-95 transition-all flex items-center space-x-1 cursor-pointer"
               style={{
                 backgroundColor: 'var(--theme-color-50, #ecfdf5)',
                 borderColor: 'var(--theme-color-200, #a7f3d0)',
@@ -603,13 +603,13 @@ export const ProfileView: React.FC = () => {
                 <LogIn className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-[11px] font-bold text-gray-900">Guest Mode (Logged Out)</div>
-                <div className="text-[9.5px] text-gray-500">Sign in to access your wallet, plans & withdrawal records.</div>
+                <div className="text-[10px] font-bold text-gray-900">Guest Mode (Logged Out)</div>
+                <div className="text-[8.5px] text-gray-500">Sign in to access your wallet, plans & withdrawal records.</div>
               </div>
             </div>
             <button
               onClick={() => openAuthModal('login')}
-              className="px-2.5 py-1.2 rounded-xl btn-chamkila text-white font-bold text-[11px] shrink-0 cursor-pointer shadow-xs active:scale-95 transition-all"
+              className="px-2.5 py-1.2 rounded-xl btn-chamkila text-white font-bold text-[10px] shrink-0 cursor-pointer shadow-xs active:scale-95 transition-all"
             >
               Sign In
             </button>
@@ -648,7 +648,7 @@ export const ProfileView: React.FC = () => {
               <Wifi className="w-3.5 h-3.5 text-emerald-300/80 rotate-90" />
 
               <div className="flex items-center space-x-1.5">
-                <span className="text-[10px] font-mono font-bold text-white tracking-wide">
+                <span className="text-[9px] font-mono font-bold text-white tracking-wide">
                   {maskPhone(user.phone, showPhone)}
                 </span>
                 <button
@@ -670,7 +670,7 @@ export const ProfileView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleCopyUid}
-                className="inline-flex items-center space-x-1 bg-black/35 hover:bg-black/50 px-1.5 py-0.5 rounded text-[9.5px] font-mono text-emerald-200 border border-emerald-500/25 active:scale-95 transition-all cursor-pointer"
+                className="inline-flex items-center space-x-1 bg-black/35 hover:bg-black/50 px-1.5 py-0.5 rounded text-[8.5px] font-mono text-emerald-200 border border-emerald-500/25 active:scale-95 transition-all cursor-pointer"
                 title="Copy UID"
               >
                 <span>{userUid}</span>
@@ -683,7 +683,7 @@ export const ProfileView: React.FC = () => {
           <div className="mt-2.5 pt-2 border-t border-emerald-500/20 flex items-baseline justify-between relative z-10">
             <div>
               <div className="flex items-center space-x-1.5">
-                <span className="text-[8.5px] uppercase font-bold tracking-wider text-emerald-300/85">
+                <span className="text-[7.5px] uppercase font-bold tracking-wider text-emerald-300/85">
                   Portfolio Balance
                 </span>
                 <button
@@ -710,19 +710,19 @@ export const ProfileView: React.FC = () => {
                 >
                   <RotateCw className="w-3 h-3" />
                 </button>
-                <span className="text-[7.5px] font-mono text-emerald-300/80 bg-emerald-950/60 px-1 py-0.2 rounded border border-emerald-500/25 flex items-center gap-1">
+                <span className="text-[7px] font-mono text-emerald-300/80 bg-emerald-950/60 px-1 py-0.2 rounded border border-emerald-500/25 flex items-center gap-1">
                   <span className="w-1 h-1 rounded-full bg-emerald-400 animate-ping inline-block" />
                   30s Live
                 </span>
               </div>
-              <div className="text-xl font-extrabold tracking-tight tabular-nums font-mono text-emerald-300 drop-shadow-xs mt-0.5">
+              <div className="text-[17px] font-extrabold tracking-tight tabular-nums font-mono text-emerald-300 drop-shadow-xs mt-0.5">
                 {showBalance ? formatINR(user.balance) : '₹ ••••••••'}
               </div>
             </div>
 
             <div className="text-right">
-              <span className="text-[8px] text-emerald-200/70 block uppercase font-medium">Active Plans</span>
-              <span className="text-[11px] font-bold font-mono text-white">
+              <span className="text-[7.5px] text-emerald-200/70 block uppercase font-medium">Active Plans</span>
+              <span className="text-[10px] font-bold font-mono text-white">
                 {userPlans.filter((p) => p.userId === user.id && p.status === 'active').length} Running
               </span>
             </div>
@@ -731,22 +731,22 @@ export const ProfileView: React.FC = () => {
           {/* 3 Metric Micro-Cards (Compact) */}
           <div className="grid grid-cols-3 gap-1.5 mt-2 pt-2 border-t border-emerald-500/20 text-center relative z-10">
             <div className="bg-emerald-950/40 py-1 px-1.5 rounded-lg border border-emerald-500/15">
-              <span className="text-[8px] text-emerald-300/80 font-medium block">Deposited</span>
-              <span className="text-[10px] font-bold text-white mt-0.5 block tabular-nums font-mono">
+              <span className="text-[7.5px] text-emerald-300/80 font-medium block">Deposited</span>
+              <span className="text-[9px] font-bold text-white mt-0.5 block tabular-nums font-mono">
                 {showBalance ? formatINR(effectiveTotalRecharge) : '•••'}
               </span>
             </div>
 
             <div className="bg-emerald-950/40 py-1 px-1.5 rounded-lg border border-emerald-500/15">
-              <span className="text-[8px] text-emerald-300/80 font-medium block">Revenue</span>
-              <span className="text-[10px] font-bold text-amber-300 mt-0.5 block tabular-nums font-mono">
+              <span className="text-[7.5px] text-emerald-300/80 font-medium block">Revenue</span>
+              <span className="text-[9px] font-bold text-amber-300 mt-0.5 block tabular-nums font-mono">
                 {showBalance ? formatINR(user.totalRevenue) : '•••'}
               </span>
             </div>
 
             <div className="bg-emerald-950/40 py-1 px-1.5 rounded-lg border border-emerald-500/15">
-              <span className="text-[8px] text-emerald-300/80 font-medium block">Withdrawn</span>
-              <span className="text-[10px] font-bold text-white mt-0.5 block tabular-nums font-mono">
+              <span className="text-[7.5px] text-emerald-300/80 font-medium block">Withdrawn</span>
+              <span className="text-[9px] font-bold text-white mt-0.5 block tabular-nums font-mono">
                 {showBalance ? formatINR(effectiveTotalWithdraw) : '•••'}
               </span>
             </div>
@@ -760,7 +760,7 @@ export const ProfileView: React.FC = () => {
                 sfx.playTap();
                 setCurrentView('recharge');
               }}
-              className="btn-chamkila text-white text-[11px] font-bold py-1.5 px-3 rounded-xl shadow-md flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer border-t border-emerald-300/40"
+              className="btn-chamkila text-white text-[10px] font-bold py-1.5 px-3 rounded-xl shadow-md flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer border-t border-emerald-300/40"
             >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Recharge</span>
@@ -772,7 +772,7 @@ export const ProfileView: React.FC = () => {
                 sfx.playTap();
                 setCurrentView('withdraw');
               }}
-              className="btn-chamkila-dark text-teal-300 text-[11px] font-bold py-1.5 px-3 rounded-xl shadow-md flex items-center justify-center space-x-1.5 border border-teal-500/40 active:scale-95 transition-all cursor-pointer"
+              className="btn-chamkila-dark text-teal-300 text-[10px] font-bold py-1.5 px-3 rounded-xl shadow-md flex items-center justify-center space-x-1.5 border border-teal-500/40 active:scale-95 transition-all cursor-pointer"
             >
               <Banknote className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Withdraw</span>
@@ -780,7 +780,7 @@ export const ProfileView: React.FC = () => {
           </div>
 
           {/* Security Guarantee Bottom Pill */}
-          <div className="mt-2 pt-1.5 border-t border-emerald-500/15 flex items-center justify-between text-[8px] text-emerald-300/70 font-mono">
+          <div className="mt-2 pt-1.5 border-t border-emerald-500/15 flex items-center justify-between text-[7.5px] text-emerald-300/70 font-mono">
             <div className="flex items-center space-x-1">
               <ShieldCheck className="w-2 h-2 text-emerald-400" />
               <span>SSL 256-Bit • Enterprise Vault</span>
@@ -809,14 +809,14 @@ export const ProfileView: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center space-x-1.5">
-                  <span className="text-[11px] font-black text-white tracking-wide">
+                  <span className="text-[10px] font-black text-white tracking-wide">
                     {currentTier.name}
                   </span>
-                  <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-full border ${currentTier.badgeBg} ${currentTier.badgeText} ${currentTier.badgeBorder} tracking-wide`}>
+                  <span className={`text-[7.5px] font-black px-1.5 py-0.5 rounded-full border ${currentTier.badgeBg} ${currentTier.badgeText} ${currentTier.badgeBorder} tracking-wide`}>
                     ACTIVE
                   </span>
                 </div>
-                <div className="text-[9.5px] text-slate-400 mt-0.5">
+                <div className="text-[8.5px] text-slate-400 mt-0.5">
                   Invested: <span className="font-mono font-bold text-emerald-300">{formatINR(qualifyingInvestment)}</span>
                 </div>
               </div>
@@ -825,7 +825,7 @@ export const ProfileView: React.FC = () => {
             {/* Right: Next Tier Goal or Max Badge */}
             <div className="text-right">
               {isMaxTier ? (
-                <span className="text-[9.5px] font-black text-amber-300 bg-amber-500/20 px-2 py-0.8 rounded-xl border border-amber-400/40 flex items-center gap-1 shadow-xs">
+                <span className="text-[8.5px] font-black text-amber-300 bg-amber-500/20 px-2 py-0.8 rounded-xl border border-amber-400/40 flex items-center gap-1 shadow-xs">
                   <Crown className="w-3 h-3 text-amber-300" />
                   MAX TIER
                 </span>
@@ -836,7 +836,7 @@ export const ProfileView: React.FC = () => {
                     sfx.playTap();
                     setShowVipModal(true);
                   }}
-                  className="text-[9.5px] font-bold text-amber-300 hover:text-amber-200 bg-amber-500/15 hover:bg-amber-500/25 px-2 py-0.8 rounded-xl border border-amber-400/30 transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-xs"
+                  className="text-[8.5px] font-bold text-amber-300 hover:text-amber-200 bg-amber-500/15 hover:bg-amber-500/25 px-2 py-0.8 rounded-xl border border-amber-400/30 transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-xs"
                   title="View All VIP Privileges"
                 >
                   <span>Next: {nextTier?.name}</span>
@@ -848,7 +848,7 @@ export const ProfileView: React.FC = () => {
 
           {/* Smooth Progress Bar */}
           <div className="mt-3 relative z-10">
-            <div className="flex items-center justify-between text-[9px] font-mono mb-1">
+            <div className="flex items-center justify-between text-[8px] font-mono mb-1">
               <span className="text-slate-400 flex items-center gap-1">
                 <span>Tier Progress:</span>
                 <strong className="text-white font-bold">{progressPercent.toFixed(0)}%</strong>
@@ -876,19 +876,19 @@ export const ProfileView: React.FC = () => {
           <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between relative z-10 text-xs">
             <div className="flex-1 pr-2">
               {isMaxTier ? (
-                <div className="text-[10px] text-emerald-300 font-semibold flex items-center gap-1.5">
+                <div className="text-[9px] text-emerald-300 font-semibold flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   <span>Maximum VIP privileges unlocked • 0% Fees & Concierge active!</span>
                 </div>
               ) : (
                 <div>
-                  <div className="text-[10px] font-bold text-white flex items-center gap-1 flex-wrap">
+                  <div className="text-[9px] font-bold text-white flex items-center gap-1 flex-wrap">
                     <span>Invest</span>
                     <span className="text-amber-300 font-mono font-black">{formatINR(neededMore)}</span>
                     <span>more to reach</span>
                     <span className="text-emerald-400 font-extrabold">{nextTier?.name}</span>
                   </div>
-                  <div className="text-[9px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+                  <div className="text-[8px] text-slate-400 mt-0.5 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
                     <span>Next Perk:</span>
                     <span className="text-amber-200/95 font-medium">{nextTier?.highlight}</span>
@@ -905,7 +905,7 @@ export const ProfileView: React.FC = () => {
                   sfx.playTap();
                   setShowVipModal(true);
                 }}
-                className="px-2 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold border border-slate-700 transition-all cursor-pointer active:scale-95"
+                className="px-2 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] font-bold border border-slate-700 transition-all cursor-pointer active:scale-95"
               >
                 Perks
               </button>
@@ -916,7 +916,7 @@ export const ProfileView: React.FC = () => {
                     sfx.playTap();
                     setCurrentView('home');
                   }}
-                  className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-[10px] shadow-md shadow-amber-500/25 active:scale-95 transition-all cursor-pointer flex items-center space-x-1"
+                  className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-[9px] shadow-md shadow-amber-500/25 active:scale-95 transition-all cursor-pointer flex items-center space-x-1"
                 >
                   <Zap className="w-3 h-3 fill-slate-950" />
                   <span>Invest</span>
@@ -944,14 +944,14 @@ export const ProfileView: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center space-x-1.5">
-                  <h3 className="text-[11.5px] font-bold text-gray-900 tracking-tight">
+                  <h3 className="text-[10.5px] font-bold text-gray-900 tracking-tight">
                     Investor Achievements
                   </h3>
-                  <span className="text-[8.5px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded-md border border-amber-200/60">
+                  <span className="text-[7.5px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded-md border border-amber-200/60">
                     Prestige Hub
                   </span>
                 </div>
-                <p className="text-[9px] text-gray-400 mt-0.5">
+                <p className="text-[8px] text-gray-400 mt-0.5">
                   Unlock milestone badges to claim status & engagement perks
                 </p>
               </div>
@@ -959,7 +959,7 @@ export const ProfileView: React.FC = () => {
 
             {/* Unlocked Count Badge */}
             <div className="text-right">
-              <div className="inline-flex items-center space-x-1 bg-emerald-50 text-emerald-800 px-2 py-0.8 rounded-full text-[9.5px] font-bold border border-emerald-200/60 shadow-2xs">
+              <div className="inline-flex items-center space-x-1 bg-emerald-50 text-emerald-800 px-2 py-0.8 rounded-full text-[8.5px] font-bold border border-emerald-200/60 shadow-2xs">
                 <Award className="w-3 h-3 text-emerald-600" />
                 <span>{unlockedCount} / {totalAchievements} Unlocked</span>
               </div>
@@ -968,7 +968,7 @@ export const ProfileView: React.FC = () => {
 
           {/* Overall Completion Track */}
           <div className="bg-gray-50/80 p-2.5 rounded-2xl border border-gray-100/90 space-y-1.5">
-            <div className="flex items-center justify-between text-[9px]">
+            <div className="flex items-center justify-between text-[8px]">
               <span className="text-gray-500 font-semibold flex items-center gap-1">
                 <Target className="w-3 h-3 text-emerald-600" />
                 <span>Milestone Completion Progress</span>
@@ -987,14 +987,14 @@ export const ProfileView: React.FC = () => {
             {nextUnlockTeaser && (
               <div
                 onClick={() => handleOpenBadge(nextUnlockTeaser)}
-                className="pt-0.5 flex items-center justify-between text-[9px] text-gray-600 cursor-pointer hover:text-emerald-700 transition-colors"
+                className="pt-0.5 flex items-center justify-between text-[8px] text-gray-600 cursor-pointer hover:text-emerald-700 transition-colors"
               >
                 <div className="flex items-center space-x-1 truncate pr-2">
                   <span className="font-bold text-emerald-700">Next:</span>
                   <span className="font-semibold text-gray-800">{nextUnlockTeaser.title}</span>
                   <span className="text-gray-400 font-mono">({nextUnlockTeaser.progressText})</span>
                 </div>
-                <span className="text-[8.5px] font-bold text-emerald-600 shrink-0 flex items-center">
+                <span className="text-[7.5px] font-bold text-emerald-600 shrink-0 flex items-center">
                   <span>View</span>
                   <ChevronRight className="w-2.5 h-2.5" />
                 </span>
@@ -1006,7 +1006,7 @@ export const ProfileView: React.FC = () => {
           <div className="flex items-center space-x-1.5 text-xs">
             <button
               onClick={() => setAchievementFilter('all')}
-              className={`px-2 py-0.8 rounded-xl text-[9.5px] font-bold transition-all cursor-pointer ${
+              className={`px-2 py-0.8 rounded-xl text-[8.5px] font-bold transition-all cursor-pointer ${
                 achievementFilter === 'all'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'bg-gray-100 text-gray-500 hover:text-gray-900'
@@ -1016,7 +1016,7 @@ export const ProfileView: React.FC = () => {
             </button>
             <button
               onClick={() => setAchievementFilter('unlocked')}
-              className={`px-2 py-0.8 rounded-xl text-[9.5px] font-bold transition-all cursor-pointer ${
+              className={`px-2 py-0.8 rounded-xl text-[8.5px] font-bold transition-all cursor-pointer ${
                 achievementFilter === 'unlocked'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'bg-gray-100 text-gray-500 hover:text-gray-900'
@@ -1026,7 +1026,7 @@ export const ProfileView: React.FC = () => {
             </button>
             <button
               onClick={() => setAchievementFilter('locked')}
-              className={`px-2 py-0.8 rounded-xl text-[9.5px] font-bold transition-all cursor-pointer ${
+              className={`px-2 py-0.8 rounded-xl text-[8.5px] font-bold transition-all cursor-pointer ${
                 achievementFilter === 'locked'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'bg-gray-100 text-gray-500 hover:text-gray-900'
@@ -1074,12 +1074,12 @@ export const ProfileView: React.FC = () => {
                     </div>
 
                     {isUnlocked ? (
-                      <span className="inline-flex items-center space-x-0.5 bg-emerald-100 text-emerald-800 text-[8px] font-black px-1.5 py-0.5 rounded-full border border-emerald-300/60">
+                      <span className="inline-flex items-center space-x-0.5 bg-emerald-100 text-emerald-800 text-[7.5px] font-black px-1.5 py-0.5 rounded-full border border-emerald-300/60">
                         <Check className="w-2.5 h-2.5 stroke-[3]" />
                         <span>UNLOCKED</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center space-x-0.5 bg-gray-200 text-gray-600 text-[8px] font-bold px-1.5 py-0.5 rounded-full">
+                      <span className="inline-flex items-center space-x-0.5 bg-gray-200 text-gray-600 text-[7.5px] font-bold px-1.5 py-0.5 rounded-full">
                         <Lock className="w-2.5 h-2.5" />
                         <span>{badge.progressText}</span>
                       </span>
@@ -1088,10 +1088,10 @@ export const ProfileView: React.FC = () => {
 
                   {/* Title & Subtitle */}
                   <div className="mt-2 relative z-10">
-                    <h4 className={`text-[11px] font-bold tracking-tight leading-snug ${isUnlocked ? 'text-gray-900' : 'text-gray-700'}`}>
+                    <h4 className={`text-[10px] font-bold tracking-tight leading-snug ${isUnlocked ? 'text-gray-900' : 'text-gray-700'}`}>
                       {badge.title}
                     </h4>
-                    <span className="text-[8.5px] text-gray-400 block mt-0.5">
+                    <span className="text-[7.5px] text-gray-400 block mt-0.5">
                       {badge.subtitle}
                     </span>
                   </div>
@@ -1099,13 +1099,13 @@ export const ProfileView: React.FC = () => {
                   {/* Bottom Metric / Progress */}
                   <div className="mt-2 pt-1.5 border-t border-gray-100 relative z-10">
                     {isUnlocked ? (
-                      <div className="flex items-center justify-between text-[8.5px] text-emerald-700 font-bold">
+                      <div className="flex items-center justify-between text-[7.5px] text-emerald-700 font-bold">
                         <span className="truncate pr-1">Active Perk</span>
                         <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
                       </div>
                     ) : (
                       <div className="space-y-1">
-                        <div className="flex items-center justify-between text-[8px] text-gray-400 font-mono">
+                        <div className="flex items-center justify-between text-[7px] text-gray-400 font-mono">
                           <span>Progress</span>
                           <span>{badge.progressPercent}%</span>
                         </div>
@@ -1137,7 +1137,7 @@ export const ProfileView: React.FC = () => {
               >
                 <Receipt className="w-3.5 h-3.5" />
               </div>
-              <h3 className="text-[11.5px] font-bold text-gray-900 tracking-tight">
+              <h3 className="text-[10.5px] font-bold text-gray-900 tracking-tight">
                 Account Records
               </h3>
             </div>
@@ -1147,11 +1147,11 @@ export const ProfileView: React.FC = () => {
                 sfx.playTap();
                 navigateToTransactions('all');
               }}
-              className="text-[10px] font-bold flex items-center space-x-0.5 cursor-pointer"
+              className="text-[9px] font-bold flex items-center space-x-0.5 cursor-pointer"
               style={{ color: 'var(--brand-primary)' }}
             >
               <span>View All</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-3 h-3" />
             </button>
           </div>
 
@@ -1178,11 +1178,11 @@ export const ProfileView: React.FC = () => {
                 </div>
               </div>
               <div>
-                <span className="text-[11px] font-bold text-gray-900 block transition-colors">
+                <span className="text-[9.5px] font-bold text-gray-900 block transition-colors">
                   Recharge Record
                 </span>
                 <span
-                  className="text-[9.5px] font-bold font-mono block mt-0.5"
+                  className="text-[8.5px] font-bold font-mono block mt-0.5"
                   style={{ color: 'var(--brand-primary)' }}
                 >
                   {showBalance ? formatINR(effectiveTotalRecharge) : '•••'}
@@ -1205,10 +1205,10 @@ export const ProfileView: React.FC = () => {
                 </div>
               </div>
               <div>
-                <span className="text-[11px] font-bold text-gray-900 block group-hover:text-amber-700 transition-colors">
+                <span className="text-[9.5px] font-bold text-gray-900 block group-hover:text-amber-700 transition-colors">
                   Income Record
                 </span>
-                <span className="text-[9.5px] text-amber-700 font-bold font-mono block mt-0.5">
+                <span className="text-[8.5px] text-amber-700 font-bold font-mono block mt-0.5">
                   {showBalance ? formatINR(user.totalRevenue) : '•••'}
                 </span>
               </div>
@@ -1229,10 +1229,10 @@ export const ProfileView: React.FC = () => {
                 </div>
               </div>
               <div>
-                <span className="text-[11px] font-bold text-gray-900 block group-hover:text-teal-700 transition-colors">
+                <span className="text-[9.5px] font-bold text-gray-900 block group-hover:text-teal-700 transition-colors">
                   Withdrawal Record
                 </span>
-                <span className="text-[9.5px] text-teal-700 font-bold font-mono block mt-0.5">
+                <span className="text-[8.5px] text-teal-700 font-bold font-mono block mt-0.5">
                   {showBalance ? formatINR(effectiveTotalWithdraw) : '•••'}
                 </span>
               </div>
@@ -1253,23 +1253,23 @@ export const ProfileView: React.FC = () => {
           >
             <div className="flex items-center space-x-3">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                className="w-8 h-8 rounded-xl flex items-center justify-center"
                 style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
               >
                 <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
-                <span className="text-xs font-bold text-gray-800 block">Recharge Record</span>
-                <span className="text-[10px] text-gray-400 block mt-0.5">
+                <span className="text-[11px] font-bold text-gray-800 block">Recharge Record</span>
+                <span className="text-[8.5px] text-gray-400 block mt-0.5">
                   Deposit receipts & payment confirmations
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold font-mono" style={{ color: 'var(--brand-primary)' }}>
+              <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--brand-primary)' }}>
                 {showBalance ? formatINR(effectiveTotalRecharge) : '•••'}
               </span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
             </div>
           </button>
 
@@ -1280,24 +1280,24 @@ export const ProfileView: React.FC = () => {
               sfx.playTap();
               navigateToTransactions('revenue');
             }}
-            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
-                <span className="text-xs font-bold text-gray-800 block">Income Record</span>
-                <span className="text-[10px] text-gray-400 block mt-0.5">
+                <span className="text-[11px] font-bold text-gray-800 block">Income Record</span>
+                <span className="text-[8.5px] text-gray-400 block mt-0.5">
                   Daily returns, bonuses & dividend history
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold text-amber-700 font-mono">
+              <span className="text-[10px] font-bold text-amber-700 font-mono">
                 {showBalance ? formatINR(user.totalRevenue) : '•••'}
               </span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
             </div>
           </button>
 
@@ -1308,24 +1308,24 @@ export const ProfileView: React.FC = () => {
               sfx.playTap();
               navigateToTransactions('withdraw');
             }}
-            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
                 <Banknote className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
-                <span className="text-xs font-bold text-gray-800 block">Withdrawal Record</span>
-                <span className="text-[10px] text-gray-400 block mt-0.5">
+                <span className="text-[11px] font-bold text-gray-800 block">Withdrawal Record</span>
+                <span className="text-[8.5px] text-gray-400 block mt-0.5">
                   Bank IMPS payouts & clearance confirmations
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold text-teal-700 font-mono">
+              <span className="text-[10px] font-bold text-teal-700 font-mono">
                 {showBalance ? formatINR(effectiveTotalWithdraw) : '•••'}
               </span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
             </div>
           </button>
 
@@ -1333,36 +1333,36 @@ export const ProfileView: React.FC = () => {
           <button
             id="menu-bank"
             onClick={() => setCurrentView('bank')}
-            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                className="w-8 h-8 rounded-xl flex items-center justify-center"
                 style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
               >
                 <Building2 className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-gray-800">Bank Account</span>
+              <span className="text-[11px] font-bold text-gray-800">Bank Account</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
           </button>
 
           {/* My Product */}
           <button
             id="menu-products"
             onClick={() => setCurrentView('myproducts')}
-            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                className="w-8 h-8 rounded-xl flex items-center justify-center"
                 style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
               >
                 <Package className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-gray-800">My Investment Products</span>
+              <span className="text-[11px] font-bold text-gray-800">My Investment Products</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
           </button>
 
           {/* Alerts & Notifications Center */}
@@ -1372,35 +1372,35 @@ export const ProfileView: React.FC = () => {
               sfx.playTap();
               setIsNotificationModalOpen(true);
             }}
-            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center bg-amber-50 text-amber-600 relative"
+                className="w-8 h-8 rounded-xl flex items-center justify-center bg-amber-50 text-amber-600 relative"
               >
                 <Bell className="w-4 h-4" />
                 {unreadNotificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-950 font-black text-[8px] rounded-full flex items-center justify-center ring-1 ring-white shadow-xs animate-pulse">
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-950 font-black text-[7.5px] rounded-full flex items-center justify-center ring-1 ring-white shadow-xs animate-pulse">
                     {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
                   </span>
                 )}
               </div>
               <div>
-                <span className="text-xs font-bold text-gray-800 block">Alerts & Notifications</span>
-                <span className="text-[10px] text-gray-400 block mt-0.5">
+                <span className="text-[11px] font-bold text-gray-800 block">Alerts & Notifications</span>
+                <span className="text-[8.5px] text-gray-400 block mt-0.5">
                   Interest credits & withdrawal status tracker
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-2">
               {unreadNotificationCount > 0 ? (
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
                   {unreadNotificationCount} New
                 </span>
               ) : (
-                <span className="text-[10px] text-emerald-600 font-bold">Active</span>
+                <span className="text-[9px] text-emerald-600 font-bold">Active</span>
               )}
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
             </div>
           </button>
 
@@ -1408,52 +1408,52 @@ export const ProfileView: React.FC = () => {
           <button
             id="menu-transactions"
             onClick={() => navigateToTransactions('all')}
-            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                className="w-8 h-8 rounded-xl flex items-center justify-center"
                 style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
               >
                 <HistoryIcon className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-xs font-bold text-gray-800 block">All Financial Statements</span>
-                <span className="text-[10px] text-gray-400 block mt-0.5">
+                <span className="text-[11px] font-bold text-gray-800 block">All Financial Statements</span>
+                <span className="text-[8.5px] text-gray-400 block mt-0.5">
                   Complete account audit trail & statements
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
           </button>
 
           {/* Security & Password */}
           <button
             id="menu-password"
             onClick={() => setCurrentView('password')}
-            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                className="w-8 h-8 rounded-xl flex items-center justify-center"
                 style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
               >
                 <KeyRound className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-gray-800">Security & Password</span>
+              <span className="text-[11px] font-bold text-gray-800">Security & Password</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
           </button>
 
           {/* Haptic Vibration Feedback Toggle */}
           <div
             id="menu-haptic-feedback"
             onClick={() => toggleHapticFeedback()}
-            className="w-full p-4 flex items-center justify-between hover:bg-gray-50/80 transition-colors text-left cursor-pointer select-none"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50/80 transition-colors text-left cursor-pointer select-none"
           >
             <div className="flex items-center space-x-3">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors shrink-0"
+                className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors shrink-0"
                 style={{
                   backgroundColor: isHapticEnabled
                     ? 'var(--theme-color-50, #ecfdf5)'
@@ -1465,9 +1465,9 @@ export const ProfileView: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center space-x-1.5">
-                  <span className="text-xs font-bold text-gray-800 block">Haptic Vibration</span>
+                  <span className="text-[11px] font-bold text-gray-800 block">Haptic Vibration</span>
                   <span
-                    className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded-full border transition-colors ${
+                    className={`text-[8px] font-extrabold px-1.5 py-0.2 rounded-full border transition-colors ${
                       isHapticEnabled
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         : 'bg-gray-100 text-gray-500 border-gray-200'
@@ -1476,12 +1476,12 @@ export const ProfileView: React.FC = () => {
                     {isHapticEnabled ? 'Enabled' : 'Disabled'}
                   </span>
                   {!isHapticSupported && (
-                    <span className="text-[8px] font-semibold px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                    <span className="text-[7.5px] font-semibold px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200">
                       Browser Limited
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] text-gray-400 block mt-0.5">
+                <span className="text-[8.5px] text-gray-400 block mt-0.5">
                   Tactile vibration on buttons, taps & actions
                 </span>
               </div>
@@ -1498,13 +1498,13 @@ export const ProfileView: React.FC = () => {
                 e.stopPropagation();
                 toggleHapticFeedback();
               }}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
+              className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
                 isHapticEnabled ? 'bg-emerald-600' : 'bg-gray-200'
               }`}
             >
               <span
                 aria-hidden="true"
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
                   isHapticEnabled ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
@@ -1518,26 +1518,26 @@ export const ProfileView: React.FC = () => {
               sfx.playTap();
               setIsSupportModalOpen(true);
             }}
-            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-emerald-700 bg-emerald-50"
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-emerald-700 bg-emerald-50"
               >
-                <RealSupportHeadsetIcon className="w-4.5 h-4.5" size={18} />
+                <RealSupportHeadsetIcon className="w-4 h-4" size={16} />
               </div>
               <div>
-                <span className="text-xs font-bold text-gray-800 block">Customer Support & Helpdesk</span>
-                <span className="text-[10px] text-gray-400 block mt-0.5">
+                <span className="text-[11px] font-bold text-gray-800 block">Customer Support & Helpdesk</span>
+                <span className="text-[8.5px] text-gray-400 block mt-0.5">
                   24/7 Live ticket assistance & investment inquiries
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-1.5">
-              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              <span className="text-[8px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                 24/7 Live
               </span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
             </div>
           </button>
 
@@ -1545,59 +1545,59 @@ export const ProfileView: React.FC = () => {
           <button
             id="menu-about"
             onClick={() => setCurrentView('about')}
-            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                className="w-8 h-8 rounded-xl flex items-center justify-center"
                 style={{ backgroundColor: 'var(--theme-color-50, #ecfdf5)', color: 'var(--brand-primary)' }}
               >
                 <Info className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-gray-800">About AKM Enterprises</span>
+              <span className="text-[11px] font-bold text-gray-800">About AKM Enterprises</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
           </button>
         </div>
 
         {/* Action Logout / Reset */}
-        <div className="space-y-2 pt-2">
+        <div className="space-y-2 pt-1.5">
           {isLoggedIn ? (
             <button
               id="profile-logout-btn"
               onClick={handleLogout}
-              className="w-full py-3 bg-white hover:bg-rose-50 border border-gray-200 hover:border-rose-200 text-rose-600 font-bold text-xs rounded-2xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer shadow-2xs"
+              className="w-full py-2.5 bg-white hover:bg-rose-50 border border-gray-200 hover:border-rose-200 text-rose-600 font-bold text-[10.5px] rounded-xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer shadow-2xs"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5" />
               <span>Sign Out Account</span>
             </button>
           ) : (
             <button
               onClick={() => openAuthModal('login')}
-              className="w-full py-3 btn-chamkila text-white font-bold text-xs rounded-2xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer shadow-md"
+              className="w-full py-2.5 btn-chamkila text-white font-bold text-[10.5px] rounded-xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer shadow-md"
             >
-              <LogIn className="w-4 h-4" />
+              <LogIn className="w-3.5 h-3.5" />
               <span>Sign In / Register</span>
             </button>
           )}
 
           {/* Admin Control Center - Strictly visible ONLY to verified Admins */}
           {isAdminUser ? (
-            <div className="text-center pt-2">
+            <div className="text-center pt-1.5">
               <button
                 onClick={() => setIsAdminOpen(true)}
-                className="text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 px-3.5 py-1.5 rounded-full border border-amber-300 cursor-pointer shadow-xs inline-flex items-center space-x-1.5 transition-all active:scale-95"
+                className="text-[10px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-full border border-amber-300 cursor-pointer shadow-xs inline-flex items-center space-x-1.5 transition-all active:scale-95"
               >
                 <Lock className="w-3 h-3 text-amber-600" />
                 <span>🔐 Admin & Gateway Control Center</span>
               </button>
             </div>
           ) : (
-            <div className="text-center pt-3 pb-1">
+            <div className="text-center pt-2 pb-1">
               <button
                 type="button"
                 onClick={handleSecretTap}
-                className="text-[8.5px] text-gray-300 hover:text-gray-400 select-none cursor-default transition-colors font-mono"
+                className="text-[7.5px] text-gray-300 hover:text-gray-400 select-none cursor-default transition-colors font-mono"
                 title="AKM ENTERPRISES Secure System"
               >
                 AKM ENTERPRISES LTD • SECURE PROTOCOL • 256-BIT SSL
@@ -1616,14 +1616,14 @@ export const ProfileView: React.FC = () => {
             <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
               <div className="bg-slate-900 border border-amber-500/35 rounded-3xl w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl overflow-hidden relative text-white">
                 {/* Modal Header */}
-                <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950/60">
+                <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950/60">
                   <div className="flex items-center space-x-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 p-0.5 shadow-md flex items-center justify-center shrink-0">
-                      <Crown className="w-4 h-4 text-slate-950 fill-amber-950" />
+                    <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 p-0.5 shadow-md flex items-center justify-center shrink-0">
+                      <Crown className="w-3.5 h-3.5 text-slate-950 fill-amber-950" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-black text-white">VIP Tier Privileges</h3>
-                      <p className="text-[10px] text-slate-400">Exclusive investor rewards & withdrawal benefits</p>
+                      <h3 className="text-xs font-black text-white">VIP Tier Privileges</h3>
+                      <p className="text-[9px] text-slate-400">Exclusive investor rewards & withdrawal benefits</p>
                     </div>
                   </div>
                   <button
@@ -1632,25 +1632,25 @@ export const ProfileView: React.FC = () => {
                       sfx.playTap();
                       setShowVipModal(false);
                     }}
-                    className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    className="w-6 h-6 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
                 {/* Current Status Bar */}
-                <div className="px-4 py-2.5 bg-slate-950/70 border-b border-slate-800/80 flex items-center justify-between text-xs">
+                <div className="px-3.5 py-2 bg-slate-950/70 border-b border-slate-800/80 flex items-center justify-between text-[11px]">
                   <div>
-                    <span className="text-[9.5px] text-slate-400 block">Your Current Tier</span>
-                    <span className="text-xs font-black text-amber-300 flex items-center gap-1">
+                    <span className="text-[8.5px] text-slate-400 block">Your Current Tier</span>
+                    <span className="text-[11px] font-black text-amber-300 flex items-center gap-1">
                       <span>{currentTier.name}</span>
-                      <span className="text-[9px] text-emerald-400 font-normal">({formatINR(qualifyingInvestment)} invested)</span>
+                      <span className="text-[8px] text-emerald-400 font-normal">({formatINR(qualifyingInvestment)} invested)</span>
                     </span>
                   </div>
                   {!isMaxTier && (
                     <div className="text-right">
-                      <span className="text-[9.5px] text-slate-400 block">Next Unlock ({nextTier?.name})</span>
-                      <span className="text-xs font-mono font-bold text-emerald-300">
+                      <span className="text-[8.5px] text-slate-400 block">Next Unlock ({nextTier?.name})</span>
+                      <span className="text-[11px] font-mono font-bold text-emerald-300">
                         +{formatINR(neededMore)} more
                       </span>
                     </div>
@@ -1658,14 +1658,14 @@ export const ProfileView: React.FC = () => {
                 </div>
 
                 {/* Scrollable Tier List */}
-                <div className="p-4 overflow-y-auto space-y-3 max-h-[55vh]">
+                <div className="p-3.5 overflow-y-auto space-y-2.5 max-h-[55vh]">
                   {VIP_TIER_CONFIG.map((tier) => {
                     const isCurrent = tier.level === currentTier.level;
                     const isUnlocked = qualifyingInvestment >= tier.minInvestment;
                     return (
                       <div
                         key={tier.level}
-                        className={`p-3 rounded-2xl border transition-all ${
+                        className={`p-2.5 rounded-2xl border transition-all ${
                           isCurrent
                             ? 'bg-gradient-to-r from-amber-950/40 via-slate-900 to-emerald-950/40 border-amber-500/50 shadow-md ring-1 ring-amber-500/20'
                             : isUnlocked
@@ -1673,27 +1673,27 @@ export const ProfileView: React.FC = () => {
                             : 'bg-slate-950/20 border-slate-800 opacity-80'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${tier.badgeBg} ${tier.badgeText} ${tier.badgeBorder}`}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center space-x-1.5">
+                            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full border ${tier.badgeBg} ${tier.badgeText} ${tier.badgeBorder}`}>
                               {tier.name}
                             </span>
-                            <span className="text-[11px] font-mono text-slate-300 font-bold">
+                            <span className="text-[10px] font-mono text-slate-300 font-bold">
                               {tier.minInvestment === 0 ? 'Free Entry' : `Min Invest ${formatINR(tier.minInvestment)}`}
                             </span>
                           </div>
                           <div>
                             {isCurrent ? (
-                              <span className="text-[9.5px] font-black text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/40">
+                              <span className="text-[8.5px] font-black text-amber-300 bg-amber-500/20 px-1.5 py-0.5 rounded-full border border-amber-500/40">
                                 Current
                               </span>
                             ) : isUnlocked ? (
-                              <span className="text-[9.5px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-0.5">
+                              <span className="text-[8.5px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-0.5">
                                 <CheckCircle2 className="w-2.5 h-2.5" />
                                 Unlocked
                               </span>
                             ) : (
-                              <span className="text-[9.5px] font-medium text-slate-400">
+                              <span className="text-[8.5px] font-medium text-slate-400">
                                 Need {formatINR(Math.max(0, tier.minInvestment - qualifyingInvestment))}
                               </span>
                             )}
@@ -1702,7 +1702,7 @@ export const ProfileView: React.FC = () => {
 
                         <div className="space-y-1">
                           {tier.perks.map((perk, idx) => (
-                            <div key={idx} className="flex items-center space-x-1.5 text-[10.5px] text-slate-300">
+                            <div key={idx} className="flex items-center space-x-1.5 text-[9.5px] text-slate-300">
                               <CheckCircle2 className={`w-3 h-3 shrink-0 ${isUnlocked ? 'text-emerald-400' : 'text-slate-600'}`} />
                               <span>{perk}</span>
                             </div>
@@ -1714,8 +1714,8 @@ export const ProfileView: React.FC = () => {
                 </div>
 
                 {/* Modal Footer */}
-                <div className="p-3.5 border-t border-slate-800 bg-slate-950 flex items-center justify-between">
-                  <span className="text-[10px] text-slate-400">
+                <div className="p-3 border-t border-slate-800 bg-slate-950 flex items-center justify-between">
+                  <span className="text-[9px] text-slate-400">
                     Tier unlocks automatically upon plan investment.
                   </span>
                   <button
@@ -1725,9 +1725,9 @@ export const ProfileView: React.FC = () => {
                       setShowVipModal(false);
                       setCurrentView('home');
                     }}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs shadow-md shadow-amber-500/25 active:scale-95 transition-all cursor-pointer flex items-center space-x-1"
+                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-[11px] shadow-md shadow-amber-500/25 active:scale-95 transition-all cursor-pointer flex items-center space-x-1"
                   >
-                    <Zap className="w-3.5 h-3.5 fill-slate-950" />
+                    <Zap className="w-3 h-3 fill-slate-950" />
                     <span>Invest to Level Up</span>
                   </button>
                 </div>
@@ -1748,27 +1748,27 @@ export const ProfileView: React.FC = () => {
                 />
 
                 {/* Top Action Row */}
-                <div className="p-4 flex items-center justify-between relative z-10 border-b border-slate-800">
+                <div className="p-3.5 flex items-center justify-between relative z-10 border-b border-slate-800">
                   <div className="flex items-center space-x-2">
-                    <Award className="w-4 h-4 text-amber-400" />
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-slate-300">
+                    <Award className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-300">
                       Milestone Certificate
                     </span>
                   </div>
                   <button
                     onClick={() => setSelectedAchievement(null)}
-                    className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    className="p-1 rounded-full bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
                 {/* Modal Body */}
-                <div className="p-5 text-center relative z-10 space-y-4">
+                <div className="p-4 text-center relative z-10 space-y-3">
                   {/* Giant Badge Emblem */}
                   <div className="relative inline-block mx-auto">
                     <div
-                      className={`w-20 h-20 rounded-3xl flex items-center justify-center text-white mx-auto shadow-2xl border-2 transition-transform ${
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white mx-auto shadow-2xl border-2 transition-transform ${
                         selectedAchievement.isUnlocked
                           ? 'border-white/40 ring-4'
                           : 'border-slate-700 bg-slate-800 text-slate-500'
@@ -1778,39 +1778,39 @@ export const ProfileView: React.FC = () => {
                         boxShadow: selectedAchievement.isUnlocked ? `0 10px 30px ${selectedAchievement.accentColor}55` : undefined
                       }}
                     >
-                      {renderBadgeIcon(selectedAchievement.icon, 'w-10 h-10')}
+                      {renderBadgeIcon(selectedAchievement.icon, 'w-8 h-8')}
                     </div>
 
                     {selectedAchievement.isUnlocked && (
-                      <div className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center text-white shadow-md">
-                        <Check className="w-4 h-4 stroke-[3]" />
+                      <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center text-white shadow-md">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
                       </div>
                     )}
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-black tracking-tight text-white">
+                    <h3 className="text-sm font-black tracking-tight text-white">
                       {selectedAchievement.title}
                     </h3>
                     <span
-                      className="text-xs font-bold block mt-0.5"
+                      className="text-[10.5px] font-bold block mt-0.5"
                       style={{ color: selectedAchievement.accentColor }}
                     >
                       {selectedAchievement.subtitle}
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-300 leading-relaxed px-2">
+                  <p className="text-[10.5px] text-slate-300 leading-relaxed px-2">
                     {selectedAchievement.description}
                   </p>
 
                   {/* Status & Progress Box */}
-                  <div className="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 text-left space-y-2">
-                    <div className="flex items-center justify-between text-xs">
+                  <div className="bg-slate-950/70 p-2.5 rounded-2xl border border-slate-800 text-left space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px]">
                       <span className="text-slate-400 font-medium">Achievement Status</span>
                       {selectedAchievement.isUnlocked ? (
                         <span className="text-emerald-400 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <CheckCircle2 className="w-3 h-3" />
                           <span>Earned & Active</span>
                         </span>
                       ) : (
@@ -1821,7 +1821,7 @@ export const ProfileView: React.FC = () => {
                     </div>
 
                     {!selectedAchievement.isUnlocked && (
-                      <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{
@@ -1833,10 +1833,10 @@ export const ProfileView: React.FC = () => {
                     )}
 
                     <div className="pt-1 border-t border-slate-800/80">
-                      <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">
+                      <span className="text-[8.5px] text-slate-400 block uppercase font-bold tracking-wider">
                         Perk & Reward:
                       </span>
-                      <span className="text-[11px] font-bold text-emerald-300 block mt-0.5">
+                      <span className="text-[9.5px] font-bold text-emerald-300 block mt-0.5">
                         {selectedAchievement.perkText}
                       </span>
                     </div>
@@ -1844,13 +1844,13 @@ export const ProfileView: React.FC = () => {
                 </div>
 
                 {/* Modal Footer Buttons */}
-                <div className="p-4 border-t border-slate-800 bg-slate-950/80 flex items-center space-x-2">
+                <div className="p-3 border-t border-slate-800 bg-slate-950/80 flex items-center space-x-2">
                   {selectedAchievement.isUnlocked ? (
                     <button
                       onClick={() => handleShareBadge(selectedAchievement)}
-                      className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+                      className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110 text-white font-bold text-[10.5px] flex items-center justify-center space-x-1.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
                     >
-                      <Share2 className="w-3.5 h-3.5" />
+                      <Share2 className="w-3 h-3" />
                       <span>Share on WhatsApp</span>
                     </button>
                   ) : (
@@ -1866,16 +1866,16 @@ export const ProfileView: React.FC = () => {
                           setCurrentView(targetView);
                         }
                       }}
-                      className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 text-slate-950 font-black text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer"
+                      className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 text-slate-950 font-black text-[10.5px] flex items-center justify-center space-x-1.5 shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer"
                     >
-                      <Zap className="w-3.5 h-3.5 fill-slate-950" />
+                      <Zap className="w-3 h-3 fill-slate-950" />
                       <span>{selectedAchievement.actionCta}</span>
                     </button>
                   )}
 
                   <button
                     onClick={() => setSelectedAchievement(null)}
-                    className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-colors cursor-pointer"
+                    className="py-2 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[10.5px] transition-colors cursor-pointer"
                   >
                     Close
                   </button>
