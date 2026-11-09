@@ -251,10 +251,10 @@ export const TransactionsView: React.FC = () => {
                 <CreditCard className="w-3 h-3 text-emerald-100" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-[9.5px] font-black tracking-wide text-white uppercase truncate leading-tight">
+                <h1 className="text-[9px] font-black tracking-wide text-white uppercase truncate leading-tight">
                   Records & Passbook
                 </h1>
-                <p className="text-[7px] text-emerald-100 font-medium truncate mt-0.5 flex items-center space-x-1">
+                <p className="text-[6.5px] text-emerald-100 font-medium truncate mt-0.5 flex items-center space-x-1">
                   <span className="text-amber-300 font-black tracking-wide uppercase">AKM ENTERPRISES</span>
                   <span className="text-emerald-200/60">•</span>
                   <span className="text-emerald-100 font-semibold">Digital Passbook</span>
@@ -278,7 +278,7 @@ export const TransactionsView: React.FC = () => {
                 sfx.playTap();
                 setIsExportModalOpen(true);
               }}
-              className="flex items-center space-x-1 px-2 py-0.8 rounded-full bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-200 text-slate-950 text-[7.5px] font-black active:scale-90 transition-transform cursor-pointer shadow-sm border border-amber-200/50 shrink-0"
+              className="flex items-center space-x-1 px-2 py-0.8 rounded-full bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-200 text-slate-950 text-[7px] font-black active:scale-90 transition-transform cursor-pointer shadow-sm border border-amber-200/50 shrink-0"
             >
               <Download className="w-2 h-2 text-slate-950" />
               <span>Statement</span>
@@ -295,17 +295,17 @@ export const TransactionsView: React.FC = () => {
         {!isLoggedIn && (
           <div className="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-2xl p-3 flex items-center justify-between">
             <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
-                <LogIn className="w-4 h-4" />
+              <div className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                <LogIn className="w-3.5 h-3.5" />
               </div>
               <div>
-                <div className="text-xs font-bold text-white">Signed Out (Guest)</div>
-                <div className="text-[10px] text-gray-400">Sign in to view your real-time debit & credit transactions.</div>
+                <div className="text-[10px] font-bold text-white">Signed Out (Guest)</div>
+                <div className="text-[8.5px] text-gray-400">Sign in to view your real-time debit & credit transactions.</div>
               </div>
             </div>
             <button
               onClick={() => openAuthModal('login')}
-              className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs shrink-0 cursor-pointer shadow-lg active:scale-95 transition-all"
+              className="px-2.5 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-[9.5px] shrink-0 cursor-pointer shadow-lg active:scale-95 transition-all"
             >
               Sign In
             </button>
@@ -325,13 +325,13 @@ export const TransactionsView: React.FC = () => {
                   sfx.playTap();
                   setActiveCardView('credit');
                 }}
-                className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                className={`flex items-center space-x-1 px-2 py-0.8 rounded-lg text-[9.5px] font-black transition-all cursor-pointer ${
                   activeCardView === 'credit'
                     ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-sm'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                <CreditCard className="w-3 h-3" />
+                <CreditCard className="w-2.5 h-2.5" />
                 <span>Credit Card</span>
               </button>
 
@@ -341,13 +341,13 @@ export const TransactionsView: React.FC = () => {
                   sfx.playTap();
                   setActiveCardView('debit');
                 }}
-                className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                className={`flex items-center space-x-1 px-2 py-0.8 rounded-lg text-[9.5px] font-black transition-all cursor-pointer ${
                   activeCardView === 'debit'
                     ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-slate-950 shadow-sm'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                <Wallet className="w-3 h-3" />
+                <Wallet className="w-2.5 h-2.5" />
                 <span>Debit Card</span>
               </button>
             </div>
@@ -359,9 +359,9 @@ export const TransactionsView: React.FC = () => {
                 sfx.playTap();
                 setShowFullCardNumber(!showFullCardNumber);
               }}
-              className="text-[9.5px] text-gray-400 hover:text-white flex items-center space-x-1 bg-white/[0.06] hover:bg-white/10 px-2 py-1 rounded-lg border border-white/10 cursor-pointer transition-all active:scale-95"
+              className="text-[8.5px] text-gray-400 hover:text-white flex items-center space-x-1 bg-white/[0.06] hover:bg-white/10 px-2 py-0.8 rounded-lg border border-white/10 cursor-pointer transition-all active:scale-95"
             >
-              {showFullCardNumber ? <EyeOff className="w-3 h-3 text-emerald-400" /> : <Eye className="w-3 h-3 text-gray-400" />}
+              {showFullCardNumber ? <EyeOff className="w-2.5 h-2.5 text-emerald-400" /> : <Eye className="w-2.5 h-2.5 text-gray-400" />}
               <span>{showFullCardNumber ? 'Hide No.' : 'Show No.'}</span>
             </button>
           </div>
@@ -392,22 +392,22 @@ export const TransactionsView: React.FC = () => {
               {/* Card Top Row: Brand & Contactless */}
               <div className="relative flex items-center justify-between mb-2.5">
                 <div className="flex items-center space-x-1.5">
-                  <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-amber-400 to-amber-200 text-black flex items-center justify-center font-black text-[9px] shadow-xs">
+                  <div className="w-4.5 h-4.5 rounded-md bg-gradient-to-tr from-amber-400 to-amber-200 text-black flex items-center justify-center font-black text-[8px] shadow-xs">
                     A
                   </div>
                   <div>
-                    <span className="text-[11px] font-black tracking-widest text-emerald-200 uppercase">
+                    <span className="text-[9.5px] font-black tracking-widest text-emerald-200 uppercase">
                       AKM ENTERPRISES
                     </span>
-                    <span className="text-[8px] font-black text-amber-300 ml-1 px-1 py-0.2 rounded bg-amber-400/20 border border-amber-400/30">
+                    <span className="text-[7px] font-black text-amber-300 ml-1 px-1 py-0.2 rounded bg-amber-400/20 border border-amber-400/30">
                       PLATINUM
                     </span>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-1.5 text-emerald-200/80">
-                  <Wifi className="w-3.5 h-3.5 rotate-90 stroke-[2.5]" />
-                  <span className="text-[8.5px] font-mono tracking-wider font-extrabold uppercase text-emerald-300">
+                  <Wifi className="w-3 h-3 rotate-90 stroke-[2.5]" />
+                  <span className="text-[7.5px] font-mono tracking-wider font-extrabold uppercase text-emerald-300">
                     CONTACTLESS
                   </span>
                 </div>
@@ -415,7 +415,7 @@ export const TransactionsView: React.FC = () => {
 
               {/* EMV Microchip Graphic & Total Inflow */}
               <div className="relative flex items-center justify-between mb-3">
-                <div className="w-9 h-6.5 rounded-md bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-0.5 shadow-sm flex items-center justify-center border border-amber-200/80">
+                <div className="w-8 h-5.5 rounded-md bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-0.5 shadow-sm flex items-center justify-center border border-amber-200/80">
                   <div className="w-full h-full rounded-[2px] border border-black/30 flex flex-col justify-between p-0.5 relative overflow-hidden bg-gradient-to-tr from-amber-300 via-amber-200 to-amber-100">
                     <div className="w-full h-[1px] bg-black/25 my-auto" />
                     <div className="w-full h-[1px] bg-black/25 my-auto" />
@@ -425,10 +425,10 @@ export const TransactionsView: React.FC = () => {
 
                 {/* Live Inflow Badge */}
                 <div className="text-right">
-                  <div className="text-[8.5px] font-mono text-emerald-300 tracking-wider uppercase font-bold">
+                  <div className="text-[7.5px] font-mono text-emerald-300 tracking-wider uppercase font-bold">
                     TOTAL CREDIT INFLOW
                   </div>
-                  <div className="text-sm font-black font-mono text-emerald-100 tracking-tight">
+                  <div className="text-xs font-black font-mono text-emerald-100 tracking-tight">
                     + {formatINR(totalCreditInflow)}
                   </div>
                 </div>
@@ -437,7 +437,7 @@ export const TransactionsView: React.FC = () => {
               {/* Embossed Card Number */}
               <div className="relative mb-2.5">
                 <div
-                  className="font-mono text-base sm:text-lg font-bold tracking-[0.2em] text-white/95"
+                  className="font-mono text-sm sm:text-base font-bold tracking-[0.18em] text-white/95"
                   style={{
                     textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 0 2px rgba(255,255,255,0.3)'
                   }}
@@ -449,19 +449,19 @@ export const TransactionsView: React.FC = () => {
               {/* Card Footer: Cardholder, Expiry, RuPay / Network */}
               <div className="relative flex items-end justify-between pt-0.5">
                 <div>
-                  <div className="text-[7.5px] font-mono tracking-widest text-emerald-300/70 uppercase">
+                  <div className="text-[6.5px] font-mono tracking-widest text-emerald-300/70 uppercase">
                     CARDHOLDER
                   </div>
-                  <div className="text-[11px] font-black tracking-wider uppercase text-white font-mono">
+                  <div className="text-[9.5px] font-black tracking-wider uppercase text-white font-mono">
                     {user?.phone ? `USER ${user.phone.slice(-4)}` : 'VIP INVESTOR'}
                   </div>
                 </div>
 
                 <div className="text-center">
-                  <div className="text-[7.5px] font-mono tracking-widest text-emerald-300/70 uppercase">
+                  <div className="text-[6.5px] font-mono tracking-widest text-emerald-300/70 uppercase">
                     VALID THRU
                   </div>
-                  <div className="text-[11px] font-bold tracking-wider text-white font-mono">
+                  <div className="text-[9.5px] font-bold tracking-wider text-white font-mono">
                     12/32
                   </div>
                 </div>
@@ -498,22 +498,22 @@ export const TransactionsView: React.FC = () => {
               {/* Card Top Row: Brand & Contactless */}
               <div className="relative flex items-center justify-between mb-2.5">
                 <div className="flex items-center space-x-1.5">
-                  <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-slate-200 to-slate-400 text-black flex items-center justify-center font-black text-[9px] shadow-xs">
+                  <div className="w-4.5 h-4.5 rounded-md bg-gradient-to-tr from-slate-200 to-slate-400 text-black flex items-center justify-center font-black text-[8px] shadow-xs">
                     A
                   </div>
                   <div>
-                    <span className="text-[11px] font-black tracking-widest text-slate-200 uppercase">
+                    <span className="text-[9.5px] font-black tracking-widest text-slate-200 uppercase">
                       AKM ENTERPRISES
                     </span>
-                    <span className="text-[8px] font-black text-rose-300 ml-1 px-1 py-0.2 rounded bg-rose-500/20 border border-rose-500/30">
+                    <span className="text-[7px] font-black text-rose-300 ml-1 px-1 py-0.2 rounded bg-rose-500/20 border border-rose-500/30">
                       TITANIUM
                     </span>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-1.5 text-slate-400">
-                  <Wifi className="w-3.5 h-3.5 rotate-90 stroke-[2.5]" />
-                  <span className="text-[8.5px] font-mono tracking-wider font-extrabold uppercase text-slate-300">
+                  <Wifi className="w-3 h-3 rotate-90 stroke-[2.5]" />
+                  <span className="text-[7.5px] font-mono tracking-wider font-extrabold uppercase text-slate-300">
                     IMPS 24x7
                   </span>
                 </div>
@@ -521,7 +521,7 @@ export const TransactionsView: React.FC = () => {
 
               {/* EMV Platinum Chip Graphic & Total Outflow */}
               <div className="relative flex items-center justify-between mb-3">
-                <div className="w-9 h-6.5 rounded-md bg-gradient-to-br from-slate-200 via-slate-300 to-slate-500 p-0.5 shadow-sm flex items-center justify-center border border-slate-200/80">
+                <div className="w-8 h-5.5 rounded-md bg-gradient-to-br from-slate-200 via-slate-300 to-slate-500 p-0.5 shadow-sm flex items-center justify-center border border-slate-200/80">
                   <div className="w-full h-full rounded-[2px] border border-black/30 flex flex-col justify-between p-0.5 relative overflow-hidden bg-gradient-to-tr from-slate-300 via-slate-200 to-slate-100">
                     <div className="w-full h-[1px] bg-black/25 my-auto" />
                     <div className="w-full h-[1px] bg-black/25 my-auto" />
@@ -531,10 +531,10 @@ export const TransactionsView: React.FC = () => {
 
                 {/* Total Settled Debit Outflow */}
                 <div className="text-right">
-                  <div className="text-[8.5px] font-mono text-rose-300 tracking-wider uppercase font-bold">
+                  <div className="text-[7.5px] font-mono text-rose-300 tracking-wider uppercase font-bold">
                     TOTAL DEBIT OUTFLOW
                   </div>
-                  <div className="text-sm font-black font-mono text-rose-200 tracking-tight">
+                  <div className="text-xs font-black font-mono text-rose-200 tracking-tight">
                     - {formatINR(totalWithdrawn)}
                   </div>
                 </div>
@@ -543,7 +543,7 @@ export const TransactionsView: React.FC = () => {
               {/* Embossed Card Number */}
               <div className="relative mb-2.5">
                 <div
-                  className="font-mono text-base sm:text-lg font-bold tracking-[0.2em] text-white/95"
+                  className="font-mono text-sm sm:text-base font-bold tracking-[0.18em] text-white/95"
                   style={{
                     textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 0 2px rgba(255,255,255,0.3)'
                   }}
@@ -555,19 +555,19 @@ export const TransactionsView: React.FC = () => {
               {/* Card Footer */}
               <div className="relative flex items-end justify-between pt-0.5">
                 <div>
-                  <div className="text-[7.5px] font-mono tracking-widest text-slate-400 uppercase">
+                  <div className="text-[6.5px] font-mono tracking-widest text-slate-400 uppercase">
                     LINKED ACCOUNT
                   </div>
-                  <div className="text-[11px] font-black tracking-wider uppercase text-white font-mono">
+                  <div className="text-[9.5px] font-black tracking-wider uppercase text-white font-mono">
                     {user?.bankDetails?.accountNumber ? `A/C •• ${user.bankDetails.accountNumber.slice(-4)}` : 'BANK ACCOUNT'}
                   </div>
                 </div>
 
                 <div className="text-center">
-                  <div className="text-[7.5px] font-mono tracking-widest text-slate-400 uppercase">
+                  <div className="text-[6.5px] font-mono tracking-widest text-slate-400 uppercase">
                     SETTLEMENT
                   </div>
-                  <div className="text-[11px] font-bold tracking-wider text-rose-300 font-mono">
+                  <div className="text-[9.5px] font-bold tracking-wider text-rose-300 font-mono">
                     INSTANT
                   </div>
                 </div>
@@ -594,14 +594,14 @@ export const TransactionsView: React.FC = () => {
               sfx.playTap();
               setActiveTab('all');
             }}
-            className={`py-2 px-1 rounded-xl text-center transition-all cursor-pointer flex items-center justify-center space-x-1 active:scale-95 ${
+            className={`py-1.5 px-1 rounded-xl text-center transition-all cursor-pointer flex items-center justify-center space-x-1 active:scale-95 ${
               activeTab === 'all'
                 ? 'bg-white/15 text-white font-black shadow-sm border border-white/20'
                 : 'text-gray-400 hover:text-white font-bold'
             }`}
           >
             <CreditCard className="w-2.5 h-2.5 text-gray-300" />
-            <span className="text-[10px]">All</span>
+            <span className="text-[8.5px]">All</span>
           </button>
 
           {/* 2. Recharge Tab (Credit CR) */}
@@ -614,14 +614,14 @@ export const TransactionsView: React.FC = () => {
               setActiveCardView('credit');
               setTransactionFilter('deposit');
             }}
-            className={`py-2 px-1 rounded-xl text-center transition-all cursor-pointer flex items-center justify-center space-x-1 active:scale-95 ${
+            className={`py-1.5 px-1 rounded-xl text-center transition-all cursor-pointer flex items-center justify-center space-x-1 active:scale-95 ${
               activeTab === 'recharge'
                 ? 'bg-emerald-500/20 text-emerald-300 font-black shadow-sm border border-emerald-500/40'
                 : 'text-gray-400 hover:text-emerald-300 font-bold'
             }`}
           >
             <ArrowDownLeft className="w-2.5 h-2.5 text-emerald-400" />
-            <span className="text-[10px]">Recharge</span>
+            <span className="text-[8.5px]">Recharge</span>
           </button>
 
           {/* 3. Income Tab (Credit CR) */}
@@ -634,14 +634,14 @@ export const TransactionsView: React.FC = () => {
               setActiveCardView('credit');
               setTransactionFilter('revenue');
             }}
-            className={`py-2 px-1 rounded-xl text-center transition-all cursor-pointer flex items-center justify-center space-x-1 active:scale-95 ${
+            className={`py-1.5 px-1 rounded-xl text-center transition-all cursor-pointer flex items-center justify-center space-x-1 active:scale-95 ${
               activeTab === 'income'
                 ? 'bg-amber-500/20 text-amber-300 font-black shadow-sm border border-amber-500/40'
                 : 'text-gray-400 hover:text-amber-300 font-bold'
             }`}
           >
             <TrendingUp className="w-2.5 h-2.5 text-amber-400" />
-            <span className="text-[10px]">Income</span>
+            <span className="text-[8.5px]">Income</span>
           </button>
 
           {/* 4. Withdrawal Tab (Debit DR) */}
@@ -654,14 +654,14 @@ export const TransactionsView: React.FC = () => {
               setActiveCardView('debit');
               setTransactionFilter('withdraw');
             }}
-            className={`py-2 px-1 rounded-xl text-center transition-all cursor-pointer flex items-center justify-center space-x-1 active:scale-95 ${
+            className={`py-1.5 px-1 rounded-xl text-center transition-all cursor-pointer flex items-center justify-center space-x-1 active:scale-95 ${
               activeTab === 'withdraw'
                 ? 'bg-rose-500/20 text-rose-300 font-black shadow-sm border border-rose-500/40'
                 : 'text-gray-400 hover:text-rose-300 font-bold'
             }`}
           >
             <ArrowUpRight className="w-2.5 h-2.5 text-rose-400" />
-            <span className="text-[10px]">Withdraw</span>
+            <span className="text-[8.5px]">Withdraw</span>
           </button>
         </div>
 
@@ -670,13 +670,13 @@ export const TransactionsView: React.FC = () => {
             ===================================================================== */}
         {filteredList.length === 0 ? (
           <div className="bg-[#161b22] rounded-3xl p-8 border border-white/10 text-center flex flex-col items-center my-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 text-gray-400 flex items-center justify-center mb-3">
-              <CreditCard className="w-7 h-7" />
+            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 text-gray-400 flex items-center justify-center mb-3">
+              <CreditCard className="w-6 h-6" />
             </div>
-            <h3 className="text-xs font-bold text-white">
+            <h3 className="text-[11px] font-bold text-white">
               No Transactions Recorded
             </h3>
-            <p className="text-[11px] text-gray-400 mt-1 max-w-[260px]">
+            <p className="text-[9.5px] text-gray-400 mt-1 max-w-[260px]">
               {activeTab === 'recharge'
                 ? 'Recharge deposits made via UPI or Cards will show up here.'
                 : activeTab === 'income'
@@ -696,27 +696,27 @@ export const TransactionsView: React.FC = () => {
               return (
                 <div key={monthTitle} className="space-y-3">
                   {/* Month Timeline Header */}
-                  <div className="flex items-center justify-between px-1 pt-1 text-[8px] font-bold text-gray-400 tracking-wide">
+                  <div className="flex items-center justify-between px-1 pt-1 text-[7.5px] font-bold text-gray-400 tracking-wide">
                     <div className="flex items-center space-x-1.5 min-w-0">
-                      <Calendar className="w-3 h-3 text-emerald-400 shrink-0" />
+                      <Calendar className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
                       {monthTitle.includes('THIS MONTH') ? (
                         <div className="flex items-center space-x-1 shrink-0">
-                          <span className="text-[6.5px] font-extrabold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-1 py-0.2 rounded-full uppercase tracking-wider">
+                          <span className="text-[6px] font-extrabold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-1 py-0.2 rounded-full uppercase tracking-wider">
                             This Month
                           </span>
-                          <span className="text-gray-300 font-bold text-[7px] tracking-wide">
+                          <span className="text-gray-300 font-bold text-[6.5px] tracking-wide">
                             {monthTitle.replace('THIS MONTH • ', '').replace('THIS MONTH', '')}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-gray-300 font-bold text-[7px] tracking-wide uppercase truncate">
+                        <span className="text-gray-300 font-bold text-[6.5px] tracking-wide uppercase truncate">
                           {monthTitle}
                         </span>
                       )}
                     </div>
 
                     <div className="flex items-center space-x-1 shrink-0 ml-1">
-                      <span className="text-[7.5px] font-mono font-bold text-gray-400 bg-white/5 px-1.5 py-0.5 rounded-md border border-white/10 uppercase">
+                      <span className="text-[6.5px] font-mono font-bold text-gray-400 bg-white/5 px-1.5 py-0.5 rounded-md border border-white/10 uppercase">
                         {formatINR(monthVolume)} Volume
                       </span>
                     </div>
@@ -757,20 +757,20 @@ export const TransactionsView: React.FC = () => {
                               {/* Card Top Header: Brand + Contactless NFC */}
                               <div className="relative flex items-center justify-between mb-2">
                                 <div className="flex items-center space-x-1.5">
-                                  <div className="w-4 h-4 rounded bg-gradient-to-tr from-slate-200 to-slate-400 text-black flex items-center justify-center font-black text-[8px] shadow-sm">
+                                  <div className="w-3.5 h-3.5 rounded bg-gradient-to-tr from-slate-200 to-slate-400 text-black flex items-center justify-center font-black text-[7.5px] shadow-sm">
                                     A
                                   </div>
-                                  <span className="text-[10px] font-black tracking-wider text-slate-200 uppercase font-mono">
+                                  <span className="text-[8.5px] font-black tracking-wider text-slate-200 uppercase font-mono">
                                     AKM TITANIUM
                                   </span>
-                                  <span className="text-[7.5px] font-black text-rose-300 px-1.5 py-0.2 rounded bg-rose-500/20 border border-rose-500/30 uppercase tracking-wide">
+                                  <span className="text-[6.5px] font-black text-rose-300 px-1 py-0.2 rounded bg-rose-500/20 border border-rose-500/30 uppercase tracking-wide">
                                     DEBIT CARD
                                   </span>
                                 </div>
 
                                 <div className="flex items-center space-x-1 text-slate-400">
-                                  <Wifi className="w-3 h-3 rotate-90 stroke-[2.5]" />
-                                  <span className="text-[8px] font-mono tracking-wider font-bold uppercase text-slate-300">
+                                  <Wifi className="w-2.5 h-2.5 rotate-90 stroke-[2.5]" />
+                                  <span className="text-[7px] font-mono tracking-wider font-bold uppercase text-slate-300">
                                     IMPS 24x7
                                   </span>
                                 </div>
@@ -781,7 +781,7 @@ export const TransactionsView: React.FC = () => {
                                 {/* Left: Cute Titanium Chip + Card Number */}
                                 <div className="flex items-center space-x-2">
                                   {/* Cute Platinum/Silver EMV Chip */}
-                                  <div className="w-7 h-5 rounded bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 p-0.5 shadow-sm flex items-center justify-center border border-slate-200/70 shrink-0">
+                                  <div className="w-6.5 h-4.5 rounded bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 p-0.5 shadow-sm flex items-center justify-center border border-slate-200/70 shrink-0">
                                     <div className="w-full h-full rounded-[2px] border border-black/25 flex flex-col justify-between p-0.5 relative overflow-hidden bg-gradient-to-tr from-slate-300 via-slate-200 to-slate-100">
                                       <div className="w-full h-[0.5px] bg-black/30 my-auto" />
                                       <div className="w-full h-[0.5px] bg-black/30 my-auto" />
@@ -792,12 +792,12 @@ export const TransactionsView: React.FC = () => {
 
                                   <div>
                                     <div
-                                      className="font-mono text-[10.5px] font-bold tracking-[0.16em] text-white/90"
+                                      className="font-mono text-[9px] font-bold tracking-[0.16em] text-white/90"
                                       style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}
                                     >
                                       •••• {last4}
                                     </div>
-                                    <div className="text-[7.5px] font-mono text-slate-400 uppercase">
+                                    <div className="text-[6.5px] font-mono text-slate-400 uppercase">
                                       DEBIT OUTFLOW
                                     </div>
                                   </div>
@@ -806,25 +806,25 @@ export const TransactionsView: React.FC = () => {
                                 {/* Right: Debited Amount & Status Pill */}
                                 <div className="text-right">
                                   <div
-                                    className="text-base font-black font-mono text-rose-400 tracking-tight"
+                                    className="text-xs font-black font-mono text-rose-400 tracking-tight"
                                     style={{ textShadow: '0 0 10px rgba(244, 63, 94, 0.4)' }}
                                   >
                                     - {formatINR(Math.abs(tx.amount))}
                                   </div>
                                   <div className="mt-0.5">
                                     {tx.status === 'success' ? (
-                                      <span className="inline-flex items-center text-[7.5px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-400/30 px-1.5 py-0.2 rounded-full space-x-1">
-                                        <Check className="w-2 h-2 stroke-[3]" />
+                                      <span className="inline-flex items-center text-[6.5px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-400/30 px-1 py-0.2 rounded-full space-x-1">
+                                        <Check className="w-1.5 h-1.5 stroke-[3]" />
                                         <span>SUCCESS</span>
                                       </span>
                                     ) : tx.status === 'pending' ? (
-                                      <span className="inline-flex items-center text-[7.5px] font-bold text-amber-300 bg-amber-500/20 border border-amber-400/30 px-1.5 py-0.2 rounded-full space-x-1">
-                                        <Clock className="w-2 h-2 stroke-[2.5] animate-pulse" />
+                                      <span className="inline-flex items-center text-[6.5px] font-bold text-amber-300 bg-amber-500/20 border border-amber-400/30 px-1 py-0.2 rounded-full space-x-1">
+                                        <Clock className="w-1.5 h-1.5 stroke-[2.5] animate-pulse" />
                                         <span>PROCESSING</span>
                                       </span>
                                     ) : (
-                                      <span className="inline-flex items-center text-[7.5px] font-bold text-rose-300 bg-rose-500/20 border border-rose-400/30 px-1.5 py-0.2 rounded-full space-x-1">
-                                        <XCircle className="w-2 h-2 stroke-[2.5]" />
+                                      <span className="inline-flex items-center text-[6.5px] font-bold text-rose-300 bg-rose-500/20 border border-rose-400/30 px-1 py-0.2 rounded-full space-x-1">
+                                        <XCircle className="w-1.5 h-1.5 stroke-[2.5]" />
                                         <span>DECLINED</span>
                                       </span>
                                     )}
@@ -832,42 +832,42 @@ export const TransactionsView: React.FC = () => {
                                 </div>
                               </div>
 
-                              {/* Card Details Compact Grid (har detail ke sath: date, time, title, auth, a/c) */}
-                              <div className="relative bg-black/40 rounded-xl p-2 border border-white/10 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[9px] mb-2">
+                              {/* Card Details Compact Grid */}
+                              <div className="relative bg-black/40 rounded-xl p-2 border border-white/10 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[8px] mb-2">
                                 {/* Exact Date & Time */}
                                 <div>
-                                  <div className="text-[7px] font-mono tracking-wider text-slate-400 uppercase flex items-center space-x-1">
+                                  <div className="text-[6.5px] font-mono tracking-wider text-slate-400 uppercase flex items-center space-x-1">
                                     <Calendar className="w-2 h-2 text-rose-400" />
                                     <span>DATE & TIME</span>
                                   </div>
-                                  <div className="font-mono text-white font-bold mt-0.5 text-[8.5px] leading-tight">
+                                  <div className="font-mono text-white font-bold mt-0.5 text-[7.5px] leading-tight">
                                     {formatRecordDateTime(tx.createdAt)}
                                   </div>
-                                  <div className="text-[7.5px] text-rose-300/80 font-mono">
+                                  <div className="text-[6.5px] text-rose-300/80 font-mono">
                                     {relativeTime}
                                   </div>
                                 </div>
 
                                 {/* Transaction Title */}
                                 <div>
-                                  <div className="text-[7px] font-mono tracking-wider text-slate-400 uppercase">
+                                  <div className="text-[6.5px] font-mono tracking-wider text-slate-400 uppercase">
                                     PURPOSE / TITLE
                                   </div>
-                                  <div className="text-white font-bold truncate mt-0.5 text-[8.5px] leading-tight" title={tx.title}>
+                                  <div className="text-white font-bold truncate mt-0.5 text-[7.5px] leading-tight" title={tx.title}>
                                     {tx.title}
                                   </div>
-                                  <div className="text-[7.5px] text-slate-400 font-mono">
+                                  <div className="text-[6.5px] text-slate-400 font-mono">
                                     Cashout IMPS
                                   </div>
                                 </div>
 
                                 {/* Auth / Order ID */}
                                 <div>
-                                  <div className="text-[7px] font-mono tracking-wider text-slate-400 uppercase">
+                                  <div className="text-[6.5px] font-mono tracking-wider text-slate-400 uppercase">
                                     AUTH / ORDER ID
                                   </div>
                                   <div className="flex items-center space-x-1 mt-0.5">
-                                    <span className="font-mono text-slate-200 font-bold truncate text-[8px]">
+                                    <span className="font-mono text-slate-200 font-bold truncate text-[7px]">
                                       {tx.orderId || tx.id}
                                     </span>
                                     <button
@@ -885,11 +885,11 @@ export const TransactionsView: React.FC = () => {
 
                                 {/* Account / UTR */}
                                 <div>
-                                  <div className="text-[7px] font-mono tracking-wider text-slate-400 uppercase">
+                                  <div className="text-[6.5px] font-mono tracking-wider text-slate-400 uppercase">
                                     {(tx.utrNumber || (tx as any).utr) ? 'BANK UTR' : 'BENEFICIARY A/C'}
                                   </div>
                                   <div className="flex items-center space-x-1 mt-0.5">
-                                    <span className="font-mono text-slate-200 font-bold truncate text-[8px]">
+                                    <span className="font-mono text-slate-200 font-bold truncate text-[7px]">
                                       {(tx.utrNumber || (tx as any).utr) || (user?.bankDetails?.accountNumber ? `A/C •• ${user.bankDetails.accountNumber.slice(-4)}` : 'Bank Transfer')}
                                     </span>
                                     {(tx.utrNumber || (tx as any).utr) && (
@@ -912,10 +912,10 @@ export const TransactionsView: React.FC = () => {
                               <div className="relative flex items-center justify-between pt-1 border-t border-white/10">
                                 <div className="flex items-center space-x-1.5">
                                   <div className="flex items-center -space-x-1">
-                                    <div className="w-3.5 h-3.5 rounded-full bg-rose-500/90 shadow-sm" />
-                                    <div className="w-3.5 h-3.5 rounded-full bg-sky-400/90 shadow-sm mix-blend-screen" />
+                                    <div className="w-3 h-3 rounded-full bg-rose-500/90 shadow-sm" />
+                                    <div className="w-3 h-3 rounded-full bg-sky-400/90 shadow-sm mix-blend-screen" />
                                   </div>
-                                  <span className="text-[7.5px] font-mono text-slate-400 font-bold">
+                                  <span className="text-[6.5px] font-mono text-slate-400 font-bold">
                                     RuPay / IMPS
                                   </span>
                                 </div>
@@ -926,9 +926,9 @@ export const TransactionsView: React.FC = () => {
                                       sfx.playTap();
                                       setHelpTx(tx);
                                     }}
-                                    className="px-2.5 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-slate-300 text-[8px] font-bold flex items-center space-x-1 cursor-pointer active:scale-95 transition-all"
+                                    className="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-slate-300 text-[7px] font-bold flex items-center space-x-1 cursor-pointer active:scale-95 transition-all"
                                   >
-                                    <HelpCircle className="w-2.5 h-2.5 text-rose-400" />
+                                    <HelpCircle className="w-2 h-2 text-rose-400" />
                                     <span>Help / Dispute</span>
                                   </button>
                                 </div>
@@ -960,20 +960,20 @@ export const TransactionsView: React.FC = () => {
                               {/* Card Top Header: Brand + NFC Waves */}
                               <div className="relative flex items-center justify-between mb-2">
                                 <div className="flex items-center space-x-1.5">
-                                  <div className="w-4 h-4 rounded bg-gradient-to-tr from-amber-400 to-amber-200 text-black flex items-center justify-center font-black text-[8px] shadow-sm">
+                                  <div className="w-3.5 h-3.5 rounded bg-gradient-to-tr from-amber-400 to-amber-200 text-black flex items-center justify-center font-black text-[7.5px] shadow-sm">
                                     A
                                   </div>
-                                  <span className="text-[10px] font-black tracking-wider text-emerald-200 uppercase font-mono">
+                                  <span className="text-[8.5px] font-black tracking-wider text-emerald-200 uppercase font-mono">
                                     AKM PLATINUM
                                   </span>
-                                  <span className="text-[7.5px] font-black text-amber-300 px-1.5 py-0.2 rounded bg-amber-400/20 border border-amber-400/30 uppercase tracking-wide">
+                                  <span className="text-[6.5px] font-black text-amber-300 px-1 py-0.2 rounded bg-amber-400/20 border border-amber-400/30 uppercase tracking-wide">
                                     CREDIT CARD
                                   </span>
                                 </div>
 
                                 <div className="flex items-center space-x-1 text-emerald-300/80">
-                                  <Wifi className="w-3 h-3 rotate-90 stroke-[2.5]" />
-                                  <span className="text-[8px] font-mono tracking-wider font-bold uppercase text-emerald-300">
+                                  <Wifi className="w-2.5 h-2.5 rotate-90 stroke-[2.5]" />
+                                  <span className="text-[7px] font-mono tracking-wider font-bold uppercase text-emerald-300">
                                     INSTANT CREDIT
                                   </span>
                                 </div>
@@ -984,7 +984,7 @@ export const TransactionsView: React.FC = () => {
                                 {/* Left: Cute Gold Chip + Card Number */}
                                 <div className="flex items-center space-x-2">
                                   {/* Cute Gold EMV Chip */}
-                                  <div className="w-7 h-5 rounded bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-0.5 shadow-sm flex items-center justify-center border border-amber-200/70 shrink-0">
+                                  <div className="w-6.5 h-4.5 rounded bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-0.5 shadow-sm flex items-center justify-center border border-amber-200/70 shrink-0">
                                     <div className="w-full h-full rounded-[2px] border border-black/25 flex flex-col justify-between p-0.5 relative overflow-hidden bg-gradient-to-tr from-amber-300 via-amber-200 to-amber-100">
                                       <div className="w-full h-[0.5px] bg-black/30 my-auto" />
                                       <div className="w-full h-[0.5px] bg-black/30 my-auto" />
@@ -995,12 +995,12 @@ export const TransactionsView: React.FC = () => {
 
                                   <div>
                                     <div
-                                      className="font-mono text-[10.5px] font-bold tracking-[0.16em] text-white/90"
+                                      className="font-mono text-[9px] font-bold tracking-[0.16em] text-white/90"
                                       style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}
                                     >
                                       •••• {last4}
                                     </div>
-                                    <div className="text-[7.5px] font-mono text-emerald-300/80 uppercase">
+                                    <div className="text-[6.5px] font-mono text-emerald-300/80 uppercase">
                                       CREDIT INFLOW
                                     </div>
                                   </div>
@@ -1009,56 +1009,56 @@ export const TransactionsView: React.FC = () => {
                                 {/* Right: Credited Amount & Settled Stamp */}
                                 <div className="text-right">
                                   <div
-                                    className="text-base font-black font-mono text-emerald-300 tracking-tight"
+                                    className="text-xs font-black font-mono text-emerald-300 tracking-tight"
                                     style={{ textShadow: '0 0 10px rgba(52, 211, 153, 0.4)' }}
                                   >
                                     + {formatINR(Math.abs(tx.amount))}
                                   </div>
                                   <div className="mt-0.5">
-                                    <span className="inline-flex items-center text-[7.5px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-400/30 px-1.5 py-0.2 rounded-full space-x-1">
-                                      <Check className="w-2 h-2 stroke-[3]" />
+                                    <span className="inline-flex items-center text-[6.5px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-400/30 px-1 py-0.2 rounded-full space-x-1">
+                                      <Check className="w-1.5 h-1.5 stroke-[3]" />
                                       <span>SETTLED</span>
                                     </span>
                                   </div>
                                 </div>
                               </div>
 
-                              {/* Card Details Compact Grid (har detail ke sath: date, time, title, auth, cardholder/utr) */}
-                              <div className="relative bg-black/40 rounded-xl p-2 border border-white/10 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[9px] mb-2">
+                              {/* Card Details Compact Grid */}
+                              <div className="relative bg-black/40 rounded-xl p-2 border border-white/10 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[8px] mb-2">
                                 {/* Exact Date & Time */}
                                 <div>
-                                  <div className="text-[7px] font-mono tracking-wider text-emerald-300/70 uppercase flex items-center space-x-1">
+                                  <div className="text-[6.5px] font-mono tracking-wider text-emerald-300/70 uppercase flex items-center space-x-1">
                                     <Calendar className="w-2 h-2 text-emerald-400" />
                                     <span>DATE & TIME</span>
                                   </div>
-                                  <div className="font-mono text-white font-bold mt-0.5 text-[8.5px] leading-tight">
+                                  <div className="font-mono text-white font-bold mt-0.5 text-[7.5px] leading-tight">
                                     {formatRecordDateTime(tx.createdAt)}
                                   </div>
-                                  <div className="text-[7.5px] text-emerald-300/80 font-mono">
+                                  <div className="text-[6.5px] text-emerald-300/80 font-mono">
                                     {relativeTime}
                                   </div>
                                 </div>
 
                                 {/* Income Source / Type */}
                                 <div>
-                                  <div className="text-[7px] font-mono tracking-wider text-emerald-300/70 uppercase">
+                                  <div className="text-[6.5px] font-mono tracking-wider text-emerald-300/70 uppercase">
                                     SOURCE / PURPOSE
                                   </div>
-                                  <div className="text-white font-bold truncate mt-0.5 text-[8.5px] leading-tight" title={tx.title}>
+                                  <div className="text-white font-bold truncate mt-0.5 text-[7.5px] leading-tight" title={tx.title}>
                                     {tx.title}
                                   </div>
-                                  <div className="text-[7.5px] text-emerald-300/80 font-mono">
+                                  <div className="text-[6.5px] text-emerald-300/80 font-mono">
                                     {isRecharge ? 'Recharge Deposit' : 'Daily Income Dividend'}
                                   </div>
                                 </div>
 
                                 {/* Auth / Order ID */}
                                 <div>
-                                  <div className="text-[7px] font-mono tracking-wider text-emerald-300/70 uppercase">
+                                  <div className="text-[6.5px] font-mono tracking-wider text-emerald-300/70 uppercase">
                                     AUTH / ORDER ID
                                   </div>
                                   <div className="flex items-center space-x-1 mt-0.5">
-                                    <span className="font-mono text-emerald-200 font-bold truncate text-[8px]">
+                                    <span className="font-mono text-emerald-200 font-bold truncate text-[7px]">
                                       {tx.orderId || tx.id}
                                     </span>
                                     <button
@@ -1076,11 +1076,11 @@ export const TransactionsView: React.FC = () => {
 
                                 {/* Cardholder / UTR */}
                                 <div>
-                                  <div className="text-[7px] font-mono tracking-wider text-emerald-300/70 uppercase">
+                                  <div className="text-[6.5px] font-mono tracking-wider text-emerald-300/70 uppercase">
                                     {(tx.utrNumber || (tx as any).utr) ? 'BANK UTR' : 'CARDHOLDER'}
                                   </div>
                                   <div className="flex items-center space-x-1 mt-0.5">
-                                    <span className="font-mono text-emerald-200 font-bold truncate text-[8px]">
+                                    <span className="font-mono text-emerald-200 font-bold truncate text-[7px]">
                                       {(tx.utrNumber || (tx as any).utr) || (user?.phone ? `USER • ${user.phone.slice(-4)}` : 'VIP INVESTOR')}
                                     </span>
                                     {(tx.utrNumber || (tx as any).utr) && (
@@ -1103,10 +1103,10 @@ export const TransactionsView: React.FC = () => {
                               <div className="relative flex items-center justify-between pt-1 border-t border-white/10">
                                 <div className="flex items-center space-x-1.5">
                                   <div className="flex items-center -space-x-1">
-                                    <div className="w-3.5 h-3.5 rounded-full bg-emerald-400/90 shadow-sm" />
-                                    <div className="w-3.5 h-3.5 rounded-full bg-amber-400/90 shadow-sm mix-blend-screen" />
+                                    <div className="w-3 h-3 rounded-full bg-emerald-400/90 shadow-sm" />
+                                    <div className="w-3 h-3 rounded-full bg-amber-400/90 shadow-sm mix-blend-screen" />
                                   </div>
-                                  <span className="text-[7.5px] font-mono text-emerald-300/80 font-bold">
+                                  <span className="text-[6.5px] font-mono text-emerald-300/80 font-bold">
                                     RuPay / NPCI
                                   </span>
                                 </div>
@@ -1117,9 +1117,9 @@ export const TransactionsView: React.FC = () => {
                                       sfx.playTap();
                                       setHelpTx(tx);
                                     }}
-                                    className="px-2.5 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-gray-200 text-[8px] font-bold flex items-center space-x-1 cursor-pointer active:scale-95 transition-all"
+                                    className="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-gray-200 text-[7px] font-bold flex items-center space-x-1 cursor-pointer active:scale-95 transition-all"
                                   >
-                                    <HelpCircle className="w-2.5 h-2.5 text-emerald-400" />
+                                    <HelpCircle className="w-2 h-2 text-emerald-400" />
                                     <span>Help / Dispute</span>
                                   </button>
                                 </div>
@@ -1159,23 +1159,23 @@ export const TransactionsView: React.FC = () => {
             </button>
 
             <div className="text-center pt-1 border-b border-white/10 pb-3">
-              <div className="w-11 h-11 rounded-2xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center mx-auto mb-2">
-                <HelpCircle className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-2xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center mx-auto mb-2">
+                <HelpCircle className="w-5 h-5" />
               </div>
-              <div className="text-sm font-black text-white tracking-tight">
+              <div className="text-xs font-black text-white tracking-tight">
                 Card Payment Support
               </div>
-              <div className="text-[10px] text-gray-400 mt-0.5">
+              <div className="text-[9px] text-gray-400 mt-0.5">
                 Ticket Reference: <span className="font-mono font-bold text-emerald-400">TKT-{helpTx.orderId || helpTx.id}</span>
               </div>
             </div>
 
-            <div className="bg-sky-500/10 p-3 rounded-xl border border-sky-500/20 text-xs text-sky-200 space-y-1">
-              <div className="font-bold flex items-center space-x-1 text-sky-300">
-                <ShieldCheck className="w-3.5 h-3.5" />
+            <div className="bg-sky-500/10 p-2.5 rounded-xl border border-sky-500/20 text-[11px] text-sky-200 space-y-1">
+              <div className="font-bold flex items-center space-x-1 text-sky-300 text-[11px]">
+                <ShieldCheck className="w-3 h-3" />
                 <span>Card Protection Active</span>
               </div>
-              <p className="text-[11px] text-sky-200/80 leading-relaxed">
+              <p className="text-[10px] text-sky-200/80 leading-relaxed">
                 If an amount was deducted or pending from your card or bank account, bank clearance automatically completes within 10-30 minutes.
               </p>
             </div>
@@ -1186,11 +1186,11 @@ export const TransactionsView: React.FC = () => {
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => setHelpTx(null)}
-                className="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer shadow-lg active:scale-95 transition-all"
+                className="w-full py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] flex items-center justify-center space-x-1.5 cursor-pointer shadow-lg active:scale-95 transition-all"
               >
-                <MessageSquare className="w-3.5 h-3.5" />
+                <MessageSquare className="w-3 h-3" />
                 <span>Chat with Card Desk</span>
-                <ExternalLink className="w-3 h-3" />
+                <ExternalLink className="w-2.5 h-2.5" />
               </a>
 
               <button
@@ -1198,7 +1198,7 @@ export const TransactionsView: React.FC = () => {
                   handleCopy(`Card issue reported for ${helpTx.orderId || helpTx.id} amount ${helpTx.amount}`, 'Support ticket query');
                   setHelpTx(null);
                 }}
-                className="w-full py-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 font-bold text-xs cursor-pointer transition-all"
+                className="w-full py-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 font-bold text-[11px] cursor-pointer transition-all"
               >
                 Copy Ticket Details
               </button>
@@ -1218,7 +1218,7 @@ export const TransactionsView: React.FC = () => {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-[#161b22] text-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-white/20 relative space-y-4 my-auto cursor-default"
+            className="bg-[#161b22] text-white rounded-3xl max-w-sm w-full p-4.5 shadow-2xl border border-white/20 relative space-y-3.5 my-auto cursor-default"
           >
             <button
               onClick={() => setIsExportModalOpen(false)}
@@ -1228,19 +1228,19 @@ export const TransactionsView: React.FC = () => {
             </button>
 
             <div className="text-center pt-1 border-b border-white/10 pb-3">
-              <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto mb-2">
-                <FileText className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto mb-2">
+                <FileText className="w-5 h-5" />
               </div>
-              <div className="text-sm font-black text-white tracking-tight">
+              <div className="text-xs font-black text-white tracking-tight">
                 Card Passbook Statement
               </div>
-              <div className="text-[10px] text-gray-400 mt-0.5">
+              <div className="text-[9px] text-gray-400 mt-0.5">
                 Download or print official account statements
               </div>
             </div>
 
             {/* Details */}
-            <div className="bg-black/40 p-3 rounded-2xl border border-white/10 text-xs space-y-1.5">
+            <div className="bg-black/40 p-2.5 rounded-2xl border border-white/10 text-[11px] space-y-1.5">
               <div className="flex justify-between">
                 <span className="text-gray-400">Active View</span>
                 <span className="font-bold text-white capitalize">{activeTab} Statements</span>
@@ -1260,20 +1260,20 @@ export const TransactionsView: React.FC = () => {
             </div>
 
             {/* Actions */}
-            <div className="pt-2 space-y-2">
+            <div className="pt-1.5 space-y-2">
               <button
                 onClick={handleExportCSV}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-extrabold text-xs flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 shadow-md transition-all"
+                className="w-full py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-extrabold text-[11px] flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 shadow-md transition-all"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-3.5 h-3.5" />
                 <span>Download Card Statement (.CSV)</span>
               </button>
 
               <button
                 onClick={handlePrintStatement}
-                className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer transition-all"
+                className="w-full py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] flex items-center justify-center space-x-1.5 cursor-pointer transition-all"
               >
-                <Printer className="w-4 h-4" />
+                <Printer className="w-3.5 h-3.5" />
                 <span>Print Card Passbook</span>
               </button>
             </div>
