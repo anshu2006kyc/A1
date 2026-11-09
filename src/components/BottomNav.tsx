@@ -20,9 +20,8 @@ export const BottomNav: React.FC = () => {
     <div className="fixed bottom-2.5 left-2.5 right-2.5 z-40 max-w-md mx-auto pointer-events-none">
       <nav
         aria-label="Bottom Navigation"
-        className="pointer-events-auto relative bg-white/95 backdrop-blur-2xl border rounded-[26px] px-2 h-[60px] flex items-center box-border"
+        className="pointer-events-auto relative bg-white/95 dark:bg-[#111722]/95 backdrop-blur-2xl border border-gray-100 dark:border-white/10 rounded-[26px] px-2 h-[60px] flex items-center box-border transition-colors duration-200"
         style={{
-          borderColor: 'var(--brand-glow)',
           boxShadow: '0 10px 30px var(--brand-glow), 0 2px 8px rgba(0,0,0,0.04)'
         }}
       >
@@ -56,7 +55,7 @@ export const BottomNav: React.FC = () => {
               <motion.div
                 whileTap={{ scale: 0.88 }}
                 className={`relative z-10 flex flex-col items-center justify-center transition-colors ${
-                  currentView === 'home' ? '' : 'text-slate-400 group-hover:text-slate-700'
+                  currentView === 'home' ? '' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200'
                 }`}
               >
                 <Home
@@ -113,7 +112,7 @@ export const BottomNav: React.FC = () => {
               <motion.div
                 whileTap={{ scale: 0.88 }}
                 className={`relative z-10 flex flex-col items-center justify-center transition-colors ${
-                  currentView === 'share' ? '' : 'text-slate-400 group-hover:text-slate-700'
+                  currentView === 'share' ? '' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200'
                 }`}
               >
                 <Share2
@@ -169,9 +168,9 @@ export const BottomNav: React.FC = () => {
                   />
                 )}
 
-                {/* Main Circular Button with Constant 52px Diameter (No scale-105 or dynamic ring offset) */}
+                {/* Main Circular Button with Constant 52px Diameter */}
                 <div
-                  className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center border-[3px] border-white transition-all overflow-hidden"
+                  className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center border-[3px] border-white dark:border-[#111722] transition-colors overflow-hidden"
                   style={{
                     background: 'var(--brand-chamkila-gradient, linear-gradient(135deg, #00d26a 0%, #00ba58 45%, #00873d 100%))',
                     boxShadow: currentView === 'checkin'
@@ -202,13 +201,13 @@ export const BottomNav: React.FC = () => {
 
                 {/* Floating Notification Badge */}
                 {!hasCheckedInToday ? (
-                  <span className="absolute -top-1 -right-1 z-30 bg-gradient-to-r from-amber-500 via-amber-600 to-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white shadow-md flex items-center space-x-0.5 animate-bounce pointer-events-none">
+                  <span className="absolute -top-1 -right-1 z-30 bg-gradient-to-r from-amber-500 via-amber-600 to-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white dark:border-[#111722] shadow-md flex items-center space-x-0.5 animate-bounce pointer-events-none">
                     <Gift className="w-2.5 h-2.5 text-amber-100" />
                     <span>NEW</span>
                   </span>
                 ) : (
                   <span
-                    className="absolute -top-1 -right-1 z-30 text-white text-[8px] font-black p-0.5 rounded-full border-2 border-white shadow-xs flex items-center justify-center pointer-events-none"
+                    className="absolute -top-1 -right-1 z-30 text-white text-[8px] font-black p-0.5 rounded-full border-2 border-white dark:border-[#111722] shadow-xs flex items-center justify-center pointer-events-none"
                     style={{ backgroundColor: 'var(--brand-primary)' }}
                   >
                     <Check className="w-2.5 h-2.5 stroke-[3]" />
@@ -216,7 +215,7 @@ export const BottomNav: React.FC = () => {
                 )}
               </div>
 
-              {/* Label below the circle (Stable size, no scale jump) */}
+              {/* Label below the circle */}
               <span
                 className="text-[9.5px] tracking-tight mt-0.5 font-bold transition-colors"
                 style={{
@@ -267,7 +266,7 @@ export const BottomNav: React.FC = () => {
               <motion.div
                 whileTap={{ scale: 0.88 }}
                 className={`relative z-10 flex flex-col items-center justify-center transition-colors ${
-                  currentView === 'team' ? '' : 'text-slate-400 group-hover:text-slate-700'
+                  currentView === 'team' ? '' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200'
                 }`}
               >
                 <Users
@@ -324,7 +323,7 @@ export const BottomNav: React.FC = () => {
               <motion.div
                 whileTap={{ scale: 0.88 }}
                 className={`relative z-10 flex flex-col items-center justify-center transition-colors ${
-                  isProfileActive ? '' : 'text-slate-400 group-hover:text-slate-700'
+                  isProfileActive ? '' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200'
                 }`}
               >
                 <User

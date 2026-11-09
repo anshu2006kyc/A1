@@ -92,7 +92,7 @@ export const HomeView: React.FC = () => {
             className={`py-2.5 px-2 rounded-xl text-center flex items-center justify-center space-x-1.5 transition-all cursor-pointer font-black text-xs ${
               selectedCategory === 'normal'
                 ? 'btn-chamkila text-white shadow-md'
-                : 'bg-white text-gray-700 border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/40'
+                : 'bg-white dark:bg-[#111722] text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 hover:border-emerald-300 dark:hover:border-emerald-500/50 hover:bg-emerald-50/40 dark:hover:bg-white/5'
             }`}
           >
             <Layers className="w-3.5 h-3.5 drop-shadow-xs" />
@@ -108,7 +108,7 @@ export const HomeView: React.FC = () => {
             className={`py-2.5 px-2 rounded-xl text-center flex items-center justify-center space-x-1.5 transition-all cursor-pointer font-black text-xs ${
               selectedCategory === 'turbo'
                 ? 'btn-chamkila-gold text-amber-950 shadow-md ring-1 ring-amber-300/80'
-                : 'bg-white text-gray-700 border border-gray-200 hover:border-amber-300 hover:bg-amber-50/40'
+                : 'bg-white dark:bg-[#111722] text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 hover:border-amber-300 dark:hover:border-amber-500/50 hover:bg-amber-50/40 dark:hover:bg-white/5'
             }`}
           >
             <Zap className="w-3.5 h-3.5 text-amber-900 fill-amber-300" />
@@ -124,7 +124,7 @@ export const HomeView: React.FC = () => {
             className={`py-2.5 px-2 rounded-xl text-center flex items-center justify-center space-x-1.5 transition-all cursor-pointer font-black text-xs ${
               selectedCategory === 'vip'
                 ? 'btn-chamkila text-white shadow-md'
-                : 'bg-white text-gray-700 border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/40'
+                : 'bg-white dark:bg-[#111722] text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-white/10 hover:border-emerald-300 dark:hover:border-emerald-500/50 hover:bg-emerald-50/40 dark:hover:bg-white/5'
             }`}
           >
             <Crown className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
@@ -134,13 +134,13 @@ export const HomeView: React.FC = () => {
 
         {/* Clean Interactive Turbo Duration Filter Toggles */}
         {selectedCategory === 'turbo' && (
-          <div className="mt-2.5 p-2 bg-gradient-to-r from-amber-500/10 via-amber-400/15 to-orange-500/10 border border-amber-300/70 rounded-2xl animate-fade-in shadow-xs">
+          <div className="mt-2.5 p-2 bg-gradient-to-r from-amber-500/10 via-amber-400/15 to-orange-500/10 dark:from-amber-950/40 dark:via-amber-900/30 dark:to-orange-950/40 border border-amber-300/70 dark:border-amber-500/30 rounded-2xl animate-fade-in shadow-xs">
             <div className="flex items-center justify-between px-1 mb-1.5">
-              <div className="flex items-center space-x-1.5 text-xs font-extrabold text-amber-950">
+              <div className="flex items-center space-x-1.5 text-xs font-extrabold text-amber-950 dark:text-amber-200">
                 <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-400" />
                 <span>Turbo Duration</span>
               </div>
-              <span className="text-[9.5px] text-amber-900 font-black bg-white/90 px-2 py-0.5 rounded-md border border-amber-200">
+              <span className="text-[9.5px] text-amber-900 dark:text-amber-300 font-black bg-white/90 dark:bg-amber-950/80 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-500/40">
                 Auto-Settlement
               </span>
             </div>
@@ -156,7 +156,7 @@ export const HomeView: React.FC = () => {
                 className={`py-1.5 px-2 rounded-xl text-xs font-bold text-center transition-all cursor-pointer ${
                   turboDurationFilter === 'all'
                     ? 'bg-amber-600 text-white shadow-sm font-black ring-1 ring-amber-400'
-                    : 'bg-white/80 text-amber-900 hover:bg-white border border-amber-200/70'
+                    : 'bg-white/80 dark:bg-[#0d131d] text-amber-900 dark:text-amber-200 hover:bg-white dark:hover:bg-[#141b27] border border-amber-200/70 dark:border-amber-500/30'
                 }`}
               >
                 All Plans
@@ -172,7 +172,7 @@ export const HomeView: React.FC = () => {
                 className={`py-1.5 px-2 rounded-xl text-xs font-bold text-center flex items-center justify-center space-x-1 transition-all cursor-pointer ${
                   turboDurationFilter === '1m'
                     ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm font-black ring-1 ring-amber-300'
-                    : 'bg-white/80 text-amber-900 hover:bg-white border border-amber-200/70'
+                    : 'bg-white/80 dark:bg-[#0d131d] text-amber-900 dark:text-amber-200 hover:bg-white dark:hover:bg-[#141b27] border border-amber-200/70 dark:border-amber-500/30'
                 }`}
               >
                 <span>⏱️ 1 Minute</span>
@@ -188,7 +188,7 @@ export const HomeView: React.FC = () => {
                 className={`py-1.5 px-2 rounded-xl text-xs font-bold text-center flex items-center justify-center space-x-1 transition-all cursor-pointer ${
                   turboDurationFilter === '1h'
                     ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm font-black ring-1 ring-amber-300'
-                    : 'bg-white/80 text-amber-900 hover:bg-white border border-amber-200/70'
+                    : 'bg-white/80 dark:bg-[#0d131d] text-amber-900 dark:text-amber-200 hover:bg-white dark:hover:bg-[#141b27] border border-amber-200/70 dark:border-amber-500/30'
                 }`}
               >
                 <span>⏱️ 1 Hour</span>
@@ -215,8 +215,8 @@ export const HomeView: React.FC = () => {
         </div>
 
         {filteredPlans.length === 0 && (
-          <div className="text-center py-10 bg-white rounded-2xl border border-gray-100 p-6">
-            <div className="text-gray-400 text-sm">No plans available in this category.</div>
+          <div className="text-center py-10 bg-white dark:bg-[#111722] rounded-2xl border border-gray-100 dark:border-white/10 p-6">
+            <div className="text-gray-400 dark:text-gray-400 text-sm">No plans available in this category.</div>
           </div>
         )}
       </div>

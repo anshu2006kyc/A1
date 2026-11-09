@@ -23,6 +23,7 @@ import {
   Lock,
   LogIn,
   LogOut,
+  Moon,
   Package,
   Plus,
   QrCode,
@@ -32,6 +33,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Smartphone,
+  Sun,
   Target,
   TrendingUp,
   Trophy,
@@ -161,7 +163,11 @@ export const ProfileView: React.FC = () => {
     setIsSupportModalOpen,
     isHapticEnabled,
     toggleHapticFeedback,
-    isHapticSupported
+    isHapticSupported,
+    colorMode,
+    setColorMode,
+    toggleColorMode,
+    isDarkMode
   } = useApp();
   const [showBalance, setShowBalance] = useState<boolean>(true);
   const [showPhone, setShowPhone] = useState<boolean>(false);
@@ -503,9 +509,9 @@ export const ProfileView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] pb-28 animate-fade-in font-sans">
+    <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#0b0f17] pb-28 animate-fade-in font-sans transition-colors duration-200">
       {/* Profile Top Bar */}
-      <div className="bg-white p-4 border-b border-gray-100 flex items-center justify-between shadow-2xs">
+      <div className="bg-white dark:bg-[#111722] p-4 border-b border-gray-100 dark:border-white/10 flex items-center justify-between shadow-2xs transition-colors duration-200">
         <div className="flex items-center space-x-3">
           <div
             className="w-13 h-13 rounded-2xl text-white flex items-center justify-center shrink-0 border border-white/20"
@@ -517,7 +523,7 @@ export const ProfileView: React.FC = () => {
             <User className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-[11px] font-bold text-gray-900 tracking-tight flex items-center space-x-1.5">
+            <div className="text-[11px] font-bold text-gray-900 dark:text-gray-100 tracking-tight flex items-center space-x-1.5">
               <span>{user.name || maskPhone(user.phone, showPhone)}</span>
               {isLoggedIn ? (
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block ring-2 ring-emerald-200" title="Online" />
@@ -528,7 +534,7 @@ export const ProfileView: React.FC = () => {
 
             {/* Masked Mobile Number with Eye Toggle & Copy */}
             <div className="flex items-center space-x-1.5 mt-0.5">
-              <span className="text-[9px] text-gray-600 font-mono font-bold tracking-tight">
+              <span className="text-[9px] text-gray-600 dark:text-gray-300 font-mono font-bold tracking-tight">
                 {maskPhone(user.phone, showPhone)}
               </span>
               <button
@@ -537,7 +543,7 @@ export const ProfileView: React.FC = () => {
                   sfx.playTap();
                   setShowPhone(!showPhone);
                 }}
-                className="text-gray-400 hover:text-emerald-700 transition-colors cursor-pointer p-0.5"
+                className="text-gray-400 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors cursor-pointer p-0.5"
                 title={showPhone ? 'Hide Mobile Number' : 'Show Mobile Number'}
               >
                 {showPhone ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -545,10 +551,10 @@ export const ProfileView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleCopyPhone}
-                className="text-gray-400 hover:text-emerald-700 transition-colors cursor-pointer p-0.5"
+                className="text-gray-400 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors cursor-pointer p-0.5"
                 title="Copy Mobile"
               >
-                {copiedPhone ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                {copiedPhone ? <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3 h-3" />}
               </button>
             </div>
           </div>
@@ -570,6 +576,30 @@ export const ProfileView: React.FC = () => {
               <span className="hidden sm:inline">Sign In</span>
             </button>
           )}
+
+          {/* Quick Header Theme Mode Toggle */}
+          <button
+            id="profile-header-theme-toggle"
+            type="button"
+            onClick={() => {
+              sfx.playTap();
+              toggleColorMode();
+            }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-all cursor-pointer border shadow-2xs"
+            style={{
+              backgroundColor: isDarkMode ? '#1e293b' : 'var(--theme-color-50, #ecfdf5)',
+              borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'var(--theme-color-200, #a7f3d0)',
+              color: isDarkMode ? '#fbbf24' : 'var(--brand-primary)',
+            }}
+            title={isDarkMode ? 'Switch to Light Theme' : 'Switch to Full Dark Mode'}
+            aria-label="Toggle Theme Mode"
+          >
+            {isDarkMode ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-slate-700" />
+            )}
+          </button>
 
           <button
             onClick={() => setCurrentView('bank')}
@@ -1128,7 +1158,7 @@ export const ProfileView: React.FC = () => {
         </div>
 
         {/* Financial Records Quick Panel (Recharge, Income, Withdrawal Records) */}
-        <div className="bg-white rounded-3xl p-4 border border-gray-100 shadow-xs space-y-3">
+        <div className="bg-white dark:bg-[#111722] rounded-3xl p-4 border border-gray-100 dark:border-white/10 shadow-xs space-y-3 transition-colors duration-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div
@@ -1137,7 +1167,7 @@ export const ProfileView: React.FC = () => {
               >
                 <Receipt className="w-3.5 h-3.5" />
               </div>
-              <h3 className="text-[10.5px] font-bold text-gray-900 tracking-tight">
+              <h3 className="text-[10.5px] font-bold text-gray-900 dark:text-gray-100 tracking-tight">
                 Account Records
               </h3>
             </div>
@@ -1163,11 +1193,7 @@ export const ProfileView: React.FC = () => {
                 sfx.playTap();
                 navigateToTransactions('deposit');
               }}
-              className="p-2.5 rounded-2xl border hover:shadow-sm active:scale-95 transition-all text-left cursor-pointer flex flex-col justify-between space-y-1.5 group"
-              style={{
-                background: 'linear-gradient(to bottom, var(--theme-color-50, #ecfdf5), white)',
-                borderColor: 'var(--theme-color-200, #a7f3d0)',
-              }}
+              className="p-2.5 rounded-2xl border hover:shadow-sm active:scale-95 transition-all text-left cursor-pointer flex flex-col justify-between space-y-1.5 group bg-gradient-to-b from-emerald-50/80 to-white dark:from-emerald-950/40 dark:to-[#111722] border-emerald-200/80 dark:border-emerald-500/30"
             >
               <div className="flex items-center justify-between">
                 <div
@@ -1178,7 +1204,7 @@ export const ProfileView: React.FC = () => {
                 </div>
               </div>
               <div>
-                <span className="text-[9.5px] font-bold text-gray-900 block transition-colors">
+                <span className="text-[9.5px] font-bold text-gray-900 dark:text-gray-100 block transition-colors">
                   Recharge Record
                 </span>
                 <span
@@ -1197,7 +1223,7 @@ export const ProfileView: React.FC = () => {
                 sfx.playTap();
                 navigateToTransactions('revenue');
               }}
-              className="p-2.5 rounded-2xl bg-gradient-to-b from-amber-50/80 to-amber-50/20 border border-amber-100/90 hover:border-amber-300 hover:shadow-sm active:scale-95 transition-all text-left cursor-pointer flex flex-col justify-between space-y-1.5 group"
+              className="p-2.5 rounded-2xl bg-gradient-to-b from-amber-50/80 to-amber-50/20 dark:from-amber-950/40 dark:to-[#111722] border border-amber-100/90 dark:border-amber-500/30 hover:border-amber-300 dark:hover:border-amber-400 hover:shadow-sm active:scale-95 transition-all text-left cursor-pointer flex flex-col justify-between space-y-1.5 group"
             >
               <div className="flex items-center justify-between">
                 <div className="w-6.5 h-6.5 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
@@ -1205,10 +1231,10 @@ export const ProfileView: React.FC = () => {
                 </div>
               </div>
               <div>
-                <span className="text-[9.5px] font-bold text-gray-900 block group-hover:text-amber-700 transition-colors">
+                <span className="text-[9.5px] font-bold text-gray-900 dark:text-gray-100 block group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
                   Income Record
                 </span>
-                <span className="text-[8.5px] text-amber-700 font-bold font-mono block mt-0.5">
+                <span className="text-[8.5px] text-amber-700 dark:text-amber-300 font-bold font-mono block mt-0.5">
                   {showBalance ? formatINR(user.totalRevenue) : '•••'}
                 </span>
               </div>
@@ -1221,7 +1247,7 @@ export const ProfileView: React.FC = () => {
                 sfx.playTap();
                 navigateToTransactions('withdraw');
               }}
-              className="p-2.5 rounded-2xl bg-gradient-to-b from-teal-50/80 to-teal-50/20 border border-teal-100/90 hover:border-teal-300 hover:shadow-sm active:scale-95 transition-all text-left cursor-pointer flex flex-col justify-between space-y-1.5 group"
+              className="p-2.5 rounded-2xl bg-gradient-to-b from-teal-50/80 to-teal-50/20 dark:from-teal-950/40 dark:to-[#111722] border border-teal-100/90 dark:border-teal-500/30 hover:border-teal-300 dark:hover:border-teal-400 hover:shadow-sm active:scale-95 transition-all text-left cursor-pointer flex flex-col justify-between space-y-1.5 group"
             >
               <div className="flex items-center justify-between">
                 <div className="w-6.5 h-6.5 rounded-xl bg-slate-800 text-teal-300 flex items-center justify-center shadow-xs">
@@ -1229,10 +1255,10 @@ export const ProfileView: React.FC = () => {
                 </div>
               </div>
               <div>
-                <span className="text-[9.5px] font-bold text-gray-900 block group-hover:text-teal-700 transition-colors">
+                <span className="text-[9.5px] font-bold text-gray-900 dark:text-gray-100 block group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">
                   Withdrawal Record
                 </span>
-                <span className="text-[8.5px] text-teal-700 font-bold font-mono block mt-0.5">
+                <span className="text-[8.5px] text-teal-700 dark:text-teal-300 font-bold font-mono block mt-0.5">
                   {showBalance ? formatINR(effectiveTotalWithdraw) : '•••'}
                 </span>
               </div>
@@ -1241,7 +1267,7 @@ export const ProfileView: React.FC = () => {
         </div>
 
         {/* Menu Navigation List */}
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-xs overflow-hidden divide-y divide-gray-50">
+        <div className="bg-white dark:bg-[#111722] rounded-3xl border border-gray-100 dark:border-white/10 shadow-xs overflow-hidden divide-y divide-gray-50 dark:divide-white/5 transition-colors duration-200">
           {/* Recharge Record */}
           <button
             id="menu-recharge-record"
@@ -1249,7 +1275,7 @@ export const ProfileView: React.FC = () => {
               sfx.playTap();
               navigateToTransactions('deposit');
             }}
-            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
@@ -1259,8 +1285,8 @@ export const ProfileView: React.FC = () => {
                 <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
-                <span className="text-[11px] font-bold text-gray-800 block">Recharge Record</span>
-                <span className="text-[8.5px] text-gray-400 block mt-0.5">
+                <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100 block">Recharge Record</span>
+                <span className="text-[8.5px] text-gray-400 dark:text-gray-400 block mt-0.5">
                   Deposit receipts & payment confirmations
                 </span>
               </div>
@@ -1269,7 +1295,7 @@ export const ProfileView: React.FC = () => {
               <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--brand-primary)' }}>
                 {showBalance ? formatINR(effectiveTotalRecharge) : '•••'}
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
             </div>
           </button>
 
@@ -1280,24 +1306,24 @@ export const ProfileView: React.FC = () => {
               sfx.playTap();
               navigateToTransactions('revenue');
             }}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
-                <span className="text-[11px] font-bold text-gray-800 block">Income Record</span>
-                <span className="text-[8.5px] text-gray-400 block mt-0.5">
+                <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100 block">Income Record</span>
+                <span className="text-[8.5px] text-gray-400 dark:text-gray-400 block mt-0.5">
                   Daily returns, bonuses & dividend history
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-[10px] font-bold text-amber-700 font-mono">
+              <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 font-mono">
                 {showBalance ? formatINR(user.totalRevenue) : '•••'}
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
             </div>
           </button>
 
@@ -1308,24 +1334,24 @@ export const ProfileView: React.FC = () => {
               sfx.playTap();
               navigateToTransactions('withdraw');
             }}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 flex items-center justify-center">
                 <Banknote className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
-                <span className="text-[11px] font-bold text-gray-800 block">Withdrawal Record</span>
-                <span className="text-[8.5px] text-gray-400 block mt-0.5">
+                <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100 block">Withdrawal Record</span>
+                <span className="text-[8.5px] text-gray-400 dark:text-gray-400 block mt-0.5">
                   Bank IMPS payouts & clearance confirmations
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-[10px] font-bold text-teal-700 font-mono">
+              <span className="text-[10px] font-bold text-teal-700 dark:text-teal-300 font-mono">
                 {showBalance ? formatINR(effectiveTotalWithdraw) : '•••'}
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
             </div>
           </button>
 
@@ -1333,7 +1359,7 @@ export const ProfileView: React.FC = () => {
           <button
             id="menu-bank"
             onClick={() => setCurrentView('bank')}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
@@ -1342,16 +1368,16 @@ export const ProfileView: React.FC = () => {
               >
                 <Building2 className="w-4 h-4" />
               </div>
-              <span className="text-[11px] font-bold text-gray-800">Bank Account</span>
+              <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100">Bank Account</span>
             </div>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
           </button>
 
           {/* My Product */}
           <button
             id="menu-products"
             onClick={() => setCurrentView('myproducts')}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
@@ -1360,9 +1386,9 @@ export const ProfileView: React.FC = () => {
               >
                 <Package className="w-4 h-4" />
               </div>
-              <span className="text-[11px] font-bold text-gray-800">My Investment Products</span>
+              <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100">My Investment Products</span>
             </div>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
           </button>
 
           {/* Alerts & Notifications Center */}
@@ -1372,35 +1398,35 @@ export const ProfileView: React.FC = () => {
               sfx.playTap();
               setIsNotificationModalOpen(true);
             }}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center bg-amber-50 text-amber-600 relative"
+                className="w-8 h-8 rounded-xl flex items-center justify-center bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 relative"
               >
                 <Bell className="w-4 h-4" />
                 {unreadNotificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-950 font-black text-[7.5px] rounded-full flex items-center justify-center ring-1 ring-white shadow-xs animate-pulse">
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-slate-950 font-black text-[7.5px] rounded-full flex items-center justify-center ring-1 ring-white dark:ring-[#111722] shadow-xs animate-pulse">
                     {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
                   </span>
                 )}
               </div>
               <div>
-                <span className="text-[11px] font-bold text-gray-800 block">Alerts & Notifications</span>
-                <span className="text-[8.5px] text-gray-400 block mt-0.5">
+                <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100 block">Alerts & Notifications</span>
+                <span className="text-[8.5px] text-gray-400 dark:text-gray-400 block mt-0.5">
                   Interest credits & withdrawal status tracker
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-2">
               {unreadNotificationCount > 0 ? (
-                <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">
                   {unreadNotificationCount} New
                 </span>
               ) : (
-                <span className="text-[9px] text-emerald-600 font-bold">Active</span>
+                <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">Active</span>
               )}
-              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
             </div>
           </button>
 
@@ -1408,7 +1434,7 @@ export const ProfileView: React.FC = () => {
           <button
             id="menu-transactions"
             onClick={() => navigateToTransactions('all')}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
@@ -1418,20 +1444,20 @@ export const ProfileView: React.FC = () => {
                 <HistoryIcon className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-[11px] font-bold text-gray-800 block">All Financial Statements</span>
-                <span className="text-[8.5px] text-gray-400 block mt-0.5">
+                <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100 block">All Financial Statements</span>
+                <span className="text-[8.5px] text-gray-400 dark:text-gray-400 block mt-0.5">
                   Complete account audit trail & statements
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
           </button>
 
           {/* Security & Password */}
           <button
             id="menu-password"
             onClick={() => setCurrentView('password')}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
@@ -1440,16 +1466,86 @@ export const ProfileView: React.FC = () => {
               >
                 <KeyRound className="w-4 h-4" />
               </div>
-              <span className="text-[11px] font-bold text-gray-800">Security & Password</span>
+              <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100">Security & Password</span>
             </div>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
           </button>
+
+          {/* USER-CONTROLLED FULL DARK MODE INTERFACE TOGGLE */}
+          <div
+            id="menu-dark-mode"
+            onClick={() => {
+              sfx.playTap();
+              toggleColorMode();
+            }}
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors text-left cursor-pointer select-none"
+          >
+            <div className="flex items-center space-x-3">
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors shrink-0 shadow-2xs border"
+                style={{
+                  backgroundColor: isDarkMode ? '#1e293b' : '#fef3c7',
+                  borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : '#fde68a',
+                  color: isDarkMode ? '#fbbf24' : '#d97706'
+                }}
+              >
+                {isDarkMode ? <Moon className="w-4 h-4 text-amber-300" /> : <Sun className="w-4 h-4 text-amber-500" />}
+              </div>
+              <div>
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100 block">Dark Mode Interface</span>
+                  <span
+                    className={`text-[8px] font-extrabold px-1.5 py-0.2 rounded-full border transition-colors ${
+                      isDarkMode
+                        ? 'bg-amber-400/15 text-amber-300 border-amber-400/30'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-500/30'
+                    }`}
+                  >
+                    {isDarkMode ? 'Dark Active' : 'Light Active'}
+                  </span>
+                </div>
+                <span className="text-[8.5px] text-gray-400 dark:text-gray-400 block mt-0.5">
+                  {isDarkMode ? 'High-contrast OLED dark theme active' : 'Clean bright institutional light theme active'}
+                </span>
+              </div>
+            </div>
+
+            {/* Accessible iOS / Material Toggle Switch with Sun/Moon Icon */}
+            <button
+              id="profile-theme-toggle-switch"
+              type="button"
+              role="switch"
+              aria-checked={isDarkMode}
+              aria-label="Toggle dark mode interface"
+              onClick={(e) => {
+                e.stopPropagation();
+                sfx.playTap();
+                toggleColorMode();
+              }}
+              className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
+                isDarkMode ? 'bg-amber-500' : 'bg-gray-200 dark:bg-gray-700'
+              }`}
+            >
+              <span
+                aria-hidden="true"
+                className={`pointer-events-none flex items-center justify-center h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                  isDarkMode ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              >
+                {isDarkMode ? (
+                  <Moon className="w-2.5 h-2.5 text-amber-600" />
+                ) : (
+                  <Sun className="w-2.5 h-2.5 text-amber-500" />
+                )}
+              </span>
+            </button>
+          </div>
 
           {/* Haptic Vibration Feedback Toggle */}
           <div
             id="menu-haptic-feedback"
             onClick={() => toggleHapticFeedback()}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50/80 transition-colors text-left cursor-pointer select-none"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50/80 dark:hover:bg-white/5 transition-colors text-left cursor-pointer select-none"
           >
             <div className="flex items-center space-x-3">
               <div
@@ -1457,7 +1553,7 @@ export const ProfileView: React.FC = () => {
                 style={{
                   backgroundColor: isHapticEnabled
                     ? 'var(--theme-color-50, #ecfdf5)'
-                    : '#f3f4f6',
+                    : isDarkMode ? '#1e293b' : '#f3f4f6',
                   color: isHapticEnabled ? 'var(--brand-primary, #059669)' : '#9ca3af'
                 }}
               >
@@ -1465,23 +1561,23 @@ export const ProfileView: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center space-x-1.5">
-                  <span className="text-[11px] font-bold text-gray-800 block">Haptic Vibration</span>
+                  <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100 block">Haptic Vibration</span>
                   <span
                     className={`text-[8px] font-extrabold px-1.5 py-0.2 rounded-full border transition-colors ${
                       isHapticEnabled
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : 'bg-gray-100 text-gray-500 border-gray-200'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-500/30'
+                        : 'bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
                     }`}
                   >
                     {isHapticEnabled ? 'Enabled' : 'Disabled'}
                   </span>
                   {!isHapticSupported && (
-                    <span className="text-[7.5px] font-semibold px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                    <span className="text-[7.5px] font-semibold px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500/30">
                       Browser Limited
                     </span>
                   )}
                 </div>
-                <span className="text-[8.5px] text-gray-400 block mt-0.5">
+                <span className="text-[8.5px] text-gray-400 dark:text-gray-400 block mt-0.5">
                   Tactile vibration on buttons, taps & actions
                 </span>
               </div>
@@ -1499,7 +1595,7 @@ export const ProfileView: React.FC = () => {
                 toggleHapticFeedback();
               }}
               className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
-                isHapticEnabled ? 'bg-emerald-600' : 'bg-gray-200'
+                isHapticEnabled ? 'bg-emerald-600' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             >
               <span
@@ -1518,26 +1614,26 @@ export const ProfileView: React.FC = () => {
               sfx.playTap();
               setIsSupportModalOpen(true);
             }}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-emerald-700 bg-emerald-50"
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40"
               >
                 <RealSupportHeadsetIcon className="w-4 h-4" size={16} />
               </div>
               <div>
-                <span className="text-[11px] font-bold text-gray-800 block">Customer Support & Helpdesk</span>
-                <span className="text-[8.5px] text-gray-400 block mt-0.5">
+                <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100 block">Customer Support & Helpdesk</span>
+                <span className="text-[8.5px] text-gray-400 dark:text-gray-400 block mt-0.5">
                   24/7 Live ticket assistance & investment inquiries
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-1.5">
-              <span className="text-[8px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              <span className="text-[8px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/30">
                 24/7 Live
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
             </div>
           </button>
 
@@ -1545,7 +1641,7 @@ export const ProfileView: React.FC = () => {
           <button
             id="menu-about"
             onClick={() => setCurrentView('about')}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div
@@ -1554,9 +1650,9 @@ export const ProfileView: React.FC = () => {
               >
                 <Info className="w-4 h-4" />
               </div>
-              <span className="text-[11px] font-bold text-gray-800">About AKM Enterprises</span>
+              <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100">About AKM Enterprises</span>
             </div>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
           </button>
         </div>
 
@@ -1566,7 +1662,7 @@ export const ProfileView: React.FC = () => {
             <button
               id="profile-logout-btn"
               onClick={handleLogout}
-              className="w-full py-2.5 bg-white hover:bg-rose-50 border border-gray-200 hover:border-rose-200 text-rose-600 font-bold text-[10.5px] rounded-xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer shadow-2xs"
+              className="w-full py-2.5 bg-white dark:bg-[#111722] hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-gray-200 dark:border-white/10 hover:border-rose-200 dark:hover:border-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-[10.5px] rounded-xl flex items-center justify-center space-x-2 active:scale-98 transition-all cursor-pointer shadow-2xs"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Sign Out Account</span>

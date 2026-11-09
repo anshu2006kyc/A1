@@ -309,6 +309,66 @@ export const applyTheme = (themeId?: string): ThemeDefinition => {
   return theme;
 };
 
+export type ColorMode = 'light' | 'dark';
+
+/**
+ * Returns current color mode ('light' | 'dark').
+ */
+export const getColorMode = (): ColorMode => {
+  try {
+    const saved = localStorage.getItem('akm_color_mode');
+    if (saved === 'dark' || saved === 'light') {
+      return saved;
+    }
+  } catch {
+    // Ignore storage errors in sandboxed iframes
+  }
+  return 'light';
+};
+
+/**
+ * Applies light or dark mode to documentElement and body.
+ */
+export const applyColorMode = (mode: ColorMode): ColorMode => {
+  const root = document.documentElement;
+  const isDark = mode === 'dark';
+
+  if (isDark) {
+    root.classList.add('dark');
+    root.setAttribute('data-color-scheme', 'dark');
+    root.style.colorScheme = 'dark';
+    if (document.body) {
+      document.body.classList.add('dark');
+      document.body.setAttribute('data-color-scheme', 'dark');
+    }
+  } else {
+    root.classList.remove('dark');
+    root.setAttribute('data-color-scheme', 'light');
+    root.style.colorScheme = 'light';
+    if (document.body) {
+      document.body.classList.remove('dark');
+      document.body.setAttribute('data-color-scheme', 'light');
+    }
+  }
+
+  try {
+    localStorage.setItem('akm_color_mode', mode);
+  } catch {
+    // Ignore iframe storage errors
+  }
+
+  return mode;
+};
+
+/**
+ * Toggles between light and dark mode.
+ */
+export const toggleColorMode = (): ColorMode => {
+  const current = getColorMode();
+  const next: ColorMode = current === 'dark' ? 'light' : 'dark';
+  return applyColorMode(next);
+};
+
 /**
  * Initializes theme on bootstrap before React tree finishes loading.
  */
@@ -331,5 +391,9 @@ export const initTheme = (): ThemeDefinition => {
     savedThemeId = 'emerald';
   }
 
+  // Also apply saved color mode immediately on initialization
+  applyColorMode(getColorMode());
+
   return applyTheme(savedThemeId);
 };
+

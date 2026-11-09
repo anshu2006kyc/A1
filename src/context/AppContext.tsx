@@ -57,7 +57,7 @@ import {
 } from '../types';
 import { formatINR } from '../utils/currency';
 import { sfx } from '../utils/sound';
-import { applyTheme } from '../utils/theme';
+import { applyTheme, ColorMode, getColorMode, applyColorMode } from '../utils/theme';
 import { parseRecordTimestamp, sortRecordsNewestFirst } from '../utils/date';
 import { getProductArtworkDataUri } from '../components/ProductArtwork';
 import {
@@ -298,6 +298,12 @@ interface AppContextType {
   isHapticEnabled: boolean;
   toggleHapticFeedback: (enabled?: boolean) => void;
   isHapticSupported: boolean;
+
+  // User-Controlled Theme System (Light Mode vs Full Dark Mode)
+  colorMode: ColorMode;
+  setColorMode: (mode: ColorMode) => void;
+  toggleColorMode: () => void;
+  isDarkMode: boolean;
 
   // Support & Investor Inquiries
   supportMessages: SupportMessage[];
@@ -1039,6 +1045,44 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
       showToast('Tactile vibration disabled 🔕', 'info');
     }
   };
+
+  // User-Controlled Theme System (Light Theme vs Full Dark Mode Interface)
+  const [colorMode, setColorModeState] = useState<ColorMode>(() => getColorMode());
+
+  const setColorMode = (mode: ColorMode) => {
+    setColorModeState(mode);
+    applyColorMode(mode);
+    if (mode === 'dark') {
+      showToast('Full Dark Mode enabled 🌙', 'success');
+      triggerHaptic([20, 30], true);
+    } else {
+      showToast('Clean Light Theme enabled ☀️', 'info');
+      triggerHaptic([20, 30], true);
+    }
+  };
+
+  const toggleColorMode = () => {
+    const next: ColorMode = colorMode === 'dark' ? 'light' : 'dark';
+    setColorMode(next);
+  };
+
+  const isDarkMode = colorMode === 'dark';
+
+  // Synchronize on mount and listen to storage events across tabs
+  useEffect(() => {
+    const currentMode = getColorMode();
+    setColorModeState(currentMode);
+    applyColorMode(currentMode);
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'akm_color_mode' && (e.newValue === 'dark' || e.newValue === 'light')) {
+        setColorModeState(e.newValue);
+        applyColorMode(e.newValue);
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   const requestBrowserNotificationPermission = async () => {
     const perm = await requestNotificationPermission();
@@ -4258,6 +4302,10 @@ export const AppProvider: React.FC<React.PropsWithChildren<{}>> = ({ children })
         isHapticEnabled,
         toggleHapticFeedback,
         isHapticSupported: isHapticSupported(),
+        colorMode,
+        setColorMode,
+        toggleColorMode,
+        isDarkMode,
         activeCheckoutModal,
         setActiveCheckoutModal,
         activePayment,

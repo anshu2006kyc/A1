@@ -19,7 +19,7 @@ export const QuickActions: React.FC = () => {
             sfx.playTap();
             setCurrentView('recharge');
           }}
-          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white shadow-xs border border-gray-100 hover:border-[var(--brand-primary)] transition-all active:scale-95 cursor-pointer group hover:shadow-sm"
+          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white dark:bg-[#111722] shadow-xs border border-gray-100 dark:border-white/10 hover:border-[var(--brand-primary)] dark:hover:border-emerald-400 transition-all active:scale-95 cursor-pointer group hover:shadow-sm"
         >
           <div
             className="w-12 h-12 rounded-2xl btn-chamkila flex items-center justify-center text-white group-hover:scale-105 transition-transform"
@@ -27,7 +27,7 @@ export const QuickActions: React.FC = () => {
           >
             <CreditCard className="w-6 h-6 stroke-[2.4] drop-shadow-xs" />
           </div>
-          <span className="text-xs font-bold text-gray-800 mt-1.5">Recharge</span>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-200 mt-1.5">Recharge</span>
         </button>
 
         {/* Withdraw - Direct navigation to Withdrawal Page */}
@@ -37,7 +37,7 @@ export const QuickActions: React.FC = () => {
             sfx.playTap();
             setCurrentView('withdraw');
           }}
-          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white shadow-xs border border-gray-100 hover:border-[var(--brand-primary)] transition-all active:scale-95 cursor-pointer group hover:shadow-sm"
+          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white dark:bg-[#111722] shadow-xs border border-gray-100 dark:border-white/10 hover:border-[var(--brand-primary)] dark:hover:border-emerald-400 transition-all active:scale-95 cursor-pointer group hover:shadow-sm"
         >
           <div
             className="w-12 h-12 rounded-2xl btn-chamkila flex items-center justify-center text-white group-hover:scale-105 transition-transform"
@@ -45,7 +45,7 @@ export const QuickActions: React.FC = () => {
           >
             <Banknote className="w-6 h-6 stroke-[2.3] drop-shadow-xs" />
           </div>
-          <span className="text-xs font-bold text-gray-800 mt-1.5">Withdraw</span>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-200 mt-1.5">Withdraw</span>
         </button>
 
         {/* Service */}
@@ -55,12 +55,12 @@ export const QuickActions: React.FC = () => {
             sfx.playTap();
             setShowServiceModal(true);
           }}
-          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white shadow-xs border border-gray-100 hover:border-amber-400 transition-all active:scale-95 cursor-pointer group hover:shadow-sm"
+          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white dark:bg-[#111722] shadow-xs border border-gray-100 dark:border-white/10 hover:border-amber-400 dark:hover:border-amber-400 transition-all active:scale-95 cursor-pointer group hover:shadow-sm"
         >
           <div className="w-12 h-12 rounded-2xl btn-chamkila-gold shadow-md shadow-amber-500/30 flex items-center justify-center text-slate-900 group-hover:scale-105 transition-transform">
             <RealSupportHeadsetIcon className="w-6 h-6 drop-shadow-xs" size={24} />
           </div>
-          <span className="text-xs font-bold text-gray-800 mt-1.5">Service</span>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-200 mt-1.5">Service</span>
         </button>
 
         {/* Channel - Official Real Telegram Channel Button */}
@@ -70,7 +70,7 @@ export const QuickActions: React.FC = () => {
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => sfx.playTap()}
-          className="relative flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white shadow-xs border border-gray-100 hover:border-[#229ED9] transition-all active:scale-95 cursor-pointer group hover:shadow-md"
+          className="relative flex flex-col items-center justify-center p-2.5 rounded-2xl bg-white dark:bg-[#111722] shadow-xs border border-gray-100 dark:border-white/10 hover:border-[#229ED9] dark:hover:border-sky-400 transition-all active:scale-95 cursor-pointer group hover:shadow-md"
           title="Join Official Telegram Channel"
         >
           <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#0088cc] via-[#229ED9] to-[#2BA6E1] shadow-md shadow-sky-500/35 flex items-center justify-center text-white group-hover:scale-105 transition-transform overflow-hidden animate-telegram-aura">
@@ -89,7 +89,7 @@ export const QuickActions: React.FC = () => {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-white/95" />
             </span>
           </div>
-          <span className="text-xs font-bold text-gray-800 mt-1.5">Channel</span>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-200 mt-1.5">Channel</span>
         </a>
       </div>
 

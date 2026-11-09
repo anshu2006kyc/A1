@@ -30,7 +30,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
     : getProductArtworkDataUri(plan.id, plan.category);
 
   return (
-    <div className="relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between group">
+    <div className="relative bg-white dark:bg-[#111722] rounded-2xl overflow-hidden border border-gray-100 dark:border-white/10 shadow-xs hover:shadow-md dark:shadow-black/40 transition-shadow flex flex-col justify-between group">
       {/* Product Image Section - Clean, Unobstructed Blade Visual */}
       <div className="relative h-32 bg-zinc-950 overflow-hidden flex items-center justify-center">
         <img
@@ -73,8 +73,8 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
       {/* Metrics 4-Grid: Return Time, Deposit, Daily Return, Est. Total */}
       <div className="p-2.5 grid grid-cols-2 gap-y-2 gap-x-2 text-[10px]">
         <div>
-          <span className="text-gray-400 block text-[8.5px]">Return Time</span>
-          <span className={`font-bold text-[10px] ${plan.durationMinutes ? 'text-amber-600 font-black' : 'text-gray-900'}`}>
+          <span className="text-gray-400 dark:text-gray-400 block text-[8.5px]">Return Time</span>
+          <span className={`font-bold text-[10px] ${plan.durationMinutes ? 'text-amber-600 dark:text-amber-400 font-black' : 'text-gray-900 dark:text-gray-100'}`}>
             {plan.durationMinutes
               ? plan.durationMinutes === 60
                 ? '1 Hour'
@@ -86,27 +86,27 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
         </div>
 
         <div className="text-right">
-          <span className="text-gray-400 block text-[8.5px]">Deposit</span>
-          <span className="font-extrabold text-gray-900 text-[9.5px] tabular-nums font-mono tracking-tight">
+          <span className="text-gray-400 dark:text-gray-400 block text-[8.5px]">Deposit</span>
+          <span className="font-extrabold text-gray-900 dark:text-gray-100 text-[9.5px] tabular-nums font-mono tracking-tight">
             {formatINR(plan.depositAmount)}
           </span>
         </div>
 
         <div>
-          <span className="text-gray-400 block text-[8.5px]">
+          <span className="text-gray-400 dark:text-gray-400 block text-[8.5px]">
             {plan.durationMinutes ? 'Plan Return' : 'Daily Return'}
           </span>
           <span
-            className="font-black text-[9.5px] tabular-nums font-mono text-emerald-600 tracking-tight"
+            className="font-black text-[9.5px] tabular-nums font-mono text-emerald-600 dark:text-emerald-400 tracking-tight"
           >
             +{formatINR(plan.dailyIncome)}
           </span>
         </div>
 
         <div className="text-right">
-          <span className="text-gray-400 block text-[8.5px]">Est. Total</span>
+          <span className="text-gray-400 dark:text-gray-400 block text-[8.5px]">Est. Total</span>
           <span
-            className="font-black text-[9.5px] tabular-nums font-mono text-emerald-700 tracking-tight"
+            className="font-black text-[9.5px] tabular-nums font-mono text-emerald-700 dark:text-emerald-400 tracking-tight"
           >
             {formatINR(plan.totalReturn)}
           </span>
@@ -119,7 +119,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, activePurchasedCount =
           <button
             id={`buy-btn-${plan.id}`}
             disabled
-            className="w-full py-2 px-2.5 rounded-xl bg-gray-100 text-gray-400 font-bold text-[11px] flex items-center justify-center space-x-1.5 cursor-not-allowed border border-gray-200"
+            className="w-full py-2 px-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-bold text-[11px] flex items-center justify-center space-x-1.5 cursor-not-allowed border border-gray-200 dark:border-gray-700"
           >
             <span>Limit Reached ({activePurchasedCount}/{plan.limit})</span>
           </button>

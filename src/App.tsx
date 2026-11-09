@@ -137,8 +137,8 @@ const MainAppContent: React.FC = () => {
   // 100% Gated: Without Mobile Registration / Login, nobody can access or use any view
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-slate-100 flex justify-center selection:bg-emerald-500 selection:text-white">
-        <div className="w-full max-w-md bg-white min-h-screen shadow-2xl relative flex flex-col">
+      <div className="min-h-screen bg-slate-100 dark:bg-neutral-950 flex justify-center selection:bg-emerald-500 selection:text-white transition-colors duration-200">
+        <div className="w-full max-w-md bg-white dark:bg-[#0b0f17] text-gray-900 dark:text-gray-100 min-h-screen shadow-2xl relative flex flex-col transition-colors duration-200">
           <MobileAuthGate />
           <Toast />
         </div>
@@ -183,9 +183,9 @@ const MainAppContent: React.FC = () => {
   const showBottomNav = ['home', 'share', 'team', 'profile', 'checkin'].includes(currentView);
 
   return (
-    <div className="min-h-screen bg-neutral-900 flex justify-center selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen bg-neutral-900 dark:bg-[#07090e] flex justify-center selection:bg-emerald-500 selection:text-white transition-colors duration-200">
       {/* Mobile-sized container with high-end app layout */}
-      <div className="w-full max-w-md bg-white min-h-screen shadow-2xl relative flex flex-col">
+      <div className="w-full max-w-md bg-white dark:bg-[#0b0f17] text-gray-900 dark:text-gray-100 min-h-screen shadow-2xl relative flex flex-col transition-colors duration-200">
         {/* Dynamic View Component with smooth view transitions & global pull-to-refresh on all pages */}
         <PullToRefresh onRefresh={refreshAppData}>
           <main className="flex-1 overflow-x-hidden flex flex-col">
